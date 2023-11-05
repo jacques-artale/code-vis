@@ -25,20 +25,29 @@ class CodeEditor extends React.Component {
       selectOnLineNumbers: true
     };
     return (
-      <div style={{width: '100%', height: '100%'}}>
-        <MonacoEditor
-          width="100%"
-          height="100%"
-          language="javascript"
-          theme="vs-dark"
-          value={code}
-          options={options}
-          onChange={this.onChange.bind(this)}
-          editorDidMount={this.editorDidMount.bind(this)}
-        />
-      </div>
+      <MonacoEditor
+        width="100%"
+        height="100%"
+        language="javascript"
+        theme="vs-dark"
+        value={code}
+        options={options}
+        onChange={this.onChange.bind(this)}
+        editorDidMount={this.editorDidMount.bind(this)}
+      />
     );
   }
 }
 
-export default CodeEditor;
+function CodeInput() {
+  const code_editor = new CodeEditor();
+  return (
+    <div style={{float: 'right', width: '50%', height: '100%'}}>
+      {
+        code_editor.render()
+      }
+    </div>
+  );
+}
+
+export default CodeInput;

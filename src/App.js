@@ -1,17 +1,10 @@
 import './App.css';
-import CodeEditor from './components/CodeEditor';
+import CodeInput from './components/CodeInput';
 
 function App() {
-
-  let code_editor = new CodeEditor();
-
   return (
     <div style={{width: '100%', height: '100%'}}>
-      <div style={{float: 'right', width: '50%', height: '100%'}}>
-        {
-          code_editor.render()
-        }
-      </div>
+      <CodeInput />
     </div>
   );
 }
