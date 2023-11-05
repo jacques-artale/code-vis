@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 
 class CodeEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      code: ""
+      code: props.code
     };
   }
 
@@ -17,6 +17,7 @@ class CodeEditor extends React.Component {
   onChange(newValue, e) {
     console.log('onChange', newValue, e);
     this.setState({ code: newValue });
+    this.props.setCode(newValue);
   }
 
   render() {
@@ -39,13 +40,10 @@ class CodeEditor extends React.Component {
   }
 }
 
-function CodeInput() {
-  const code_editor = new CodeEditor();
+function CodeInput({ code, setCode }) {
   return (
-    <div style={{float: 'right', width: '50%', height: '100%'}}>
-      {
-        code_editor.render()
-      }
+    <div style={{ float: 'right', width: '50%', height: '100%' }}>
+      <CodeEditor code={code} setCode={setCode} />
     </div>
   );
 }
