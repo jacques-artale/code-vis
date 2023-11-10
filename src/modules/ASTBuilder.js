@@ -43,7 +43,16 @@ function get_array_variables(parsedCode) {
     if (node.type === "VariableDeclaration") {
       for (const declaration of node.declarations) {
         if (declaration.init.type === "ArrayExpression") {
-          array_variables.push([declaration.id.name, declaration.init.elements.map(element => element.value)]);
+          array_variables.push([declaration.id.name, declaration.init.elements.map(element => {
+            // Nested array
+            if (element.type === "ArrayExpression") {
+              return element.elements.map(element => {
+                return element.value
+              });
+            }
+            // Single value
+            return element.value
+          })]);
         }
       }
     }

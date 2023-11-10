@@ -3,10 +3,10 @@ import './App.css';
 import CodeInput from './components/CodeInput';
 import build_ast from './modules/ASTBuilder';
 import Variable from './components/Variable';
-import Array from './components/Array';
+import ArrayGrid from './components/Array';
 
 function App() {
-  const [code, setCode] = useState('var a = 1;');
+  const [code, setCode] = useState('var a = [1,2,3,4];');
   const [parsedCode, setParsedCode] = useState('');
 
   const [variables, setVariables] = useState([]); // [name, value]
@@ -30,7 +30,7 @@ function App() {
           {
             array_variables.map(([name, values]) => {
               return (
-                <Array name={name} values={values} />
+                <ArrayGrid name={name} values={values} />
               );
             })
           }
