@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import CodeInput from './components/CodeInput';
 import build_ast from './modules/ASTBuilder';
+import interpretParsedCode from './modules/Interpreter';
+import CodeInput from './components/CodeInput';
 import Variable from './components/Variable';
 import ArrayGrid from './components/Array';
 
@@ -14,6 +15,12 @@ function App() {
 
   function process_code(code) {
     build_ast(code, setParsedCode, setVariables, setArrayVariables);
+  }
+
+  function simulate_code() {
+    if (parsedCode !== '') {
+      interpretParsedCode(parsedCode);
+    }
   }
 
   return (
@@ -37,7 +44,11 @@ function App() {
         </div>
       }
 
-      <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => process_code(code) }>Parse Code</button>
+      <div style={{display: 'flex', flexDirection: 'column'}}>
+        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => process_code(code) }>Parse Code</button>
+        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulate_code() }>Run</button>
+      </div>
+
       <CodeInput code={code} setCode={setCode} />
     </div>
   );

@@ -1,13 +1,13 @@
 import { parseScript } from 'esprima';
 
 function build_ast(code, setParsedCode, setVariables, setArrayVariables) {
-  const parsedCode = parse_code(code);
+  const parsedCode = JSON.parse(parse_code(code));
   setParsedCode(parsedCode);
 
-  const variables = get_variables(JSON.parse(parsedCode));
+  const variables = get_variables(parsedCode);
   setVariables(variables);
 
-  const array_variables = get_array_variables(JSON.parse(parsedCode));
+  const array_variables = get_array_variables(parsedCode);
   setArrayVariables(array_variables);
 }
 
