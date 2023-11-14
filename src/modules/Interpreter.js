@@ -59,6 +59,42 @@ function execute_node_type(node, variables, setVariables, array_variables, setAr
   }
 }
 
+function interpretExpression(node, variables) {
+  console.log("expression");
+  switch (node.type) {
+    case 'Literal':
+      return node.value;
+    case 'Identifier':
+      return variables[node.name];
+    case 'BinaryExpression':
+      console.log("found binary expression");
+      return interpretBinaryExpression(node, variables);
+    // Add other expression types as needed
+    default:
+      console.error(`Unrecognized node type: ${node.type}`);
+  }
+}
+
+function evaluateBinaryExpression(left, right, operator) {
+  switch (operator) {
+    case '+':
+      return left + right;
+    case '-':
+      return left - right;
+    case '*':
+      return left * right;
+    case '/':
+      return left / right;
+    case '%':
+      return left % right;
+    // Add other operators as needed, possibly power operator and such
+    default:
+      console.error(`Unrecognized operator: ${operator}`);
+  }
+}
+
+
+
 function interpretExpressionStatement(node, variables, setVariables) {
   console.log("expression statement");
   console.log(node);
@@ -66,12 +102,18 @@ function interpretExpressionStatement(node, variables, setVariables) {
   switch (node.expression.type) {
     case 'AssignmentExpression':
       return interpretAssignmentExpression(node, variables, setVariables);
+    case 'BinaryExpression':
+      return interpretBinaryExpression(node, variables, setVariables);
+    // Add other expression types as needed
     default:
       console.log('expression type not implemented yet');
   }
 }
 
 function interpretAssignmentExpression(node, variables, setVariables) {
+  console.log("assignment expression");
+  console.log(node);
+
   const var_name = node.expression.left.name;
   const value = interpretExpression(node.expression.right, variables);
 
@@ -86,21 +128,19 @@ function interpretAssignmentExpression(node, variables, setVariables) {
   setVariables(new_variables);
 }
 
-function interpretExpression(node, variables) {
-  switch (node.type) {
-    case 'Literal':
-      return node.value;
-    case 'Identifier':
-      return variables[node.name];
-    case 'BinaryExpression':
-      return interpretBinaryExpression(node, variables);
-    // Add other expression types as needed
-    default:
-      console.error(`Unrecognized node type: ${node.type}`);
-  }
+function interpretBinaryExpression(node, variables) {
+  console.log("binary expression");
+  console.log(node);
+  
+  const left_value = interpretExpression(node.left, variables);
+  const right_value = interpretExpression(node.right, variables);
+  const operator = node.operator;
+
+  const result = evaluateBinaryExpression(left_value, right_value, operator);
+  
+  return result;
 }
 
-function interpretBinaryExpression(node, variables) {}
 function interpretLogicalExpression() {}
 function interpretUnaryExpression() {}
 function interpretUpdateExpression() {}
