@@ -65,7 +65,14 @@ function interpretExpression(node, variables) {
     case 'Literal':
       return node.value;
     case 'Identifier':
-      return variables[node.name];
+      const var_name = node.name;
+      for (let i = 0; i < variables.length; i++) {
+        if (variables[i][0] === var_name) {
+          return variables[i][1];
+        }
+      }
+      console.error(`Expression interpreter error: Variable ${var_name} not found`);
+      break;
     case 'BinaryExpression':
       console.log("found binary expression");
       return interpretBinaryExpression(node, variables);
@@ -131,7 +138,7 @@ function interpretAssignmentExpression(node, variables, setVariables) {
 function interpretBinaryExpression(node, variables) {
   console.log("binary expression");
   console.log(node);
-  
+
   const left_value = interpretExpression(node.left, variables);
   const right_value = interpretExpression(node.right, variables);
   const operator = node.operator;
