@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import build_ast from './modules/ASTBuilder';
 import interpretParsedCode from './modules/Interpreter';
@@ -10,8 +10,8 @@ function App() {
   const [code, setCode] = useState('var a = [1,2,3,4];');
   const [parsedCode, setParsedCode] = useState('');
 
-  const [variables, setVariables] = useState([]); // [name, value]
-  const [array_variables, setArrayVariables] = useState([]); // [name, [value, value, ...]]
+  const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
+  const [array_variables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
 
   function process_code(code) {
     build_ast(code, setParsedCode, setVariables, setArrayVariables);
@@ -19,7 +19,7 @@ function App() {
 
   function simulate_code() {
     if (parsedCode !== '') {
-      interpretParsedCode(parsedCode);
+      interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables);
     }
   }
 

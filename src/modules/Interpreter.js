@@ -7,23 +7,16 @@
 //   - block scope (for loops, if statements, etc)
 
 
-function interpretParsedCode(parsedCode) {
+function interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables) {
   console.log(parsedCode);
 
-
-  // for each node in the parsed code
-  // call execute_node_type(node)
-  // return the result of the last node
-
   for (let i = 0; i < parsedCode.body.length; i++) {
-    execute_node_type(parsedCode.body[i]);
+    execute_node_type(parsedCode.body[i], variables, setVariables, array_variables, setArrayVariables);
   }
 
 }
 
-
-
-function execute_node_type(node) {
+function execute_node_type(node, variables, setVariables, array_variables, setArrayVariables) {
   switch (node.type) {
     case 'VariableDeclaration':
       return interpretVariableDeclaration(node);
@@ -32,9 +25,9 @@ function execute_node_type(node) {
     case 'BlockStatement':
       return interpretBlockStatement(node);
     case 'ExpressionStatement':
-      return interpretExpressionStatement(node);
+      return interpretExpressionStatement(node, variables, setVariables);
     case 'AssignmentExpression':
-      return interpretAssignmentExpression(node);
+      return interpretAssignmentExpression(node, variables, setVariables);
     case 'BinaryExpression':
       return interpretBinaryExpression(node);
     case 'LogicalExpression':
@@ -66,77 +59,65 @@ function execute_node_type(node) {
   }
 }
 
-function interpretVariableDeclaration() {
-  
+function interpretExpressionStatement(node, variables, setVariables) {
+  console.log("expression statement");
+  console.log(node);
+
+  switch (node.expression.type) {
+    case 'AssignmentExpression':
+      return interpretAssignmentExpression(node, variables, setVariables);
+    default:
+      console.log('expression type not implemented yet');
+  }
 }
 
-function interpretFunctionDeclaration() {
-  
+function interpretAssignmentExpression(node, variables, setVariables) {
+  const var_name = node.expression.left.name;
+  const value = interpretExpression(node.expression.right, variables);
+
+  const index = variables.findIndex(([name]) => name === var_name);
+  if (index === -1) {
+    console.log("weird error, variable not found");
+    return;
+  }
+
+  const new_variables = [...variables];
+  new_variables[index] = [var_name, value];
+  setVariables(new_variables);
 }
 
-function interpretBlockStatement() {
-  
+function interpretExpression(node, variables) {
+  switch (node.type) {
+    case 'Literal':
+      return node.value;
+    case 'Identifier':
+      return variables[node.name];
+    case 'BinaryExpression':
+      return interpretBinaryExpression(node, variables);
+    // Add other expression types as needed
+    default:
+      console.error(`Unrecognized node type: ${node.type}`);
+  }
 }
 
-function interpretExpressionStatement() {
-  
-}
+function interpretBinaryExpression(node, variables) {}
+function interpretLogicalExpression() {}
+function interpretUnaryExpression() {}
+function interpretUpdateExpression() {}
+function interpretCallExpression() {}
+function interpretMemberExpression() {}
+function interpretConditionalExpression() {}
 
-function interpretAssignmentExpression() {
-  
-}
+function interpretVariableDeclaration() {}
+function interpretFunctionDeclaration() {}
 
-function interpretBinaryExpression() {
-  
-}
-
-function interpretLogicalExpression() {
-  
-}
-
-function interpretUnaryExpression() {
-  
-}
-
-function interpretUpdateExpression() {
-  
-}
-
-function interpretIfStatement() {
-  
-}
-
-function interpretForStatement() {
-  
-}
-
-function interpretWhileStatement() {
-  
-}
-
-function interpretDoWhileStatement() {
-  
-}
-
-function interpretReturnStatement() {
-  
-}
-
-function interpretCallExpression() {
-  
-}
-
-function interpretMemberExpression() {
-  
-}
-
-function interpretConditionalExpression() {
-  
-}
-
-function interpretSwitchStatement() {
-
-}
+function interpretBlockStatement() {}
+function interpretIfStatement() {}
+function interpretForStatement() {}
+function interpretWhileStatement() {}
+function interpretDoWhileStatement() {}
+function interpretSwitchStatement() {}
+function interpretReturnStatement() {}
 
 
 export default interpretParsedCode;
