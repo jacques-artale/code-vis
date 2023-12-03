@@ -37,7 +37,7 @@ function execute_node_type(node, variables, setVariables, array_variables, setAr
     case 'UpdateExpression':
       return interpretUpdateExpression(node);
     case 'IfStatement':
-      return interpretIfStatement(node);
+      return interpretIfStatement(node, variables, setVariables, array_variables, setArrayVariables);
     case 'ForStatement':
       return interpretForStatement(node);
     case 'WhileStatement':
@@ -74,7 +74,6 @@ function interpretExpression(node, variables) {
       console.error(`Expression interpreter error: Variable ${var_name} not found`);
       break;
     case 'BinaryExpression':
-      console.log("found binary expression");
       return interpretBinaryExpression(node, variables);
     // Add other expression types as needed
     default:
@@ -94,6 +93,40 @@ function evaluateBinaryExpression(left, right, operator) {
       return left / right;
     case '%':
       return left % right;
+    case '==':
+      return left == right;
+    case '===':
+      return left === right;
+    case '!=':
+      return left != right;
+    case '!==':
+      return left !== right;
+    case '<':
+      return left < right;
+    case '<=':
+      return left <= right;
+    case '>':
+      return left > right;
+    case '>=':
+      return left >= right;
+    case '&&':
+      return left && right;
+    case '||':
+      return left || right;
+    case '<<':
+      return left << right;
+    case '>>':
+      return left >> right;
+    case '>>>':
+      return left >>> right;
+    case '&':
+      return left & right;
+    case '|':
+      return left | right;
+    case '^':
+      return left ^ right;
+    case 'in':
+      return left in right;
     // Add other operators as needed, possibly power operator and such
     default:
       console.error(`Unrecognized operator: ${operator}`);
@@ -158,8 +191,27 @@ function interpretConditionalExpression() {}
 function interpretVariableDeclaration() {}
 function interpretFunctionDeclaration() {}
 
-function interpretBlockStatement() {}
-function interpretIfStatement() {}
+function interpretBlockStatement(node, variables, setVariables, array_variables, setArrayVariables) {
+  console.log("block statement");
+
+  for (let i = 0; i < node.body.length; i++) {
+    execute_node_type(node.body[i], variables, setVariables, array_variables, setArrayVariables);
+  }
+}
+
+function interpretIfStatement(node, variables, setVariables, array_variables, setArrayVariables) {
+  console.log("if statement");
+  console.log(node);
+
+  // interpret the conditional expression
+  const test = interpretExpression(node.test, variables);
+  // interpret the consequent if the conditional expression is true
+  if (test) {
+    console.log("test is true");
+    interpretBlockStatement(node.consequent, variables, setVariables, array_variables, setArrayVariables);
+  }
+}
+
 function interpretForStatement() {}
 function interpretWhileStatement() {}
 function interpretDoWhileStatement() {}
