@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import build_ast from './modules/ASTBuilder';
-import interpretParsedCode from './modules/Interpreter';
+import { Interpreter } from './modules/Interpreter';
 import CodeInput from './components/CodeInput';
 import Variable from './components/Variable';
 import ArrayGrid from './components/Array';
@@ -13,13 +13,15 @@ function App() {
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [array_variables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
 
+  const interpreter = new Interpreter(setVariables, setArrayVariables);
+
   function process_code(code) {
     build_ast(code, setParsedCode, setVariables, setArrayVariables);
   }
 
   function simulate_code() {
     if (parsedCode !== '') {
-      interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables);
+      interpreter.interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables);
     }
   }
 
