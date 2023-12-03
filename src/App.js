@@ -13,7 +13,7 @@ function App() {
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [array_variables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
 
-  const interpreter = new Interpreter(setVariables, setArrayVariables);
+  const interpreter = new Interpreter(variables, array_variables, setVariables, setArrayVariables);
 
   function process_code(code) {
     build_ast(code, setParsedCode, setVariables, setArrayVariables);

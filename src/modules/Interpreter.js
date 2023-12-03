@@ -63,16 +63,16 @@ export class Interpreter {
   /*
     INTERPRETATION FUNCTIONS
   */
-  interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables) {
+  interpretParsedCode(parsedCode) {
     console.log(parsedCode);
 
     for (let i = 0; i < parsedCode.body.length; i++) {
-      this.execute_node_type(parsedCode.body[i], variables, setVariables, array_variables, setArrayVariables);
+      this.execute_node_type(parsedCode.body[i]);
     }
 
   }
 
-  execute_node_type(node, variables, setVariables, array_variables, setArrayVariables) {
+  execute_node_type(node) {
     switch (node.type) {
       case 'VariableDeclaration':
         return this.interpretVariableDeclaration(node);
@@ -81,9 +81,9 @@ export class Interpreter {
       case 'BlockStatement':
         return this.interpretBlockStatement(node);
       case 'ExpressionStatement':
-        return this.interpretExpressionStatement(node, variables, setVariables);
+        return this.interpretExpressionStatement(node);
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node, variables, setVariables);
+        return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node);
       case 'LogicalExpression':
@@ -93,9 +93,9 @@ export class Interpreter {
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node);
       case 'IfStatement':
-        return this.interpretIfStatement(node, variables, setVariables, array_variables, setArrayVariables);
+        return this.interpretIfStatement(node);
       case 'ForStatement':
-        return this.interpretForStatement(node, variables, setVariables, array_variables, setArrayVariables);
+        return this.interpretForStatement(node);
       case 'WhileStatement':
         return this.interpretWhileStatement(node);
       case 'DoWhileStatement':
@@ -115,22 +115,22 @@ export class Interpreter {
     }
   }
 
-  interpretExpression(node, variables) {
+  interpretExpression(node) {
     console.log("expression");
     switch (node.type) {
       case 'Literal':
         return node.value;
       case 'Identifier':
         const var_name = node.name;
-        for (let i = 0; i < variables.length; i++) {
-          if (variables[i][0] === var_name) {
-            return variables[i][1];
+        for (let i = 0; i < this.variables.length; i++) {
+          if (this.variables[i][0] === var_name) {
+            return this.variables[i][1];
           }
         }
         console.error(`Expression interpreter error: Variable ${var_name} not found`);
         break;
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node, variables);
+        return this.interpretBinaryExpression(node);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -191,45 +191,45 @@ export class Interpreter {
 
 
 
-  interpretExpressionStatement(node, variables, setVariables) {
+  interpretExpressionStatement(node) {
     console.log("expression statement");
     console.log(node);
 
     switch (node.expression.type) {
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node, variables, setVariables);
+        return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node, variables, setVariables);
+        return this.interpretBinaryExpression(node);
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
     }
   }
 
-  interpretAssignmentExpression(node, variables, setVariables) {
+  interpretAssignmentExpression(node) {
     console.log("assignment expression");
     console.log(node);
 
     const var_name = node.expression.left.name;
-    const value = this.interpretExpression(node.expression.right, variables);
+    const value = this.interpretExpression(node.expression.right);
 
-    const index = variables.findIndex(([name]) => name === var_name);
+    const index = this.variables.findIndex(([name]) => name === var_name);
     if (index === -1) {
       console.log("weird error, variable not found");
       return;
     }
 
-    const new_variables = [...variables];
+    const new_variables = [...this.variables];
     new_variables[index] = [var_name, value];
-    setVariables(new_variables);
+    this.setVariables(new_variables);
   }
 
-  interpretBinaryExpression(node, variables) {
+  interpretBinaryExpression(node) {
     console.log("binary expression");
     console.log(node);
 
-    const left_value = this.interpretExpression(node.left, variables);
-    const right_value = this.interpretExpression(node.right, variables);
+    const left_value = this.interpretExpression(node.left);
+    const right_value = this.interpretExpression(node.right);
     const operator = node.operator;
 
     const result = this.evaluateBinaryExpression(left_value, right_value, operator);
@@ -247,35 +247,35 @@ export class Interpreter {
   interpretVariableDeclaration() {}
   interpretFunctionDeclaration() {}
 
-  interpretBlockStatement(node, variables, setVariables, array_variables, setArrayVariables) {
+  interpretBlockStatement(node) {
     console.log("block statement");
 
     for (let i = 0; i < node.body.length; i++) {
-      this.execute_node_type(node.body[i], variables, setVariables, array_variables, setArrayVariables);
+      this.execute_node_type(node.body[i]);
     }
   }
 
-  interpretIfStatement(node, variables, setVariables, array_variables, setArrayVariables) {
+  interpretIfStatement(node) {
     console.log("if statement");
     console.log(node);
 
     // interpret the conditional expression
-    const test = this.interpretExpression(node.test, variables);
+    const test = this.interpretExpression(node.test);
     // interpret the consequent if the conditional expression is true
     if (test) {
       console.log("test is true");
-      this.interpretBlockStatement(node.consequent, variables, setVariables, array_variables, setArrayVariables);
+      this.interpretBlockStatement(node.consequent);
     }
   }
 
-  interpretForStatement(node, variables, setVariables, array_variables, setArrayVariables) {
+  interpretForStatement(node) {
     console.log("for statement");
     console.log(node);
 
     // enter a new environment
 
     // setup variables in the for loop
-    this.interpretVariableDeclaration(node.init, variables, setVariables);
+    this.interpretVariableDeclaration(node.init);
 
     // interpret the conditional expression
 
