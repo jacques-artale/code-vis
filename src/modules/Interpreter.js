@@ -132,9 +132,9 @@ export class Interpreter {
       case 'ForStatement':
         return this.interpretForStatement(node, environment);
       case 'WhileStatement':
-        return this.interpretWhileStatement(node);
+        return this.interpretWhileStatement(node, environment);
       case 'DoWhileStatement':
-        return this.interpretDoWhileStatement(node);
+        return this.interpretDoWhileStatement(node, environment);
       case 'ReturnStatement':
         return this.interpretReturnStatement(node);
       case 'CallExpression':
@@ -378,8 +378,36 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  interpretWhileStatement() {}
-  interpretDoWhileStatement() {}
+  interpretWhileStatement(node, environment) {
+    console.log("while statement");
+    console.log(node);
+
+    const new_scope = this.createEnvironment(environment);      // enter a new environment
+
+    // interpret the conditional expression
+    while (this.interpretExpression(node.test, new_scope)) {
+      this.interpretBlockStatement(node.body, new_scope);       // interpret the body of the for loop
+    }
+
+    // exit the environment
+    this.updateStateVariables(environment);
+  }
+
+  interpretDoWhileStatement(node, environment) {
+    console.log("do while statement");
+    console.log(node);
+
+    const new_scope = this.createEnvironment(environment);      // enter a new environment
+
+    // interpret the iteration
+    do {
+      this.interpretBlockStatement(node.body, new_scope);       // interpret the body of the for loop
+    } while (this.interpretExpression(node.test, new_scope));
+
+    // exit the environment
+    this.updateStateVariables(environment);
+  }
+
   interpretSwitchStatement() {}
   interpretReturnStatement() {}
 
