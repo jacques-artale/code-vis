@@ -236,7 +236,6 @@ export class Interpreter {
     }
   }
 
-  // TODO : CHANGE THIS TO USE LOOKUP FUNCTION INSTEAD
   interpretAssignmentExpression(node, environment) {
     console.log("assignment expression");
     console.log(node);
@@ -244,15 +243,7 @@ export class Interpreter {
     const var_name = node.expression.left.name;
     const value = this.interpretExpression(node.expression.right, environment);
 
-    const index = this.variables.findIndex(([name]) => name === var_name);
-    if (index === -1) {
-      console.log("weird error, variable not found");
-      return;
-    }
-
-    const new_variables = [...this.variables];
-    new_variables[index] = [var_name, value];
-    this.setVariables(new_variables);
+    this.updateVariableValue(var_name, value, environment);
   }
 
   interpretBinaryExpression(node, environment) {
