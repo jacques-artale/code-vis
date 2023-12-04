@@ -35,6 +35,7 @@ export class Interpreter {
     if (environment.parentEnvironment !== null) {
       return this.lookupVariableValue(name, environment.parentEnvironment);
     }
+    console.error(`Expression interpreter error: Variable ${name} not found`);
     return null;
   }
 
@@ -115,17 +116,17 @@ export class Interpreter {
       case 'BlockStatement':
         return this.interpretBlockStatement(node, environment);
       case 'ExpressionStatement':
-        return this.interpretExpressionStatement(node);
+        return this.interpretExpressionStatement(node, environment);
       case 'AssignmentExpression':
         return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node);
+        return this.interpretBinaryExpression(node, environment);
       case 'LogicalExpression':
         return this.interpretLogicalExpression(node);
       case 'UnaryExpression':
         return this.interpretUnaryExpression(node);
       case 'UpdateExpression':
-        return this.interpretUpdateExpression(node);
+        return this.interpretUpdateExpression(node, environment);
       case 'IfStatement':
         return this.interpretIfStatement(node, environment);
       case 'ForStatement':
@@ -149,22 +150,15 @@ export class Interpreter {
     }
   }
 
-  interpretExpression(node) {
+  interpretExpression(node, environment) {
     console.log("expression");
     switch (node.type) {
       case 'Literal':
         return node.value;
       case 'Identifier':
-        const var_name = node.name;
-        for (let i = 0; i < this.variables.length; i++) {
-          if (this.variables[i][0] === var_name) {
-            return this.variables[i][1];
-          }
-        }
-        console.error(`Expression interpreter error: Variable ${var_name} not found`);
-        break;
+        return this.lookupVariableValue(node.name, environment);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node);
+        return this.interpretBinaryExpression(node, environment);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -225,27 +219,30 @@ export class Interpreter {
 
 
 
-  interpretExpressionStatement(node) {
+  interpretExpressionStatement(node, environment) {
     console.log("expression statement");
     console.log(node);
 
     switch (node.expression.type) {
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node);
+        return this.interpretAssignmentExpression(node, environment);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node);
+        return this.interpretBinaryExpression(node, environment);
+      case 'UpdateExpression':
+        return this.interpretUpdateExpression(node.expression, environment);
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
     }
   }
 
-  interpretAssignmentExpression(node) {
+  // TODO : CHANGE THIS TO USE LOOKUP FUNCTION INSTEAD
+  interpretAssignmentExpression(node, environment) {
     console.log("assignment expression");
     console.log(node);
 
     const var_name = node.expression.left.name;
-    const value = this.interpretExpression(node.expression.right);
+    const value = this.interpretExpression(node.expression.right, environment);
 
     const index = this.variables.findIndex(([name]) => name === var_name);
     if (index === -1) {
@@ -258,12 +255,12 @@ export class Interpreter {
     this.setVariables(new_variables);
   }
 
-  interpretBinaryExpression(node) {
+  interpretBinaryExpression(node, environment) {
     console.log("binary expression");
     console.log(node);
 
-    const left_value = this.interpretExpression(node.left);
-    const right_value = this.interpretExpression(node.right);
+    const left_value = this.interpretExpression(node.left, environment);
+    const right_value = this.interpretExpression(node.right, environment);
     const operator = node.operator;
 
     const result = this.evaluateBinaryExpression(left_value, right_value, operator);
@@ -273,7 +270,25 @@ export class Interpreter {
 
   interpretLogicalExpression() {}
   interpretUnaryExpression() {}
-  interpretUpdateExpression() {}
+
+  interpretUpdateExpression(node, environment) {
+    console.log("update expression");
+    console.log(node);
+
+    const var_name = node.argument.name;
+    const operator = node.operator;
+
+    if (operator === "++") {
+      const value = this.lookupVariableValue(var_name, environment);
+      this.updateVariableValue(var_name, value + 1, environment);
+    } else if (operator === "--") {
+      const value = this.lookupVariableValue(var_name, environment);
+      this.updateVariableValue(var_name, value - 1, environment);
+    } else {
+      console.error("weird error, operator not found");
+    }
+  }
+
   interpretCallExpression() {}
   interpretMemberExpression() {}
   interpretConditionalExpression() {}
@@ -285,7 +300,7 @@ export class Interpreter {
     for (let i = 0; i < node.declarations.length; i++) {
       const declaration = node.declarations[i];
       const var_name = declaration.id.name;
-      const var_val = this.interpretExpression(declaration.init);
+      const var_val = this.interpretExpression(declaration.init, environment);
 
       this.createVariable(var_name, var_val, environment);
     }
@@ -306,7 +321,7 @@ export class Interpreter {
     console.log(node);
 
     // interpret the conditional expression
-    const test = this.interpretExpression(node.test);
+    const test = this.interpretExpression(node.test, environment);
     // interpret the consequent if the conditional expression is true
     if (test) {
       console.log("test is true");
@@ -318,16 +333,14 @@ export class Interpreter {
     console.log("for statement");
     console.log(node);
 
-    // enter a new environment
-    const new_scope = this.createEnvironment(environment);
-
-    // setup variables in the for loop
-    this.interpretVariableDeclaration(node.init, new_scope);
+    const new_scope = this.createEnvironment(environment);      // enter a new environment
+    this.interpretVariableDeclaration(node.init, new_scope);    // setup variables in the for loop
 
     // interpret the conditional expression
-    // while the conditional expression is true, interpret the body of the for loop
-
-    // interpret the update expression
+    while (this.interpretExpression(node.test, new_scope)) {
+      this.interpretBlockStatement(node.body, new_scope);       // interpret the body of the for loop
+      this.interpretUpdateExpression(node.update, new_scope);   // interpret the update expression
+    }
 
     // exit the environment
     this.updateStateVariables(environment);
