@@ -159,6 +159,8 @@ export class Interpreter {
         return this.lookupVariableValue(node.name, environment);
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node, environment);
+      case 'ArrayExpression':
+        return this.interpretArrayExpression(node, environment);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -284,6 +286,18 @@ export class Interpreter {
   interpretMemberExpression() {}
   interpretConditionalExpression() {}
 
+  interpretArrayExpression(node, environment) {
+    console.log("array expression");
+    console.log(node);
+
+    const values = [];
+    for (let i = 0; i < node.elements.length; i++) {
+      values.push(this.interpretExpression(node.elements[i], environment));
+    }
+
+    return values;
+  }
+
   interpretVariableDeclaration(node, environment) {
     console.log("variable declaration");
     console.log(node);
@@ -292,8 +306,15 @@ export class Interpreter {
       const declaration = node.declarations[i];
       const var_name = declaration.id.name;
       const var_val = this.interpretExpression(declaration.init, environment);
+      const var_type = declaration.init.type;
 
-      this.createVariable(var_name, var_val, environment);
+      if (var_type === 'Literal') {                                   // variable is a literal
+        this.createVariable(var_name, var_val, environment);
+      } else if (var_type === 'ArrayExpression') {                    // variable is an array
+        this.createArrayVariable(var_name, var_val, environment);
+      } else {
+        console.error("unknown variable type: " + declaration.init.type);
+      }
     }
   }
 
