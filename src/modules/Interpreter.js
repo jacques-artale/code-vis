@@ -17,11 +17,11 @@ export class Interpreter {
   /*
     HANDLE SCOPE AND ENVIRONMENT VARIABLES
   */
-  createEnvironment() {
+  createEnvironment(parent) {
     return {
       variables: [],
       array_variables: [],
-      parentEnvironment: null,
+      parentEnvironment: parent,
     };
   }
 
@@ -39,25 +39,56 @@ export class Interpreter {
   }
 
   createVariable(name, value, environment) {
-    // create variable
+    if (name in environment.variables) return;
+    environment.variables[name] = value;
 
-    // update state variables
+    this.updateStateVariables(environment);
   }
 
   createArrayVariable(name, values, environment) {
-    // create array variable
+    if (name in environment.array_variables) return;
+    environment.array_variables[name] = values;
 
-    // update state variables
+    this.updateStateVariables(environment);
   }
 
   updateVariableValue(name, value, environment) {
-    // update value
+    // find and update the variable in the environment
+    let current_environment = environment;
+    while (current_environment !== null) {
+      if (name in current_environment.variables) {
+        current_environment.variables[name] = value;
+        break;
+      }
+      if (name in current_environment.array_variables) {
+        current_environment.array_variables[name] = value;
+        break;
+      }
+      current_environment = current_environment.parentEnvironment;
+    }
 
-    // update state variables
+    this.updateStateVariables(environment);
   }
 
   updateStateVariables(environment) {
+    // add all variables from the environment to the state variables
+    // do so for all parent environments as well
+    const new_variables = [];
+    const new_array_variables = [];
 
+    let current_environment = environment;
+    while (current_environment !== null) {
+      for (const [name, value] of Object.entries(current_environment.variables)) {
+        new_variables.push([name, value]);
+      }
+      for (const [name, values] of Object.entries(current_environment.array_variables)) {
+        new_array_variables.push([name, values]);
+      }
+      current_environment = current_environment.parentEnvironment;
+    }
+
+    this.setVariables(new_variables);
+    this.setArrayVariables(new_array_variables);
   }
 
   /*
@@ -66,20 +97,23 @@ export class Interpreter {
   interpretParsedCode(parsedCode) {
     console.log(parsedCode);
 
+    // create the global environment
+    const environment = this.createEnvironment(null);
+
     for (let i = 0; i < parsedCode.body.length; i++) {
-      this.execute_node_type(parsedCode.body[i]);
+      this.execute_node_type(parsedCode.body[i], environment);
     }
 
   }
 
-  execute_node_type(node) {
+  execute_node_type(node, environment) {
     switch (node.type) {
       case 'VariableDeclaration':
-        return this.interpretVariableDeclaration(node);
+        return this.interpretVariableDeclaration(node, environment);
       case 'FunctionDeclaration':
         return this.interpretFunctionDeclaration(node);
       case 'BlockStatement':
-        return this.interpretBlockStatement(node);
+        return this.interpretBlockStatement(node, environment);
       case 'ExpressionStatement':
         return this.interpretExpressionStatement(node);
       case 'AssignmentExpression':
@@ -93,9 +127,9 @@ export class Interpreter {
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node);
       case 'IfStatement':
-        return this.interpretIfStatement(node);
+        return this.interpretIfStatement(node, environment);
       case 'ForStatement':
-        return this.interpretForStatement(node);
+        return this.interpretForStatement(node, environment);
       case 'WhileStatement':
         return this.interpretWhileStatement(node);
       case 'DoWhileStatement':
@@ -244,18 +278,30 @@ export class Interpreter {
   interpretMemberExpression() {}
   interpretConditionalExpression() {}
 
-  interpretVariableDeclaration() {}
-  interpretFunctionDeclaration() {}
+  interpretVariableDeclaration(node, environment) {
+    console.log("variable declaration");
+    console.log(node);
 
-  interpretBlockStatement(node) {
-    console.log("block statement");
+    for (let i = 0; i < node.declarations.length; i++) {
+      const declaration = node.declarations[i];
+      const var_name = declaration.id.name;
+      const var_val = this.interpretExpression(declaration.init);
 
-    for (let i = 0; i < node.body.length; i++) {
-      this.execute_node_type(node.body[i]);
+      this.createVariable(var_name, var_val, environment);
     }
   }
 
-  interpretIfStatement(node) {
+  interpretFunctionDeclaration() {}
+
+  interpretBlockStatement(node, environment) {
+    console.log("block statement");
+
+    for (let i = 0; i < node.body.length; i++) {
+      this.execute_node_type(node.body[i], environment);
+    }
+  }
+
+  interpretIfStatement(node, environment) {
     console.log("if statement");
     console.log(node);
 
@@ -264,24 +310,27 @@ export class Interpreter {
     // interpret the consequent if the conditional expression is true
     if (test) {
       console.log("test is true");
-      this.interpretBlockStatement(node.consequent);
+      this.interpretBlockStatement(node.consequent, environment);
     }
   }
 
-  interpretForStatement(node) {
+  interpretForStatement(node, environment) {
     console.log("for statement");
     console.log(node);
 
     // enter a new environment
+    const new_scope = this.createEnvironment(environment);
 
     // setup variables in the for loop
-    this.interpretVariableDeclaration(node.init);
+    this.interpretVariableDeclaration(node.init, new_scope);
 
     // interpret the conditional expression
-
     // while the conditional expression is true, interpret the body of the for loop
 
     // interpret the update expression
+
+    // exit the environment
+    this.updateStateVariables(environment);
   }
 
   interpretWhileStatement() {}
