@@ -244,8 +244,28 @@ export class Interpreter {
 
     const var_name = node.expression.left.name;
     const value = this.interpretExpression(node.expression.right, environment);
+    const operator = node.expression.operator;
 
-    this.updateVariableValue(var_name, value, environment);
+    const old_value = this.lookupVariableValue(var_name, environment);
+    let new_value = null;
+
+    if (operator === "=") new_value = value;
+    else if (operator === "+=") new_value = old_value + value;
+    else if (operator === "-=") new_value = old_value - value;
+    else if (operator === "*=") new_value = old_value * value;
+    else if (operator === "/=") new_value = old_value / value;
+    else if (operator === "%=") new_value = old_value % value;
+    else if (operator === "<<=") new_value = old_value << value;
+    else if (operator === ">>=") new_value = old_value >> value;
+    else if (operator === ">>>=") new_value = old_value >>> value;
+    else if (operator === "&=") new_value = old_value & value;
+    else if (operator === "|=") new_value = old_value | value;
+    else if (operator === "^=") new_value = old_value ^ value;
+    else {
+      console.error("unknown operator: " + operator);
+    }
+    
+    this.updateVariableValue(var_name, new_value, environment);
   }
 
   interpretBinaryExpression(node, environment) {
