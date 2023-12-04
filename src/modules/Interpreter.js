@@ -118,7 +118,7 @@ export class Interpreter {
       case 'ExpressionStatement':
         return this.interpretExpressionStatement(node, environment);
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node);
+        return this.interpretAssignmentExpression(node, environment);
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node, environment);
       case 'LogicalExpression':
@@ -144,7 +144,7 @@ export class Interpreter {
       case 'ConditionalExpression':
         return this.interpretConditionalExpression(node);
       case 'SwitchStatement':
-        return this.interpretSwitchStatement(node);
+        return this.interpretSwitchStatement(node, environment);
       default:
         console.log('unrecognized node type');
     }
@@ -152,6 +152,8 @@ export class Interpreter {
 
   interpretExpression(node, environment) {
     console.log("expression");
+    if (node === null) return null;
+
     switch (node.type) {
       case 'Literal':
         return node.value;
@@ -408,7 +410,33 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  interpretSwitchStatement() {}
+  interpretSwitchStatement(node, environment) {
+    console.log("switch statement");
+    console.log(node);
+
+    const new_scope = this.createEnvironment(environment);      // enter a new environment
+
+    const value = this.interpretExpression(node.discriminant, new_scope);
+
+    for (let i = 0; i < node.cases.length; i++) {
+      const case_node = node.cases[i];
+      const test = this.interpretExpression(case_node.test, new_scope);
+
+      if (test === null || test === value) {  // if the test is null, it is the default case
+
+        // interpret the body of the case
+        for (let i = 0; i < case_node.consequent.length; i++) {
+          this.execute_node_type(case_node.consequent[i], new_scope);
+        }
+
+        break;
+      }
+    }
+
+    // exit the environment
+    this.updateStateVariables(environment);
+  }
+
   interpretReturnStatement() {}
 
 }
