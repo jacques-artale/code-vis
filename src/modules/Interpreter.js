@@ -124,7 +124,7 @@ export class Interpreter {
     console.log(parsedCode);
 
     // create the global environment
-    const environment = this.createEnvironment(null);
+    const environment = this.global_environment;
 
     for (let i = 0; i < parsedCode.body.length; i++) {
       this.execute_node_type(parsedCode.body[i], environment);
@@ -263,6 +263,8 @@ export class Interpreter {
         return this.interpretBinaryExpression(node, environment);
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node.expression, environment);
+      case 'CallExpression':
+        return this.interpretCallExpression(node.expression, environment);
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
