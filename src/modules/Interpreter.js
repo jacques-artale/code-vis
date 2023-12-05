@@ -2,16 +2,22 @@
 
 export class Interpreter {
 
+  global_environment = null;
+
   variables = null;
   array_variables = null;
   setVariables = null;
   setArrayVariables = null;
+
+  function_declarations = [];
 
   constructor(variables, array_variables, setVariables, setArrayVariables) {
     this.variables = variables;
     this.array_variables = array_variables;
     this.setVariables = setVariables;
     this.setArrayVariables = setArrayVariables;
+
+    this.global_environment = this.createEnvironment(null);
   }
 
   /*
@@ -22,7 +28,26 @@ export class Interpreter {
       variables: [],
       array_variables: [],
       parentEnvironment: parent,
+      return_value: null,
     };
+  }
+
+  createFunction(name, parameters, body) {
+    return {
+      name: name,
+      parameters: parameters,
+      body: body,
+    };
+  }
+
+  lookupFunction(name) {
+    for (let i = 0; i < this.function_declarations.length; i++) {
+      if (this.function_declarations[i].name === name) {
+        return this.function_declarations[i];
+      }
+    }
+    console.error(`Expression interpreter error: Function ${name} not found`);
+    return null;
   }
 
   lookupVariableValue(name, environment) {
@@ -136,9 +161,9 @@ export class Interpreter {
       case 'DoWhileStatement':
         return this.interpretDoWhileStatement(node, environment);
       case 'ReturnStatement':
-        return this.interpretReturnStatement(node);
+        return this.interpretReturnStatement(node, environment);
       case 'CallExpression':
-        return this.interpretCallExpression(node);
+        return this.interpretCallExpression(node, environment);
       case 'MemberExpression':
         return this.interpretMemberExpression(node);
       case 'ConditionalExpression':
@@ -163,6 +188,10 @@ export class Interpreter {
         return this.interpretBinaryExpression(node, environment);
       case 'ArrayExpression':
         return this.interpretArrayExpression(node, environment);
+      case 'ObjectExpression':
+        return this.interpretObjectExpression(node);
+      case 'CallExpression':
+        return this.interpretCallExpression(node, environment);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -304,9 +333,43 @@ export class Interpreter {
     }
   }
 
-  interpretCallExpression() {}
+  interpretCallExpression(node, environment) {
+    console.log("call expression");
+    console.log(node);
+
+    // fetch the values of each argument
+    const call_arguments = node.arguments;
+    const argument_values = [];
+    for (let i = 0; i < call_arguments.length; i++) {
+      argument_values.push(this.interpretExpression(call_arguments[i], environment));
+    }
+
+    // fetch the function declaration
+    const function_declaration = this.lookupFunction(node.callee.name);
+
+    // create a new environment for the function
+    const new_environment = this.createEnvironment(this.global_environment);
+
+    // add the parameters to the environment (new variables with values of call_arguments)
+    for (let i = 0; i < function_declaration.parameters.length; i++) {
+      const parameter = function_declaration.parameters[i];
+      const parameter_value = argument_values[i];
+      this.createVariable(parameter.name, parameter_value, new_environment);
+    }
+
+    // interpret the body of the function
+    this.interpretBlockStatement(function_declaration.body, new_environment);
+
+    // exit the environment
+    this.updateStateVariables(environment);
+
+    // return the return value of the function (if any)
+    return new_environment.return_value;
+  }
+
   interpretMemberExpression() {}
   interpretConditionalExpression() {}
+  interpretObjectExpression() {}
 
   interpretArrayExpression(node, environment) {
     console.log("array expression");
@@ -334,13 +397,26 @@ export class Interpreter {
         this.createVariable(var_name, var_val, environment);
       } else if (var_type === 'ArrayExpression') {                    // variable is an array
         this.createArrayVariable(var_name, var_val, environment);
+      } else if (var_type === 'ObjectExpression') {                   // variable is an object
+        console.error("variable object type not implemented yet");
       } else {
         console.error("unknown variable type: " + declaration.init.type);
       }
     }
   }
 
-  interpretFunctionDeclaration() {}
+  interpretFunctionDeclaration(node) {
+    console.log("function declaration");
+    console.log(node);
+
+    const name = node.id.name;
+    const parameters = node.params;
+    const body = node.body;
+
+    const function_declaration = this.createFunction(name, parameters, body);
+
+    this.function_declarations.push(function_declaration);
+  }
 
   interpretBlockStatement(node, environment) {
     console.log("block statement");
@@ -423,12 +499,10 @@ export class Interpreter {
       const test = this.interpretExpression(case_node.test, new_scope);
 
       if (test === null || test === value) {  // if the test is null, it is the default case
-
         // interpret the body of the case
         for (let i = 0; i < case_node.consequent.length; i++) {
           this.execute_node_type(case_node.consequent[i], new_scope);
         }
-
         break;
       }
     }
@@ -437,6 +511,11 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  interpretReturnStatement() {}
+  interpretReturnStatement(node, environment) {
+    console.log("return statement");
+    console.log(node);
+
+    environment.return_value = this.interpretExpression(node.argument, environment);
+  }
 
 }
