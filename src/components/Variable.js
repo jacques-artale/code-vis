@@ -2,7 +2,7 @@
 function Variable({ name, value }) {
   return (
     <div>
-      <h1>{name} = {value}</h1>
+      <h1>{name} = {JSON.stringify(value)}</h1>
     </div>
   );
 }

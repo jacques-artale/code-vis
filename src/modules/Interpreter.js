@@ -189,7 +189,7 @@ export class Interpreter {
       case 'ArrayExpression':
         return this.interpretArrayExpression(node, environment);
       case 'ObjectExpression':
-        return this.interpretObjectExpression(node);
+        return this.interpretObjectExpression(node, environment);
       case 'CallExpression':
         return this.interpretCallExpression(node, environment);
       // Add other expression types as needed
@@ -371,7 +371,23 @@ export class Interpreter {
 
   interpretMemberExpression() {}
   interpretConditionalExpression() {}
-  interpretObjectExpression() {}
+
+  interpretObjectExpression(node, environment) {
+    console.log("object expression");
+    console.log(node);
+
+    const object = {};
+    const properties = node.properties;
+
+    for (let i = 0; i < properties.length; i++) {
+      const property = properties[i];
+      const key = property.key.name;
+      const value = this.interpretExpression(property.value, environment);
+      object[key] = value;
+    }
+
+    return object;
+  }
 
   interpretArrayExpression(node, environment) {
     console.log("array expression");
@@ -400,7 +416,7 @@ export class Interpreter {
       } else if (var_type === 'ArrayExpression') {                    // variable is an array
         this.createArrayVariable(var_name, var_val, environment);
       } else if (var_type === 'ObjectExpression') {                   // variable is an object
-        console.error("variable object type not implemented yet");
+        this.createVariable(var_name, var_val, environment);
       } else {
         console.error("unknown variable type: " + declaration.init.type);
       }
