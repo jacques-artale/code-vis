@@ -27,6 +27,7 @@ export class Interpreter {
     return {
       variables: [],
       array_variables: [],
+      object_variables: [],
       parentEnvironment: parent,
       return_value: null,
     };
@@ -57,6 +58,9 @@ export class Interpreter {
     if (name in environment.array_variables) {
       return environment.array_variables[name];
     }
+    if (name in environment.object_variables) {
+      return environment.object_variables[name];
+    }
     if (environment.parentEnvironment !== null) {
       return this.lookupVariableValue(name, environment.parentEnvironment);
     }
@@ -78,6 +82,13 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
+  createObjectVariable(name, value, environment) {
+    if (name in environment.object_variables) return;
+    environment.object_variables[name] = value;
+
+    this.updateStateVariables(environment);
+  }
+
   updateVariableValue(name, value, environment) {
     // find and update the variable in the environment
     let current_environment = environment;
@@ -88,6 +99,21 @@ export class Interpreter {
       }
       if (name in current_environment.array_variables) {
         current_environment.array_variables[name] = value;
+        break;
+      }
+      current_environment = current_environment.parentEnvironment;
+      // POSSIBLY RETURN HERE TO AVOID UPDATING THE STATE VARIABLES
+    }
+
+    this.updateStateVariables(environment);
+  }
+
+  updateObjectVariableProperty(name, property, value, environment) {
+    // find and update the variable in the environment
+    let current_environment = environment;
+    while (current_environment !== null) {
+      if (name in current_environment.object_variables) {
+        current_environment.object_variables[name][property] = value;
         break;
       }
       current_environment = current_environment.parentEnvironment;
@@ -104,11 +130,17 @@ export class Interpreter {
 
     let current_environment = environment;
     while (current_environment !== null) {
+      // add all variables from the environment to the state variables
       for (const [name, value] of Object.entries(current_environment.variables)) {
         new_variables.push([name, value]);
       }
+      // add all array variables from the environment to the state variables
       for (const [name, values] of Object.entries(current_environment.array_variables)) {
         new_array_variables.push([name, values]);
+      }
+      // add all object variables from the environment to the state variables
+      for (const [name, properties] of Object.entries(current_environment.object_variables)) {
+        new_variables.push([name, properties]);
       }
       current_environment = current_environment.parentEnvironment;
     }
@@ -165,7 +197,7 @@ export class Interpreter {
       case 'CallExpression':
         return this.interpretCallExpression(node, environment);
       case 'MemberExpression':
-        return this.interpretMemberExpression(node);
+        return this.interpretMemberExpression(node, environment);
       case 'ConditionalExpression':
         return this.interpretConditionalExpression(node);
       case 'SwitchStatement':
@@ -275,6 +307,17 @@ export class Interpreter {
     console.log("assignment expression");
     console.log(node);
 
+    // check if the assignment is to a variable or an object property
+    if (node.expression.left.type === 'MemberExpression') {
+      // assignment is to an object property
+      const object = node.expression.left.object.name;
+      const property = node.expression.left.property.name;
+      const value = this.interpretExpression(node.expression.right, environment);
+
+      this.updateObjectVariableProperty(object, property, value, environment);
+      return;
+    }
+
     const var_name = node.expression.left.name;
     const value = this.interpretExpression(node.expression.right, environment);
     const operator = node.expression.operator;
@@ -369,16 +412,26 @@ export class Interpreter {
     return new_environment.return_value;
   }
 
-  interpretMemberExpression() {}
+  interpretMemberExpression(node, environment) {
+    console.log("member expression");
+    console.log(node);
+
+    const object = this.interpretExpression(node.object, environment);
+    const property = node.property.name;
+
+    return object[property];
+  }
+
   interpretConditionalExpression() {}
 
   interpretObjectExpression(node, environment) {
     console.log("object expression");
     console.log(node);
 
-    const object = {};
     const properties = node.properties;
 
+    // create the new object
+    const object = {};
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
       const key = property.key.name;
@@ -416,7 +469,7 @@ export class Interpreter {
       } else if (var_type === 'ArrayExpression') {                    // variable is an array
         this.createArrayVariable(var_name, var_val, environment);
       } else if (var_type === 'ObjectExpression') {                   // variable is an object
-        this.createVariable(var_name, var_val, environment);
+        this.createObjectVariable(var_name, var_val, environment);
       } else {
         console.error("unknown variable type: " + declaration.init.type);
       }
