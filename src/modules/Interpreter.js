@@ -102,7 +102,20 @@ export class Interpreter {
         break;
       }
       current_environment = current_environment.parentEnvironment;
-      // POSSIBLY RETURN HERE TO AVOID UPDATING THE STATE VARIABLES
+    }
+
+    this.updateStateVariables(environment);
+  }
+
+  updateObjectVariableValue(name, value, environment) {
+    // find and update the variable in the environment
+    let current_environment = environment;
+    while (current_environment !== null) {
+      if (name in current_environment.object_variables) {
+        current_environment.object_variables[name] = value;
+        break;
+      }
+      current_environment = current_environment.parentEnvironment;
     }
 
     this.updateStateVariables(environment);
@@ -307,9 +320,9 @@ export class Interpreter {
     console.log("assignment expression");
     console.log(node);
 
-    // check if the assignment is to a variable or an object property
+    // check if the assignment is to an object property
     if (node.expression.left.type === 'MemberExpression') {
-      // assignment is to an object property
+      // we only update the property
       const object = node.expression.left.object.name;
       const property = node.expression.left.property.name;
       const value = this.interpretExpression(node.expression.right, environment);
@@ -341,7 +354,14 @@ export class Interpreter {
       console.error("unknown operator: " + operator);
     }
     
-    this.updateVariableValue(var_name, new_value, environment);
+    // check new value type
+    if (typeof new_value === 'object') {
+      // if new value is an object we need to update the object variable
+      this.updateObjectVariableValue(var_name, new_value, environment);
+    } else {
+      // otherwise we update the variable
+      this.updateVariableValue(var_name, new_value, environment);
+    }
   }
 
   interpretBinaryExpression(node, environment) {
