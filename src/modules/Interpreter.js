@@ -51,23 +51,6 @@ export class Interpreter {
     return null;
   }
 
-  lookupVariableValue(name, environment) {
-    if (name in environment.variables) {
-      return environment.variables[name];
-    }
-    if (name in environment.array_variables) {
-      return environment.array_variables[name];
-    }
-    if (name in environment.object_variables) {
-      return environment.object_variables[name];
-    }
-    if (environment.parentEnvironment !== null) {
-      return this.lookupVariableValue(name, environment.parentEnvironment);
-    }
-    console.error(`Expression interpreter error: Variable ${name} not found`);
-    return null;
-  }
-
   createVariable(name, value, environment) {
     if (name in environment.variables) return;
     environment.variables[name] = value;
@@ -89,6 +72,23 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
+  lookupVariableValue(name, environment) {
+    if (name in environment.variables) {
+      return environment.variables[name];
+    }
+    if (name in environment.array_variables) {
+      return environment.array_variables[name];
+    }
+    if (name in environment.object_variables) {
+      return environment.object_variables[name];
+    }
+    if (environment.parentEnvironment !== null) {
+      return this.lookupVariableValue(name, environment.parentEnvironment);
+    }
+    console.error(`Expression interpreter error: Variable ${name} not found`);
+    return null;
+  }
+
   updateVariableValue(name, value, environment) {
     // find and update the variable in the environment
     let current_environment = environment;
@@ -101,16 +101,6 @@ export class Interpreter {
         current_environment.array_variables[name] = value;
         break;
       }
-      current_environment = current_environment.parentEnvironment;
-    }
-
-    this.updateStateVariables(environment);
-  }
-
-  updateObjectVariableValue(name, value, environment) {
-    // find and update the variable in the environment
-    let current_environment = environment;
-    while (current_environment !== null) {
       if (name in current_environment.object_variables) {
         current_environment.object_variables[name] = value;
         break;
@@ -121,10 +111,14 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  updateObjectVariableProperty(name, property, value, environment) {
+  updateVariableProperty(name, property, value, environment) {
     // find and update the variable in the environment
     let current_environment = environment;
     while (current_environment !== null) {
+      if (name in current_environment.array_variables) {
+        current_environment.array_variables[name][property] = value;
+        break;
+      }
       if (name in current_environment.object_variables) {
         current_environment.object_variables[name][property] = value;
         break;
@@ -222,6 +216,7 @@ export class Interpreter {
 
   interpretExpression(node, environment) {
     console.log("expression");
+    console.log(node);
     if (node === null) return null;
 
     switch (node.type) {
@@ -237,6 +232,8 @@ export class Interpreter {
         return this.interpretObjectExpression(node, environment);
       case 'CallExpression':
         return this.interpretCallExpression(node, environment);
+      case 'MemberExpression':
+        return this.interpretMemberExpression(node, environment);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -295,8 +292,6 @@ export class Interpreter {
     }
   }
 
-
-
   interpretExpressionStatement(node, environment) {
     console.log("expression statement");
     console.log(node);
@@ -310,6 +305,8 @@ export class Interpreter {
         return this.interpretUpdateExpression(node.expression, environment);
       case 'CallExpression':
         return this.interpretCallExpression(node.expression, environment);
+      case 'MemberExpression':
+        return this.interpretMemberExpression(node.expression, environment);
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
@@ -322,15 +319,30 @@ export class Interpreter {
 
     // check if the assignment is to an object property
     if (node.expression.left.type === 'MemberExpression') {
-      // we only update the property
-      const object = node.expression.left.object.name;
-      const property = node.expression.left.property.name;
-      const value = this.interpretExpression(node.expression.right, environment);
+      // we update the property
+      this.handleMemberExpressionAssignment(node, environment);
+    } else {
+      // we update the variable
+      this.handleVariableAssignment(node, environment);
+    }
+  }
 
-      this.updateObjectVariableProperty(object, property, value, environment);
-      return;
+  handleMemberExpressionAssignment(node, environment) {
+    const identifier = node.expression.left.object.name;
+
+    let property = null;
+    if (node.expression.left.property.name) {
+      property = node.expression.left.property.name;
+    } else  {
+      property = this.interpretExpression(node.expression.left.property, environment);
     }
 
+    const value = this.interpretExpression(node.expression.right, environment);
+
+    this.updateVariableProperty(identifier, property, value, environment); // identifier[property] = value;
+  }
+
+  handleVariableAssignment(node, environment) {
     const var_name = node.expression.left.name;
     const value = this.interpretExpression(node.expression.right, environment);
     const operator = node.expression.operator;
@@ -354,14 +366,7 @@ export class Interpreter {
       console.error("unknown operator: " + operator);
     }
     
-    // check new value type
-    if (typeof new_value === 'object') {
-      // if new value is an object we need to update the object variable
-      this.updateObjectVariableValue(var_name, new_value, environment);
-    } else {
-      // otherwise we update the variable
-      this.updateVariableValue(var_name, new_value, environment);
-    }
+    this.updateVariableValue(var_name, new_value, environment);
   }
 
   interpretBinaryExpression(node, environment) {
