@@ -9,13 +9,16 @@ export class Interpreter {
   setVariables = null;
   setArrayVariables = null;
 
+  setLog = null;
+
   function_declarations = [];
 
-  constructor(variables, array_variables, setVariables, setArrayVariables) {
+  constructor(variables, array_variables, setVariables, setArrayVariables, setLog) {
     this.variables = variables;
     this.array_variables = array_variables;
     this.setVariables = setVariables;
     this.setArrayVariables = setArrayVariables;
+    this.setLog = setLog;
 
     this.global_environment = this.createEnvironment(null);
   }
@@ -440,6 +443,9 @@ export class Interpreter {
   interpretCallExpression(node, environment) {
     console.log("call expression");
     console.log(node);
+    
+    // check if the function is a built-in function
+    if (this.handleStandardFunctions(node, environment)) return;
 
     // fetch the values of each argument
     const call_arguments = node.arguments;
@@ -471,17 +477,24 @@ export class Interpreter {
     return new_environment.return_value;
   }
 
+  handleStandardFunctions(node, environment) {
+    if (node.callee.type === 'MemberExpression') {
+      if (node.callee.object.name === 'console') {
+        if (node.callee.property.name === 'log') {
+          this.interpretConsoleLog(node, environment);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   interpretMemberExpression(node, environment) {
     console.log("member expression");
     console.log(node);
 
     const object = this.interpretExpression(node.object, environment);
-    let property = null;
-    if (node.property.name) {
-      property = node.property.name;
-    } else {
-      property = this.interpretExpression(node.property, environment);
-    }
+    const property = this.interpretExpression(node.property, environment);
 
     return object[property];
   }
@@ -660,6 +673,16 @@ export class Interpreter {
     console.log(node);
 
     environment.return_value = this.interpretExpression(node.argument, environment);
+  }
+
+  /* STANDARD FUNCTIONS */
+
+  interpretConsoleLog(node, environment) {
+    console.log("console log");
+    console.log(node);
+
+    const argument = this.interpretExpression(node.arguments[0], environment);
+    this.setLog((old_log) => [...old_log, argument]);
   }
 
 }

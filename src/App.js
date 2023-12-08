@@ -3,6 +3,7 @@ import './App.css';
 import build_ast from './modules/ASTBuilder';
 import { Interpreter } from './modules/Interpreter';
 import CodeInput from './components/CodeInput';
+import Console from './components/Console';
 import Variable from './components/Variable';
 import ArrayGrid from './components/Array';
 
@@ -13,7 +14,9 @@ function App() {
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [array_variables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
 
-  const interpreter = new Interpreter(variables, array_variables, setVariables, setArrayVariables);
+  const [log, setLog] = useState([]); // [line, line, ...]
+
+  const interpreter = new Interpreter(variables, array_variables, setVariables, setArrayVariables, setLog);
 
   function process_code(code) {
     build_ast(code, setParsedCode, setVariables, setArrayVariables);
@@ -21,6 +24,7 @@ function App() {
 
   function simulate_code() {
     if (parsedCode !== '') {
+      setLog([]); // Clear the console
       interpreter.interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables);
     }
   }
@@ -43,6 +47,7 @@ function App() {
               );
             })
           }
+          <Console log={log} />
         </div>
       }
 
