@@ -331,12 +331,7 @@ export class Interpreter {
     const identifier = node.expression.left.object.name;
     const operator = node.expression.operator;
 
-    let property = null;
-    if (node.expression.left.property.name) {
-      property = node.expression.left.property.name;
-    } else  {
-      property = this.interpretExpression(node.expression.left.property, environment);
-    }
+    const property = this.interpretExpression(node.expression.left.property, environment);
 
     const old_value = this.lookupVariableValue(identifier, environment)[property];
     const value = this.interpretExpression(node.expression.right, environment);
