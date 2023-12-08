@@ -7,7 +7,7 @@ import Variable from './components/Variable';
 import ArrayGrid from './components/Array';
 
 function App() {
-  const [code, setCode] = useState('var a = [1,2,3,4];');
+  const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]++;\n}\n');
   const [parsedCode, setParsedCode] = useState('');
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]

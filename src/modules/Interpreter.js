@@ -462,7 +462,12 @@ export class Interpreter {
     console.log(node);
 
     const object = this.interpretExpression(node.object, environment);
-    const property = node.property.name;
+    let property = null;
+    if (node.property.name) {
+      property = node.property.name;
+    } else {
+      property = this.interpretExpression(node.property, environment);
+    }
 
     return object[property];
   }
@@ -515,6 +520,15 @@ export class Interpreter {
         this.createArrayVariable(var_name, var_val, environment);
       } else if (var_type === 'ObjectExpression') {                   // variable is an object
         this.createObjectVariable(var_name, var_val, environment);
+      } else if (var_type === 'MemberExpression') {                   // variable is an array or object property
+        // check type of value and create the variable accordingly
+        if (Array.isArray(var_val)) {
+          this.createArrayVariable(var_name, var_val, environment);
+        } else if (typeof var_val === 'object') {
+          this.createObjectVariable(var_name, var_val, environment);
+        } else {
+          this.createVariable(var_name, var_val, environment);
+        }
       } else {
         console.error("unknown variable type: " + declaration.init.type);
       }
