@@ -389,18 +389,38 @@ export class Interpreter {
     console.log("update expression");
     console.log(node);
 
+    if (node.argument.type === 'MemberExpression') {
+      // update the array or object property
+      this.handleUpdateMemberExpression(node, environment);
+    } else {
+      // update the variable
+      this.handleUpdateVariableExpression(node, environment);
+    }
+  }
+
+  handleUpdateMemberExpression(node, environment) {
+    const identifier = node.argument.object.name;
+    const operator = node.operator;
+    const property = this.interpretExpression(node.argument.property, environment);
+
+    let value = this.lookupVariableValue(identifier, environment)[property];
+    if (operator === "++") value++;
+    else if (operator === "--") value--;
+    else console.error("weird error, operator not found");
+
+    this.updateVariableProperty(identifier, property, value, environment); // identifier[property] = value;
+  }
+
+  handleUpdateVariableExpression(node, environment) {
     const var_name = node.argument.name;
     const operator = node.operator;
+    let value = this.lookupVariableValue(var_name, environment);
 
-    if (operator === "++") {
-      const value = this.lookupVariableValue(var_name, environment);
-      this.updateVariableValue(var_name, value + 1, environment);
-    } else if (operator === "--") {
-      const value = this.lookupVariableValue(var_name, environment);
-      this.updateVariableValue(var_name, value - 1, environment);
-    } else {
-      console.error("weird error, operator not found");
-    }
+    if (operator === "++") value++;
+    else if (operator === "--") value--;
+    else console.error("weird error, operator not found");
+
+    this.updateVariableValue(var_name, value, environment);
   }
 
   interpretCallExpression(node, environment) {
