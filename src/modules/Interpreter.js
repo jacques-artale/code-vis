@@ -329,6 +329,7 @@ export class Interpreter {
 
   handleMemberExpressionAssignment(node, environment) {
     const identifier = node.expression.left.object.name;
+    const operator = node.expression.operator;
 
     let property = null;
     if (node.expression.left.property.name) {
@@ -337,9 +338,27 @@ export class Interpreter {
       property = this.interpretExpression(node.expression.left.property, environment);
     }
 
+    const old_value = this.lookupVariableValue(identifier, environment)[property];
     const value = this.interpretExpression(node.expression.right, environment);
 
-    this.updateVariableProperty(identifier, property, value, environment); // identifier[property] = value;
+    let new_value = null;
+    if (operator === "=") new_value = value;
+    else if (operator === "+=") new_value = old_value + value;
+    else if (operator === "-=") new_value = old_value - value;
+    else if (operator === "*=") new_value = old_value * value;
+    else if (operator === "/=") new_value = old_value / value;
+    else if (operator === "%=") new_value = old_value % value;
+    else if (operator === "<<=") new_value = old_value << value;
+    else if (operator === ">>=") new_value = old_value >> value;
+    else if (operator === ">>>=") new_value = old_value >>> value;
+    else if (operator === "&=") new_value = old_value & value;
+    else if (operator === "|=") new_value = old_value | value;
+    else if (operator === "^=") new_value = old_value ^ value;
+    else {
+      console.error("unknown operator: " + operator);
+    }
+
+    this.updateVariableProperty(identifier, property, new_value, environment); // identifier[property] = value;
   }
 
   handleVariableAssignment(node, environment) {
