@@ -8,7 +8,6 @@ export class Interpreter {
 
   setVariables = null;
   setArrayVariables = null;
-
   setLog = null;
 
   function_declarations = [];
@@ -19,6 +18,11 @@ export class Interpreter {
     this.setLog = setLog;
 
     this.global_environment = this.createEnvironment(null);
+  }
+
+  clearInternalState() {
+    this.global_environment = this.createEnvironment(null);
+    this.function_declarations = [];
   }
 
   /*
@@ -569,6 +573,9 @@ export class Interpreter {
         const value = this.interpretExpression(declaration.init, environment);
         this.createVariable(var_name, value, environment);
       } else if (var_type === 'UnaryExpression') {                    // variable is a unary expression
+        const value = this.interpretExpression(declaration.init, environment);
+        this.createVariable(var_name, value, environment);
+      } else if (var_type === 'CallExpression') {                     // variable is a function call
         const value = this.interpretExpression(declaration.init, environment);
         this.createVariable(var_name, value, environment);
       } else if (var_type === 'ArrayExpression') {                    // variable is an array
