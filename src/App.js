@@ -16,7 +16,7 @@ function App() {
 
   const [log, setLog] = useState([]); // [line, line, ...]
 
-  const interpreter = new Interpreter(variables, array_variables, setVariables, setArrayVariables, setLog);
+  const interpreter = new Interpreter(setVariables, setArrayVariables, setLog);
 
   function process_code(code) {
     build_ast(code, setParsedCode, setVariables, setArrayVariables);
@@ -25,7 +25,7 @@ function App() {
   function simulate_code() {
     if (parsedCode !== '') {
       setLog([]); // Clear the console
-      interpreter.interpretParsedCode(parsedCode, variables, setVariables, array_variables, setArrayVariables);
+      interpreter.interpretParsedCode(parsedCode);
     }
   }
 

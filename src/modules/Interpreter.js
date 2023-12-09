@@ -4,8 +4,6 @@ export class Interpreter {
 
   global_environment = null;
 
-  variables = null;
-  array_variables = null;
   setVariables = null;
   setArrayVariables = null;
 
@@ -13,9 +11,7 @@ export class Interpreter {
 
   function_declarations = [];
 
-  constructor(variables, array_variables, setVariables, setArrayVariables, setLog) {
-    this.variables = variables;
-    this.array_variables = array_variables;
+  constructor(setVariables, setArrayVariables, setLog) {
     this.setVariables = setVariables;
     this.setArrayVariables = setArrayVariables;
     this.setLog = setLog;
