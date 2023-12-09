@@ -189,7 +189,7 @@ export class Interpreter {
       case 'LogicalExpression':
         return this.interpretLogicalExpression(node);
       case 'UnaryExpression':
-        return this.interpretUnaryExpression(node);
+        return this.interpretUnaryExpression(node, environment);
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node, environment);
       case 'IfStatement':
@@ -230,7 +230,7 @@ export class Interpreter {
       case 'LogicalExpression':
         return this.interpretLogicalExpression(node);
       case 'UnaryExpression':
-        return this.interpretUnaryExpression(node);
+        return this.interpretUnaryExpression(node, environment);
       case 'ArrayExpression':
         return this.interpretArrayExpression(node, environment);
       case 'ObjectExpression':
@@ -402,7 +402,24 @@ export class Interpreter {
   }
 
   interpretLogicalExpression() {}
-  interpretUnaryExpression() {}
+
+  interpretUnaryExpression(node, environment) {
+    if (this.debugging) console.log("unary expression");
+    if (this.debugging) console.log(node);
+
+    const value = this.interpretExpression(node.argument, environment);
+    const operator = node.operator;
+
+    if (operator === "!") return !value;
+    else if (operator === "-") return -value;
+    else if (operator === "+") return +value;
+    else if (operator === "~") return ~value;
+    else if (operator === "typeof") return typeof value;
+    else if (operator === "void") return void value;
+    else {
+      console.error("unknown operator: " + operator);
+    }
+  }
 
   interpretUpdateExpression(node, environment) {
     if (this.debugging) console.log("update expression");
@@ -548,7 +565,10 @@ export class Interpreter {
       } else if (var_type === 'Identifier') {                         // variable is an identifier
         const value = this.lookupVariableValue(declaration.init.name, environment);
         this.createVariable(var_name, value, environment);
-      } else if (var_type === 'BinaryExpression') {                   // variable is an expression
+      } else if (var_type === 'BinaryExpression') {                   // variable is a binary expression
+        const value = this.interpretExpression(declaration.init, environment);
+        this.createVariable(var_name, value, environment);
+      } else if (var_type === 'UnaryExpression') {                    // variable is a unary expression
         const value = this.interpretExpression(declaration.init, environment);
         this.createVariable(var_name, value, environment);
       } else if (var_type === 'ArrayExpression') {                    // variable is an array

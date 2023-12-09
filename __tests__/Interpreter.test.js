@@ -89,9 +89,20 @@ describe('Variable assignment', () => {
     expect(variables).toEqual([['a', 2.25]]);
   });
 
-  test('Assign unary expression to variable', () => {});
-  test('Assign literal to variable', () => {});
-  test('Assign identifier to variable', () => {});
+  test('Assign unary expression to variable', () => {
+    const code = 'var a = -1;';
+    build_ast(code, setParsedCode);
+    interpreter.interpretParsedCode(parsedCode);
+    expect(variables).toEqual([['a', -1]]);
+  });
+
+  test('Assign identifier to variable', () => {
+    const code = 'var a = 1; var b = a;';
+    build_ast(code, setParsedCode);
+    interpreter.interpretParsedCode(parsedCode);
+    expect(variables).toEqual([['a', 1], ['b', 1]]);
+  });
+
   test('Assign function call to variable', () => {});
 
   test('Assign addition of two variables to variable', () => {});
