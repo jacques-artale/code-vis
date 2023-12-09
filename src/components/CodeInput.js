@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 
 class CodeEditor extends React.Component {
