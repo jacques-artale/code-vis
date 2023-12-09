@@ -9,7 +9,6 @@ import ArrayGrid from './components/Array';
 
 function App() {
   const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]++;\n}\n');
-  const [parsedCode, setParsedCode] = useState('');
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [array_variables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
@@ -18,11 +17,9 @@ function App() {
 
   const interpreter = new Interpreter(setVariables, setArrayVariables, setLog);
 
-  function process_code(code) {
-    build_ast(code, setParsedCode, setVariables, setArrayVariables);
-  }
-
   function simulate_code() {
+    const parsedCode = build_ast(code);
+    
     if (parsedCode !== '') {
       setLog([]); // Clear the console
       interpreter.interpretParsedCode(parsedCode);
@@ -52,7 +49,6 @@ function App() {
       }
 
       <div style={{display: 'flex', flexDirection: 'column'}}>
-        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => process_code(code) }>Parse Code</button>
         <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulate_code() }>Run</button>
       </div>
 
