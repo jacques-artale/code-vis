@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import build_ast from './modules/ASTBuilder';
+import buildAst from './modules/ASTBuilder';
 import { Interpreter } from './modules/Interpreter';
 import CodeInput from './components/CodeInput';
 import Console from './components/Console';
@@ -11,14 +11,14 @@ function App() {
   const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]++;\n}\n');
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
-  const [array_variables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
+  const [arrayVariables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
 
   const [log, setLog] = useState([]); // [line, line, ...]
 
   const interpreter = new Interpreter(setVariables, setArrayVariables, setLog);
 
-  function simulate_code() {
-    const parsedCode = build_ast(code);
+  function simulateCode() {
+    const parsedCode = buildAst(code);
     
     if (parsedCode !== '') {
       setLog([]); // Clear the console
@@ -38,7 +38,7 @@ function App() {
             })
           }
           {
-            array_variables.map(([name, values]) => {
+            arrayVariables.map(([name, values]) => {
               return (
                 <ArrayGrid name={name} values={values} />
               );
@@ -49,7 +49,7 @@ function App() {
       }
 
       <div style={{display: 'flex', flexDirection: 'column'}}>
-        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulate_code() }>Run</button>
+        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
       </div>
 
       <CodeInput code={code} setCode={setCode} />

@@ -4,25 +4,25 @@ export class Interpreter {
 
   debugging = false;
 
-  global_environment = null;
+  globalEnvironment = null;
 
   setVariables = null;
   setArrayVariables = null;
   setLog = null;
 
-  function_declarations = [];
+  functionDeclarations = [];
 
   constructor(setVariables, setArrayVariables, setLog) {
     this.setVariables = setVariables;
     this.setArrayVariables = setArrayVariables;
     this.setLog = setLog;
 
-    this.global_environment = this.createEnvironment(null);
+    this.globalEnvironment = this.createEnvironment(null);
   }
 
   clearInternalState() {
-    this.global_environment = this.createEnvironment(null);
-    this.function_declarations = [];
+    this.globalEnvironment = this.createEnvironment(null);
+    this.functionDeclarations = [];
   }
 
   /*
@@ -31,10 +31,10 @@ export class Interpreter {
   createEnvironment(parent) {
     return {
       variables: [],
-      array_variables: [],
-      object_variables: [],
+      arrayVariables: [],
+      objectVariables: [],
       parentEnvironment: parent,
-      return_value: null,
+      returnValue: null,
     };
   }
 
@@ -47,9 +47,9 @@ export class Interpreter {
   }
 
   lookupFunction(name) {
-    for (let i = 0; i < this.function_declarations.length; i++) {
-      if (this.function_declarations[i].name === name) {
-        return this.function_declarations[i];
+    for (let i = 0; i < this.functionDeclarations.length; i++) {
+      if (this.functionDeclarations[i].name === name) {
+        return this.functionDeclarations[i];
       }
     }
     console.error(`Expression interpreter error: Function ${name} not found`);
@@ -64,15 +64,15 @@ export class Interpreter {
   }
 
   createArrayVariable(name, values, environment) {
-    if (name in environment.array_variables) return;
-    environment.array_variables[name] = values;
+    if (name in environment.arrayVariables) return;
+    environment.arrayVariables[name] = values;
 
     this.updateStateVariables(environment);
   }
 
   createObjectVariable(name, value, environment) {
-    if (name in environment.object_variables) return;
-    environment.object_variables[name] = value;
+    if (name in environment.objectVariables) return;
+    environment.objectVariables[name] = value;
 
     this.updateStateVariables(environment);
   }
@@ -81,11 +81,11 @@ export class Interpreter {
     if (name in environment.variables) {
       return environment.variables[name];
     }
-    if (name in environment.array_variables) {
-      return environment.array_variables[name];
+    if (name in environment.arrayVariables) {
+      return environment.arrayVariables[name];
     }
-    if (name in environment.object_variables) {
-      return environment.object_variables[name];
+    if (name in environment.objectVariables) {
+      return environment.objectVariables[name];
     }
     if (environment.parentEnvironment !== null) {
       return this.lookupVariableValue(name, environment.parentEnvironment);
@@ -96,21 +96,21 @@ export class Interpreter {
 
   updateVariableValue(name, value, environment) {
     // find and update the variable in the environment
-    let current_environment = environment;
-    while (current_environment !== null) {
-      if (name in current_environment.variables) {
-        current_environment.variables[name] = value;
+    let currentEnvironment = environment;
+    while (currentEnvironment !== null) {
+      if (name in currentEnvironment.variables) {
+        currentEnvironment.variables[name] = value;
         break;
       }
-      if (name in current_environment.array_variables) {
-        current_environment.array_variables[name] = value;
+      if (name in currentEnvironment.arrayVariables) {
+        currentEnvironment.arrayVariables[name] = value;
         break;
       }
-      if (name in current_environment.object_variables) {
-        current_environment.object_variables[name] = value;
+      if (name in currentEnvironment.objectVariables) {
+        currentEnvironment.objectVariables[name] = value;
         break;
       }
-      current_environment = current_environment.parentEnvironment;
+      currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
     this.updateStateVariables(environment);
@@ -118,17 +118,17 @@ export class Interpreter {
 
   updateVariableProperty(name, property, value, environment) {
     // find and update the variable in the environment
-    let current_environment = environment;
-    while (current_environment !== null) {
-      if (name in current_environment.array_variables) {
-        current_environment.array_variables[name][property] = value;
+    let currentEnvironment = environment;
+    while (currentEnvironment !== null) {
+      if (name in currentEnvironment.arrayVariables) {
+        currentEnvironment.arrayVariables[name][property] = value;
         break;
       }
-      if (name in current_environment.object_variables) {
-        current_environment.object_variables[name][property] = value;
+      if (name in currentEnvironment.objectVariables) {
+        currentEnvironment.objectVariables[name][property] = value;
         break;
       }
-      current_environment = current_environment.parentEnvironment;
+      currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
     this.updateStateVariables(environment);
@@ -137,28 +137,28 @@ export class Interpreter {
   updateStateVariables(environment) {
     // add all variables from the environment to the state variables
     // do so for all parent environments as well
-    const new_variables = [];
-    const new_array_variables = [];
+    const newVariables = [];
+    const newArrayVariables = [];
 
-    let current_environment = environment;
-    while (current_environment !== null) {
+    let currentEnvironment = environment;
+    while (currentEnvironment !== null) {
       // add all variables from the environment to the state variables
-      for (const [name, value] of Object.entries(current_environment.variables)) {
-        new_variables.push([name, value]);
+      for (const [name, value] of Object.entries(currentEnvironment.variables)) {
+        newVariables.push([name, value]);
       }
       // add all array variables from the environment to the state variables
-      for (const [name, values] of Object.entries(current_environment.array_variables)) {
-        new_array_variables.push([name, values]);
+      for (const [name, values] of Object.entries(currentEnvironment.arrayVariables)) {
+        newArrayVariables.push([name, values]);
       }
       // add all object variables from the environment to the state variables
-      for (const [name, properties] of Object.entries(current_environment.object_variables)) {
-        new_variables.push([name, properties]);
+      for (const [name, properties] of Object.entries(currentEnvironment.objectVariables)) {
+        newVariables.push([name, properties]);
       }
-      current_environment = current_environment.parentEnvironment;
+      currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
-    this.setVariables(new_variables);
-    this.setArrayVariables(new_array_variables);
+    this.setVariables(newVariables);
+    this.setArrayVariables(newArrayVariables);
   }
 
   /*
@@ -168,15 +168,15 @@ export class Interpreter {
     if (this.debugging) console.log(parsedCode);
 
     // create the global environment
-    const environment = this.global_environment;
+    const environment = this.globalEnvironment;
 
     for (let i = 0; i < parsedCode.body.length; i++) {
-      this.execute_node_type(parsedCode.body[i], environment);
+      this.executeNodeType(parsedCode.body[i], environment);
     }
 
   }
 
-  execute_node_type(node, environment) {
+  executeNodeType(node, environment) {
     switch (node.type) {
       case 'VariableDeclaration':
         return this.interpretVariableDeclaration(node, environment);
@@ -342,65 +342,65 @@ export class Interpreter {
 
     const property = this.interpretExpression(node.expression.left.property, environment);
 
-    const old_value = this.lookupVariableValue(identifier, environment)[property];
+    const oldValue = this.lookupVariableValue(identifier, environment)[property];
     const value = this.interpretExpression(node.expression.right, environment);
 
-    let new_value = null;
-    if (operator === "=") new_value = value;
-    else if (operator === "+=") new_value = old_value + value;
-    else if (operator === "-=") new_value = old_value - value;
-    else if (operator === "*=") new_value = old_value * value;
-    else if (operator === "/=") new_value = old_value / value;
-    else if (operator === "%=") new_value = old_value % value;
-    else if (operator === "<<=") new_value = old_value << value;
-    else if (operator === ">>=") new_value = old_value >> value;
-    else if (operator === ">>>=") new_value = old_value >>> value;
-    else if (operator === "&=") new_value = old_value & value;
-    else if (operator === "|=") new_value = old_value | value;
-    else if (operator === "^=") new_value = old_value ^ value;
+    let newValue = null;
+    if (operator === "=") newValue = value;
+    else if (operator === "+=") newValue = oldValue + value;
+    else if (operator === "-=") newValue = oldValue - value;
+    else if (operator === "*=") newValue = oldValue * value;
+    else if (operator === "/=") newValue = oldValue / value;
+    else if (operator === "%=") newValue = oldValue % value;
+    else if (operator === "<<=") newValue = oldValue << value;
+    else if (operator === ">>=") newValue = oldValue >> value;
+    else if (operator === ">>>=") newValue = oldValue >>> value;
+    else if (operator === "&=") newValue = oldValue & value;
+    else if (operator === "|=") newValue = oldValue | value;
+    else if (operator === "^=") newValue = oldValue ^ value;
     else {
       console.error("unknown operator: " + operator);
     }
 
-    this.updateVariableProperty(identifier, property, new_value, environment); // identifier[property] = value;
+    this.updateVariableProperty(identifier, property, newValue, environment); // identifier[property] = value;
   }
 
   handleVariableAssignment(node, environment) {
-    const var_name = node.expression.left.name;
+    const varName = node.expression.left.name;
     const value = this.interpretExpression(node.expression.right, environment);
     const operator = node.expression.operator;
 
-    const old_value = this.lookupVariableValue(var_name, environment);
-    let new_value = null;
+    const oldValue = this.lookupVariableValue(varName, environment);
+    let newValue = null;
 
-    if (operator === "=") new_value = value;
-    else if (operator === "+=") new_value = old_value + value;
-    else if (operator === "-=") new_value = old_value - value;
-    else if (operator === "*=") new_value = old_value * value;
-    else if (operator === "/=") new_value = old_value / value;
-    else if (operator === "%=") new_value = old_value % value;
-    else if (operator === "<<=") new_value = old_value << value;
-    else if (operator === ">>=") new_value = old_value >> value;
-    else if (operator === ">>>=") new_value = old_value >>> value;
-    else if (operator === "&=") new_value = old_value & value;
-    else if (operator === "|=") new_value = old_value | value;
-    else if (operator === "^=") new_value = old_value ^ value;
+    if (operator === "=") newValue = value;
+    else if (operator === "+=") newValue = oldValue + value;
+    else if (operator === "-=") newValue = oldValue - value;
+    else if (operator === "*=") newValue = oldValue * value;
+    else if (operator === "/=") newValue = oldValue / value;
+    else if (operator === "%=") newValue = oldValue % value;
+    else if (operator === "<<=") newValue = oldValue << value;
+    else if (operator === ">>=") newValue = oldValue >> value;
+    else if (operator === ">>>=") newValue = oldValue >>> value;
+    else if (operator === "&=") newValue = oldValue & value;
+    else if (operator === "|=") newValue = oldValue | value;
+    else if (operator === "^=") newValue = oldValue ^ value;
     else {
       console.error("unknown operator: " + operator);
     }
     
-    this.updateVariableValue(var_name, new_value, environment);
+    this.updateVariableValue(varName, newValue, environment);
   }
 
   interpretBinaryExpression(node, environment) {
     if (this.debugging) console.log("binary expression");
     if (this.debugging) console.log(node);
 
-    const left_value = this.interpretExpression(node.left, environment);
-    const right_value = this.interpretExpression(node.right, environment);
+    const leftValue = this.interpretExpression(node.left, environment);
+    const rightValue = this.interpretExpression(node.right, environment);
     const operator = node.operator;
 
-    const result = this.evaluateBinaryExpression(left_value, right_value, operator);
+    const result = this.evaluateBinaryExpression(leftValue, rightValue, operator);
     
     return result;
   }
@@ -452,15 +452,15 @@ export class Interpreter {
   }
 
   handleUpdateVariableExpression(node, environment) {
-    const var_name = node.argument.name;
+    const varName = node.argument.name;
     const operator = node.operator;
-    let value = this.lookupVariableValue(var_name, environment);
+    let value = this.lookupVariableValue(varName, environment);
 
     if (operator === "++") value++;
     else if (operator === "--") value--;
     else console.error("weird error, operator not found");
 
-    this.updateVariableValue(var_name, value, environment);
+    this.updateVariableValue(varName, value, environment);
   }
 
   interpretCallExpression(node, environment) {
@@ -471,33 +471,33 @@ export class Interpreter {
     if (this.handleStandardFunctions(node, environment)) return;
 
     // fetch the values of each argument
-    const call_arguments = node.arguments;
-    const argument_values = [];
-    for (let i = 0; i < call_arguments.length; i++) {
-      argument_values.push(this.interpretExpression(call_arguments[i], environment));
+    const callArguments = node.arguments;
+    const argumentValues = [];
+    for (let i = 0; i < callArguments.length; i++) {
+      argumentValues.push(this.interpretExpression(callArguments[i], environment));
     }
 
     // fetch the function declaration
-    const function_declaration = this.lookupFunction(node.callee.name);
+    const functionDeclaration = this.lookupFunction(node.callee.name);
 
     // create a new environment for the function
-    const new_environment = this.createEnvironment(this.global_environment);
+    const newEnvironment = this.createEnvironment(this.globalEnvironment);
 
-    // add the parameters to the environment (new variables with values of call_arguments)
-    for (let i = 0; i < function_declaration.parameters.length; i++) {
-      const parameter = function_declaration.parameters[i];
-      const parameter_value = argument_values[i];
-      this.createVariable(parameter.name, parameter_value, new_environment);
+    // add the parameters to the environment (new variables with values of callArguments)
+    for (let i = 0; i < functionDeclaration.parameters.length; i++) {
+      const parameter = functionDeclaration.parameters[i];
+      const parameterValue = argumentValues[i];
+      this.createVariable(parameter.name, parameterValue, newEnvironment);
     }
 
     // interpret the body of the function
-    this.interpretBlockStatement(function_declaration.body, new_environment);
+    this.interpretBlockStatement(functionDeclaration.body, newEnvironment);
 
     // exit the environment
     this.updateStateVariables(environment);
 
     // return the return value of the function (if any)
-    return new_environment.return_value;
+    return newEnvironment.returnValue;
   }
 
   handleStandardFunctions(node, environment) {
@@ -560,36 +560,36 @@ export class Interpreter {
 
     for (let i = 0; i < node.declarations.length; i++) {
       const declaration = node.declarations[i];
-      const var_name = declaration.id.name;
-      const var_val = this.interpretExpression(declaration.init, environment);
-      const var_type = declaration.init.type;
+      const varName = declaration.id.name;
+      const varVal = this.interpretExpression(declaration.init, environment);
+      const varType = declaration.init.type;
 
-      if (var_type === 'Literal') {                                   // variable is a literal
-        this.createVariable(var_name, var_val, environment);
-      } else if (var_type === 'Identifier') {                         // variable is an identifier
+      if (varType === 'Literal') {                                   // variable is a literal
+        this.createVariable(varName, varVal, environment);
+      } else if (varType === 'Identifier') {                         // variable is an identifier
         const value = this.lookupVariableValue(declaration.init.name, environment);
-        this.createVariable(var_name, value, environment);
-      } else if (var_type === 'BinaryExpression') {                   // variable is a binary expression
+        this.createVariable(varName, value, environment);
+      } else if (varType === 'BinaryExpression') {                   // variable is a binary expression
         const value = this.interpretExpression(declaration.init, environment);
-        this.createVariable(var_name, value, environment);
-      } else if (var_type === 'UnaryExpression') {                    // variable is a unary expression
+        this.createVariable(varName, value, environment);
+      } else if (varType === 'UnaryExpression') {                    // variable is a unary expression
         const value = this.interpretExpression(declaration.init, environment);
-        this.createVariable(var_name, value, environment);
-      } else if (var_type === 'CallExpression') {                     // variable is a function call
+        this.createVariable(varName, value, environment);
+      } else if (varType === 'CallExpression') {                     // variable is a function call
         const value = this.interpretExpression(declaration.init, environment);
-        this.createVariable(var_name, value, environment);
-      } else if (var_type === 'ArrayExpression') {                    // variable is an array
-        this.createArrayVariable(var_name, var_val, environment);
-      } else if (var_type === 'ObjectExpression') {                   // variable is an object
-        this.createObjectVariable(var_name, var_val, environment);
-      } else if (var_type === 'MemberExpression') {                   // variable is an array or object property
+        this.createVariable(varName, value, environment);
+      } else if (varType === 'ArrayExpression') {                    // variable is an array
+        this.createArrayVariable(varName, varVal, environment);
+      } else if (varType === 'ObjectExpression') {                   // variable is an object
+        this.createObjectVariable(varName, varVal, environment);
+      } else if (varType === 'MemberExpression') {                   // variable is an array or object property
         // check type of value and create the variable accordingly
-        if (Array.isArray(var_val)) {
-          this.createArrayVariable(var_name, var_val, environment);
-        } else if (typeof var_val === 'object') {
-          this.createObjectVariable(var_name, var_val, environment);
+        if (Array.isArray(varVal)) {
+          this.createArrayVariable(varName, varVal, environment);
+        } else if (typeof varVal === 'object') {
+          this.createObjectVariable(varName, varVal, environment);
         } else {
-          this.createVariable(var_name, var_val, environment);
+          this.createVariable(varName, varVal, environment);
         }
       } else {
         console.error("unknown variable type: " + declaration.init.type);
@@ -605,16 +605,16 @@ export class Interpreter {
     const parameters = node.params;
     const body = node.body;
 
-    const function_declaration = this.createFunction(name, parameters, body);
+    const functionDeclaration = this.createFunction(name, parameters, body);
 
-    this.function_declarations.push(function_declaration);
+    this.functionDeclarations.push(functionDeclaration);
   }
 
   interpretBlockStatement(node, environment) {
     if (this.debugging) console.log("block statement");
 
     for (let i = 0; i < node.body.length; i++) {
-      this.execute_node_type(node.body[i], environment);
+      this.executeNodeType(node.body[i], environment);
     }
   }
 
@@ -635,13 +635,13 @@ export class Interpreter {
     if (this.debugging) console.log("for statement");
     if (this.debugging) console.log(node);
 
-    const new_scope = this.createEnvironment(environment);      // enter a new environment
-    this.interpretVariableDeclaration(node.init, new_scope);    // setup variables in the for loop
+    const newScope = this.createEnvironment(environment);      // enter a new environment
+    this.interpretVariableDeclaration(node.init, newScope);    // setup variables in the for loop
 
     // interpret the conditional expression
-    while (this.interpretExpression(node.test, new_scope)) {
-      this.interpretBlockStatement(node.body, new_scope);       // interpret the body of the for loop
-      this.interpretUpdateExpression(node.update, new_scope);   // interpret the update expression
+    while (this.interpretExpression(node.test, newScope)) {
+      this.interpretBlockStatement(node.body, newScope);       // interpret the body of the for loop
+      this.interpretUpdateExpression(node.update, newScope);   // interpret the update expression
     }
 
     // exit the environment
@@ -652,11 +652,11 @@ export class Interpreter {
     if (this.debugging) console.log("while statement");
     if (this.debugging) console.log(node);
 
-    const new_scope = this.createEnvironment(environment);      // enter a new environment
+    const newScope = this.createEnvironment(environment);      // enter a new environment
 
     // interpret the conditional expression
-    while (this.interpretExpression(node.test, new_scope)) {
-      this.interpretBlockStatement(node.body, new_scope);       // interpret the body of the for loop
+    while (this.interpretExpression(node.test, newScope)) {
+      this.interpretBlockStatement(node.body, newScope);       // interpret the body of the for loop
     }
 
     // exit the environment
@@ -667,12 +667,12 @@ export class Interpreter {
     if (this.debugging) console.log("do while statement");
     if (this.debugging) console.log(node);
 
-    const new_scope = this.createEnvironment(environment);      // enter a new environment
+    const newScope = this.createEnvironment(environment);      // enter a new environment
 
     // interpret the iteration
     do {
-      this.interpretBlockStatement(node.body, new_scope);       // interpret the body of the for loop
-    } while (this.interpretExpression(node.test, new_scope));
+      this.interpretBlockStatement(node.body, newScope);       // interpret the body of the for loop
+    } while (this.interpretExpression(node.test, newScope));
 
     // exit the environment
     this.updateStateVariables(environment);
@@ -682,18 +682,18 @@ export class Interpreter {
     if (this.debugging) console.log("switch statement");
     if (this.debugging) console.log(node);
 
-    const new_scope = this.createEnvironment(environment);      // enter a new environment
+    const newScope = this.createEnvironment(environment);      // enter a new environment
 
-    const value = this.interpretExpression(node.discriminant, new_scope);
+    const value = this.interpretExpression(node.discriminant, newScope);
 
     for (let i = 0; i < node.cases.length; i++) {
-      const case_node = node.cases[i];
-      const test = this.interpretExpression(case_node.test, new_scope);
+      const caseNode = node.cases[i];
+      const test = this.interpretExpression(caseNode.test, newScope);
 
       if (test === null || test === value) {  // if the test is null, it is the default case
         // interpret the body of the case
-        for (let i = 0; i < case_node.consequent.length; i++) {
-          this.execute_node_type(case_node.consequent[i], new_scope);
+        for (let i = 0; i < caseNode.consequent.length; i++) {
+          this.executeNodeType(caseNode.consequent[i], newScope);
         }
         break;
       }
@@ -707,7 +707,7 @@ export class Interpreter {
     if (this.debugging) console.log("return statement");
     if (this.debugging) console.log(node);
 
-    environment.return_value = this.interpretExpression(node.argument, environment);
+    environment.returnValue = this.interpretExpression(node.argument, environment);
   }
 
   /* STANDARD FUNCTIONS */
@@ -717,7 +717,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     const argument = this.interpretExpression(node.arguments[0], environment);
-    this.setLog((old_log) => [...old_log, argument]);
+    this.setLog((oldLog) => [...oldLog, argument]);
   }
 
 }

@@ -1,11 +1,11 @@
 import { parseScript } from 'esprima';
 
-function build_ast(code) {
-  const parsedCode = JSON.parse(parse_code(code));
+function buildAst(code) {
+  const parsedCode = JSON.parse(parseCode(code));
   return parsedCode;
 }
 
-function parse_code(code) {
+function parseCode(code) {
   try {
     const parsedCode = parseScript(code);
     return JSON.stringify(parsedCode, null, 2);
@@ -15,4 +15,4 @@ function parse_code(code) {
   return "";
 }
 
-export default build_ast;
+export default buildAst;
