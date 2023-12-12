@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+
+import InterpretWorker from './workers/Interpreter.worker.js';
+import WebWorker from './workers/WebWorker.js';
+
 import buildAst from './modules/ASTBuilder';
 import { Interpreter } from './modules/Interpreter';
 import CodeInput from './components/CodeInput';
@@ -12,10 +16,24 @@ function App() {
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [arrayVariables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
-
   const [log, setLog] = useState([]); // [line, line, ...]
 
+  const [worker, setWorker] = useState(null);
+
   const interpreter = new Interpreter(setVariables, setArrayVariables, setLog);
+  
+  // setup worker for interpreting code
+  useEffect(() => {
+    const newWorker = new WebWorker(InterpretWorker);
+    setWorker(newWorker);
+
+    newWorker.postMessage('Hello World!');
+    newWorker.onmessage = (e) => {
+      console.log('Message received from worker:', e.data);
+    };
+
+    return () => newWorker.terminate();
+  }, []);
 
   function simulateCode() {
     const parsedCode = buildAst(code);
