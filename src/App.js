@@ -4,7 +4,6 @@ import './App.css';
 import InterpretWorker from './workers/Interpreter.worker.js';
 
 import buildAst from './modules/ASTBuilder';
-import { Interpreter } from './modules/Interpreter';
 import CodeInput from './components/CodeInput';
 import Console from './components/Console';
 import Variable from './components/Variable';
@@ -18,17 +17,20 @@ function App() {
   const [log, setLog] = useState([]); // [line, line, ...]
 
   const [worker, setWorker] = useState(null);
-
-  const interpreter = new Interpreter(setVariables, setArrayVariables, setLog);
   
   // setup worker for interpreting code
   useEffect(() => {
     const newWorker = new InterpretWorker();
     setWorker(newWorker);
 
-    newWorker.postMessage('Hello World!');
     newWorker.onmessage = (e) => {
-      console.log('Message received from worker:', e.data);
+      // handle messages from worker
+      if (e.data.command === 'updateVariables') {
+        setVariables(e.data.variables);
+        setArrayVariables(e.data.arrayVariables);
+      } else if (e.data.command === 'consoleLog') {
+        setLog(old_log => [...old_log, e.data.argument]);
+      }
     };
 
     return () => newWorker.terminate();
@@ -39,7 +41,8 @@ function App() {
     
     if (parsedCode !== '') {
       setLog([]); // Clear the console
-      interpreter.interpretParsedCode(parsedCode);
+      worker.postMessage({ command: 'initialize' });
+      worker.postMessage({ command: 'interpretAll', code: parsedCode });
     }
   }
 

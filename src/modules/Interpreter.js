@@ -6,17 +6,9 @@ export class Interpreter {
 
   globalEnvironment = null;
 
-  setVariables = null;
-  setArrayVariables = null;
-  setLog = null;
-
   functionDeclarations = [];
 
-  constructor(setVariables, setArrayVariables, setLog) {
-    this.setVariables = setVariables;
-    this.setArrayVariables = setArrayVariables;
-    this.setLog = setLog;
-
+  constructor() {
     this.globalEnvironment = this.createEnvironment(null);
   }
 
@@ -157,8 +149,7 @@ export class Interpreter {
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
-    this.setVariables(newVariables);
-    this.setArrayVariables(newArrayVariables);
+    postMessage({ command: 'updateVariables', variables: newVariables, arrayVariables: newArrayVariables });
   }
 
   /*
@@ -173,7 +164,6 @@ export class Interpreter {
     for (let i = 0; i < parsedCode.body.length; i++) {
       this.executeNodeType(parsedCode.body[i], environment);
     }
-
   }
 
   executeNodeType(node, environment) {
@@ -717,7 +707,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     const argument = this.interpretExpression(node.arguments[0], environment);
-    this.setLog((oldLog) => [...oldLog, argument]);
+    postMessage({ command: 'consoleLog', argument: argument });
   }
 
 }
