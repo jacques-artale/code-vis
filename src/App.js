@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 
 import InterpretWorker from './workers/Interpreter.worker.js';
-import WebWorker from './workers/WebWorker.js';
 
 import buildAst from './modules/ASTBuilder';
 import { Interpreter } from './modules/Interpreter';
@@ -24,7 +23,7 @@ function App() {
   
   // setup worker for interpreting code
   useEffect(() => {
-    const newWorker = new WebWorker(InterpretWorker);
+    const newWorker = new InterpretWorker();
     setWorker(newWorker);
 
     newWorker.postMessage('Hello World!');
