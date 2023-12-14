@@ -6,11 +6,18 @@ let arrayVariables = [];
 let log = [];
 let parsedCode = '';
 
-const setVariables = (newVariables) => { variables = newVariables; };
-const setArrayVariables = (newArrayVariables) => { arrayVariables = newArrayVariables; };
-const setLog = (newLog) => { log = newLog; };
-
 let interpreter;
+
+function updateVariables(data) {
+  if (data.command === 'updateVariables') {
+    variables = data.variables;
+    arrayVariables = data.arrayVariables;
+  } else if (data.command === 'consoleLog') {
+    log = [...log, data.argument];
+  } else {
+    console.error('Unknown command: ' + data.command);
+  }
+}
 
 // Reset variables before each test
 beforeEach(() => {    
@@ -19,7 +26,7 @@ beforeEach(() => {
   log = [];
   parsedCode = '';
 
-  interpreter = new Interpreter(setVariables, setArrayVariables, setLog);
+  interpreter = new Interpreter(updateVariables);
 });
 
 describe('Declarations', () => {

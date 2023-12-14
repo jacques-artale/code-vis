@@ -5,7 +5,7 @@ let interpreter = null;
 
 self.addEventListener('message', (e) => {
   if (e.data.command === 'initialize') {
-    interpreter = new Interpreter();
+    interpreter = new Interpreter(self.postMessage.bind(self));
   } else if (e.data.command === 'interpretAll') {
     if (interpreter !== null) {
       interpreter.interpretParsedCode(e.data.code);

@@ -4,11 +4,12 @@ export class Interpreter {
 
   debugging = false;
 
+  updateCallback = null;
   globalEnvironment = null;
-
   functionDeclarations = [];
 
-  constructor() {
+  constructor(updateCallback) {
+    this.updateCallback = updateCallback;
     this.globalEnvironment = this.createEnvironment(null);
   }
 
@@ -149,7 +150,7 @@ export class Interpreter {
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
-    postMessage({ command: 'updateVariables', variables: newVariables, arrayVariables: newArrayVariables });
+    this.updateCallback({ command: 'updateVariables', variables: newVariables, arrayVariables: newArrayVariables });
   }
 
   /*
@@ -707,7 +708,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     const argument = this.interpretExpression(node.arguments[0], environment);
-    postMessage({ command: 'consoleLog', argument: argument });
+    this.updateCallback({ command: 'consoleLog', argument: argument });
   }
 
 }
