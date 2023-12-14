@@ -1,9 +1,18 @@
 /* eslint-disable no-restricted-globals */
+import { Interpreter } from './../modules/Interpreter';
 
-export default () => {
-  self.addEventListener('message', (e) => {
-    console.log('Message received from main script:', e.data);
-  
-    self.postMessage('Received: ' + e.data);
-  });
-}
+let interpreter = null;
+
+self.addEventListener('message', (e) => {
+  if (e.data.command === 'initialize') {
+    interpreter = new Interpreter(self.postMessage.bind(self));
+  } else if (e.data.command === 'interpretAll') {
+    if (interpreter !== null) {
+      interpreter.interpretParsedCode(e.data.code);
+    } else {
+      console.error('Interpreter not initialized before interpreting code');
+    }
+  } else if (e.data.command === 'interpretNext') {
+    console.error('InterpretNext not implemented yet');
+  }
+});
