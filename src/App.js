@@ -6,11 +6,12 @@ import InterpretWorker from './workers/Interpreter.worker.js';
 import buildAst from './modules/ASTBuilder';
 import CodeInput from './components/CodeInput';
 import Console from './components/Console';
-import Variable from './components/Variable';
-import ArrayGrid from './components/Array';
+import ASTView from './components/ASTView';
+import VisualView from './components/VisualView';
 
 function App() {
   const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]++;\n}\n');
+  const [viewAST, setViewAST] = useState(false);
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [arrayVariables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
@@ -46,23 +47,18 @@ function App() {
     }
   }
 
+  function toggleASTView() {
+    setViewAST(oldValue => !oldValue);
+  }
+
   return (
     <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'row'}}>
       {
         <div style={{width: '50%', display: 'flex', flexDirection: 'column'}}>
           {
-            variables.map(([name, value]) => {
-              return (
-                <Variable name={name} value={value} />
-              );
-            })
-          }
-          {
-            arrayVariables.map(([name, values]) => {
-              return (
-                <ArrayGrid name={name} values={values} />
-              );
-            })
+            viewAST ?
+              <ASTView code={code} /> :
+              <VisualView variables={variables} arrayVariables={arrayVariables} />
           }
           <Console log={log} />
         </div>
@@ -70,6 +66,11 @@ function App() {
 
       <div style={{display: 'flex', flexDirection: 'column'}}>
         <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
+        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
+          {
+            viewAST ? 'View Visual' : 'View AST'
+          }
+        </button>
       </div>
 
       <CodeInput code={code} setCode={setCode} />
