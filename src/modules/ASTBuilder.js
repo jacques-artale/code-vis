@@ -11,8 +11,8 @@ function parseCode(code) {
     return JSON.stringify(parsedCode, null, 2);
   } catch (e) {
     console.log("Error parsing code: ", e);
+    return e;
   }
-  return "";
 }
 
 export default buildAst;
