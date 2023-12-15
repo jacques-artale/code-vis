@@ -7,13 +7,13 @@ const ASTView = ({ code }) => {
   function getAST() {
     try {
       const parsedCode = buildAst(code);
-      return JSON.stringify(parsedCode);
+      return JSON.stringify(parsedCode, null, 2);
     } catch (e) {
       const errorInfo = {
         message: e.message,
         stack: e.stack,
       };
-      return JSON.stringify(errorInfo);
+      return JSON.stringify(errorInfo, null, 2);
     }
   }
 
@@ -24,7 +24,8 @@ const ASTView = ({ code }) => {
         flexDirection: "column",
         overflow: "scroll",
         height: "80%",
-        padding: "1%"
+        padding: "1%",
+        whiteSpace: "pre-wrap"
       }
     }>
       {
