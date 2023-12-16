@@ -4,15 +4,13 @@ import { Interpreter } from './../modules/Interpreter';
 let interpreter = null;
 
 self.addEventListener('message', (e) => {
-  if (e.data.command === 'initialize') {
-    interpreter = new Interpreter(self.postMessage.bind(self));
-  } else if (e.data.command === 'interpretAll') {
-    if (interpreter !== null) {
-      interpreter.interpretParsedCode(e.data.code);
-    } else {
-      console.error('Interpreter not initialized before interpreting code');
-    }
+  if (interpreter === null) {
+    interpreter = new Interpreter(e.data.code, self.postMessage.bind(self));
+  }
+
+  if (e.data.command === 'interpretAll') {
+    interpreter.interpretAllInstructions();
   } else if (e.data.command === 'interpretNext') {
-    console.error('InterpretNext not implemented yet');
+    interpreter.interpretNextInstruction();
   }
 });

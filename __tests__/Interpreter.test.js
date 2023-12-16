@@ -6,8 +6,6 @@ let arrayVariables = [];
 let log = [];
 let parsedCode = '';
 
-let interpreter;
-
 function updateVariables(data) {
   if (data.command === 'updateVariables') {
     variables = data.variables;
@@ -25,29 +23,30 @@ beforeEach(() => {
   arrayVariables = [];
   log = [];
   parsedCode = '';
-
-  interpreter = new Interpreter(updateVariables);
 });
 
 describe('Declarations', () => {
   test('Declare variable', () => {
     const code = 'var a = 1;';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', 1]]);
   });
 
   test('Array declaration', () => {
     const code = 'var a = [1, 2, 3];';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
   });
 
   test('Object declaration', () => {
     const code = 'var a = {b: 1, c: 2};';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', {b: 1, c: 2}]]);
   });
 });
@@ -64,10 +63,10 @@ describe('Variable assignment', () => {
     ]
     operations.forEach(({ code, expected }) => {
       variables = [];
-      interpreter.clearInternalState();
 
       const parsedCode = buildAst(code);
-      interpreter.interpretParsedCode(parsedCode);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
     });
   });
@@ -75,7 +74,8 @@ describe('Variable assignment', () => {
   test('Assign unary expression to variable', () => {
     const code = 'var a = -1;';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', -1]]);
   });
 
@@ -91,10 +91,10 @@ describe('Variable assignment', () => {
     ]
     operations.forEach(({ code, expected }) => {
       variables = [];
-      interpreter.clearInternalState();
 
       const parsedCode = buildAst(code);
-      interpreter.interpretParsedCode(parsedCode);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
     });
   });
@@ -102,7 +102,8 @@ describe('Variable assignment', () => {
   test('Assign function call to variable', () => {
     const code = 'function a() { return 1; } var b = a();';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(variables).toEqual([['b', 1]]);
   });
 
@@ -122,10 +123,10 @@ describe('Array assignment', () => {
     ]
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
-      interpreter.clearInternalState();
 
       const parsedCode = buildAst(code);
-      interpreter.interpretParsedCode(parsedCode);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
       expect(arrayVariables).toEqual(expected);
     });
   });
@@ -133,14 +134,16 @@ describe('Array assignment', () => {
   test('Assign unary expression to array', () => {
     const code = 'var a = [1, 2, 3]; a[0] = -1;';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [-1, 2, 3]]]);
   });
 
   test('Assign function call to array', () => {
     const code = 'function a() { return 1; } var b = [3, 3, 3]; b[0] = a();';
     const parsedCode = buildAst(code);
-    interpreter.interpretParsedCode(parsedCode);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
   });
 });
@@ -157,3 +160,5 @@ describe('If statement', () => {});
 describe('While statement', () => {});
 describe('For statement', () => {});
 describe('Do-while statement', () => {});
+
+describe('Scope', () => {});
