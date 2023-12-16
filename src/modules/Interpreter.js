@@ -192,9 +192,6 @@ export class Interpreter {
   }
 
   interpretNextInstruction() {
-    console.log("THIS IS WHAT WE WILL INTERPRET");
-    console.log(this.nextExecutingNode);
-
     const node = this.getExecutingNode();
     if (node === null) return;
 
