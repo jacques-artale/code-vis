@@ -41,8 +41,15 @@ function App() {
     
     if (parsedCode !== '') {
       setLog([]); // Clear the console
-      worker.postMessage({ command: 'initialize' });
       worker.postMessage({ command: 'interpretAll', code: parsedCode });
+    }
+  }
+
+  function simulateNext() {
+    const parsedCode = buildAst(code);
+
+    if (parsedCode !== '') {
+      worker.postMessage({ command: 'interpretNext', code: parsedCode });
     }
   }
 
@@ -70,6 +77,7 @@ function App() {
 
       <div style={{display: 'flex', flexDirection: 'column'}}>
         <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
+        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateNext() }>Next</button>
       </div>
 
       <CodeInput code={code} setCode={setCode} />

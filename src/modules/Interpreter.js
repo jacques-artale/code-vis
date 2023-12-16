@@ -8,9 +8,21 @@ export class Interpreter {
   globalEnvironment = null;
   functionDeclarations = [];
 
-  constructor(updateCallback) {
+  parsedCode = null;
+  nextExecutingNode = 0;
+
+  environmentStack = [];
+
+  // TODO: keep track of call stack (where do executeNodeType returns go?)
+
+  constructor(parsedCode, updateCallback) {
+    this.parsedCode = parsedCode;
     this.updateCallback = updateCallback;
+
     this.globalEnvironment = this.createEnvironment(null);
+    this.currentExecutingEnvironment = this.globalEnvironment;
+
+    this.environmentStack.push(this.globalEnvironment);
   }
 
   clearInternalState() {
@@ -31,6 +43,18 @@ export class Interpreter {
     };
   }
 
+  getCurrentEnvironment() {
+    return this.environmentStack[this.environmentStack.length - 1];
+  }
+
+  addNewEnvironment(environment) {
+    this.environmentStack.push(environment);
+  }
+
+  removeCurrentEnvironment() {
+    this.environmentStack.pop();
+  }
+
   createFunction(name, parameters, body) {
     return {
       name: name,
@@ -49,21 +73,24 @@ export class Interpreter {
     return null;
   }
 
-  createVariable(name, value, environment) {
+  createVariable(name, value) {
+    const environment = this.getCurrentEnvironment();
     if (name in environment.variables) return;
     environment.variables[name] = value;
 
     this.updateStateVariables(environment);
   }
 
-  createArrayVariable(name, values, environment) {
+  createArrayVariable(name, values) {
+    const environment = this.getCurrentEnvironment();
     if (name in environment.arrayVariables) return;
     environment.arrayVariables[name] = values;
 
     this.updateStateVariables(environment);
   }
 
-  createObjectVariable(name, value, environment) {
+  createObjectVariable(name, value) {
+    const environment = this.getCurrentEnvironment();
     if (name in environment.objectVariables) return;
     environment.objectVariables[name] = value;
 
@@ -156,61 +183,74 @@ export class Interpreter {
   /*
     INTERPRETATION FUNCTIONS
   */
-  interpretParsedCode(parsedCode) {
-    if (this.debugging) console.log(parsedCode);
+  interpretAllInstructions() {
+    if (this.debugging) console.log(this.parsedCode);
 
-    // create the global environment
-    const environment = this.globalEnvironment;
-
-    for (let i = 0; i < parsedCode.body.length; i++) {
-      this.executeNodeType(parsedCode.body[i], environment);
+    for (let i = 0; i < this.parsedCode.body.length; i++) {
+      this.executeNodeType(this.parsedCode.body[i]);
     }
   }
 
-  executeNodeType(node, environment) {
+  interpretNextInstruction() {
+    console.log("THIS IS WHAT WE WILL INTERPRET");
+    console.log(this.nextExecutingNode);
+
+    const node = this.getExecutingNode();
+    if (node === null) return;
+
+    this.executeNodeType(node);
+    this.nextExecutingNode++;
+  }
+
+  getExecutingNode() {
+    if (this.nextExecutingNode >= this.parsedCode.body.length) return null;
+    return this.parsedCode.body[this.nextExecutingNode];
+  }
+
+  executeNodeType(node) {
     switch (node.type) {
       case 'VariableDeclaration':
-        return this.interpretVariableDeclaration(node, environment);
+        return this.interpretVariableDeclaration(node);
       case 'FunctionDeclaration':
         return this.interpretFunctionDeclaration(node);
       case 'BlockStatement':
-        return this.interpretBlockStatement(node, environment);
+        return this.interpretBlockStatement(node);
       case 'ExpressionStatement':
-        return this.interpretExpressionStatement(node, environment);
+        return this.interpretExpressionStatement(node);
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node, environment);
+        return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node, environment);
+        return this.interpretBinaryExpression(node);
       case 'LogicalExpression':
         return this.interpretLogicalExpression(node);
       case 'UnaryExpression':
-        return this.interpretUnaryExpression(node, environment);
+        return this.interpretUnaryExpression(node);
       case 'UpdateExpression':
-        return this.interpretUpdateExpression(node, environment);
+        return this.interpretUpdateExpression(node);
       case 'IfStatement':
-        return this.interpretIfStatement(node, environment);
+        return this.interpretIfStatement(node);
       case 'ForStatement':
-        return this.interpretForStatement(node, environment);
+        return this.interpretForStatement(node);
       case 'WhileStatement':
-        return this.interpretWhileStatement(node, environment);
+        return this.interpretWhileStatement(node);
       case 'DoWhileStatement':
-        return this.interpretDoWhileStatement(node, environment);
+        return this.interpretDoWhileStatement(node);
       case 'ReturnStatement':
-        return this.interpretReturnStatement(node, environment);
+        return this.interpretReturnStatement(node);
       case 'CallExpression':
-        return this.interpretCallExpression(node, environment);
+        return this.interpretCallExpression(node);
       case 'MemberExpression':
-        return this.interpretMemberExpression(node, environment);
+        return this.interpretMemberExpression(node);
       case 'ConditionalExpression':
         return this.interpretConditionalExpression(node);
       case 'SwitchStatement':
-        return this.interpretSwitchStatement(node, environment);
+        return this.interpretSwitchStatement(node);
       default:
         console.log('unrecognized node type');
     }
   }
 
-  interpretExpression(node, environment) {
+  interpretExpression(node) {
     if (this.debugging) console.log("expression");
     if (this.debugging) console.log(node);
     if (node === null) return null;
@@ -219,21 +259,21 @@ export class Interpreter {
       case 'Literal':
         return node.value;
       case 'Identifier':
-        return this.lookupVariableValue(node.name, environment);
+        return this.lookupVariableValue(node.name, this.getCurrentEnvironment());
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node, environment);
+        return this.interpretBinaryExpression(node);
       case 'LogicalExpression':
         return this.interpretLogicalExpression(node);
       case 'UnaryExpression':
-        return this.interpretUnaryExpression(node, environment);
+        return this.interpretUnaryExpression(node);
       case 'ArrayExpression':
-        return this.interpretArrayExpression(node, environment);
+        return this.interpretArrayExpression(node);
       case 'ObjectExpression':
-        return this.interpretObjectExpression(node, environment);
+        return this.interpretObjectExpression(node);
       case 'CallExpression':
-        return this.interpretCallExpression(node, environment);
+        return this.interpretCallExpression(node);
       case 'MemberExpression':
-        return this.interpretMemberExpression(node, environment);
+        return this.interpretMemberExpression(node);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -292,49 +332,49 @@ export class Interpreter {
     }
   }
 
-  interpretExpressionStatement(node, environment) {
+  interpretExpressionStatement(node) {
     if (this.debugging) console.log("expression statement");
     if (this.debugging) console.log(node);
 
     switch (node.expression.type) {
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node, environment);
+        return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node, environment);
+        return this.interpretBinaryExpression(node);
       case 'UpdateExpression':
-        return this.interpretUpdateExpression(node.expression, environment);
+        return this.interpretUpdateExpression(node.expression);
       case 'CallExpression':
-        return this.interpretCallExpression(node.expression, environment);
+        return this.interpretCallExpression(node.expression);
       case 'MemberExpression':
-        return this.interpretMemberExpression(node.expression, environment);
+        return this.interpretMemberExpression(node.expression);
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
     }
   }
 
-  interpretAssignmentExpression(node, environment) {
+  interpretAssignmentExpression(node) {
     if (this.debugging) console.log("assignment expression");
     if (this.debugging) console.log(node);
 
     // check if the assignment is to an object property
     if (node.expression.left.type === 'MemberExpression') {
       // we update the property
-      this.handleMemberExpressionAssignment(node, environment);
+      this.handleMemberExpressionAssignment(node);
     } else {
       // we update the variable
-      this.handleVariableAssignment(node, environment);
+      this.handleVariableAssignment(node);
     }
   }
 
-  handleMemberExpressionAssignment(node, environment) {
+  handleMemberExpressionAssignment(node) {
     const identifier = node.expression.left.object.name;
     const operator = node.expression.operator;
 
-    const property = this.interpretExpression(node.expression.left.property, environment);
+    const property = this.interpretExpression(node.expression.left.property);
 
-    const oldValue = this.lookupVariableValue(identifier, environment)[property];
-    const value = this.interpretExpression(node.expression.right, environment);
+    const oldValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment())[property];
+    const value = this.interpretExpression(node.expression.right);
 
     let newValue = null;
     if (operator === "=") newValue = value;
@@ -353,15 +393,15 @@ export class Interpreter {
       console.error("unknown operator: " + operator);
     }
 
-    this.updateVariableProperty(identifier, property, newValue, environment); // identifier[property] = value;
+    this.updateVariableProperty(identifier, property, newValue, this.getCurrentEnvironment()); // identifier[property] = value;
   }
 
-  handleVariableAssignment(node, environment) {
+  handleVariableAssignment(node) {
     const varName = node.expression.left.name;
-    const value = this.interpretExpression(node.expression.right, environment);
+    const value = this.interpretExpression(node.expression.right);
     const operator = node.expression.operator;
 
-    const oldValue = this.lookupVariableValue(varName, environment);
+    const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
     let newValue = null;
 
     if (operator === "=") newValue = value;
@@ -380,15 +420,15 @@ export class Interpreter {
       console.error("unknown operator: " + operator);
     }
     
-    this.updateVariableValue(varName, newValue, environment);
+    this.updateVariableValue(varName, newValue, this.getCurrentEnvironment());
   }
 
-  interpretBinaryExpression(node, environment) {
+  interpretBinaryExpression(node) {
     if (this.debugging) console.log("binary expression");
     if (this.debugging) console.log(node);
 
-    const leftValue = this.interpretExpression(node.left, environment);
-    const rightValue = this.interpretExpression(node.right, environment);
+    const leftValue = this.interpretExpression(node.left);
+    const rightValue = this.interpretExpression(node.right);
     const operator = node.operator;
 
     const result = this.evaluateBinaryExpression(leftValue, rightValue, operator);
@@ -398,11 +438,11 @@ export class Interpreter {
 
   interpretLogicalExpression() {}
 
-  interpretUnaryExpression(node, environment) {
+  interpretUnaryExpression(node) {
     if (this.debugging) console.log("unary expression");
     if (this.debugging) console.log(node);
 
-    const value = this.interpretExpression(node.argument, environment);
+    const value = this.interpretExpression(node.argument);
     const operator = node.operator;
 
     if (operator === "!") return !value;
@@ -416,56 +456,56 @@ export class Interpreter {
     }
   }
 
-  interpretUpdateExpression(node, environment) {
+  interpretUpdateExpression(node) {
     if (this.debugging) console.log("update expression");
     if (this.debugging) console.log(node);
 
     if (node.argument.type === 'MemberExpression') {
       // update the array or object property
-      this.handleUpdateMemberExpression(node, environment);
+      this.handleUpdateMemberExpression(node);
     } else {
       // update the variable
-      this.handleUpdateVariableExpression(node, environment);
+      this.handleUpdateVariableExpression(node);
     }
   }
 
-  handleUpdateMemberExpression(node, environment) {
+  handleUpdateMemberExpression(node) {
     const identifier = node.argument.object.name;
     const operator = node.operator;
-    const property = this.interpretExpression(node.argument.property, environment);
+    const property = this.interpretExpression(node.argument.property);
 
-    let value = this.lookupVariableValue(identifier, environment)[property];
+    let value = this.lookupVariableValue(identifier, this.getCurrentEnvironment())[property];
     if (operator === "++") value++;
     else if (operator === "--") value--;
     else console.error("weird error, operator not found");
 
-    this.updateVariableProperty(identifier, property, value, environment); // identifier[property] = value;
+    this.updateVariableProperty(identifier, property, value, this.getCurrentEnvironment()); // identifier[property] = value;
   }
 
-  handleUpdateVariableExpression(node, environment) {
+  handleUpdateVariableExpression(node) {
     const varName = node.argument.name;
     const operator = node.operator;
-    let value = this.lookupVariableValue(varName, environment);
+    let value = this.lookupVariableValue(varName, this.getCurrentEnvironment());
 
     if (operator === "++") value++;
     else if (operator === "--") value--;
     else console.error("weird error, operator not found");
 
-    this.updateVariableValue(varName, value, environment);
+    this.updateVariableValue(varName, value, this.getCurrentEnvironment());
   }
 
-  interpretCallExpression(node, environment) {
+  interpretCallExpression(node) {
     if (this.debugging) console.log("call expression");
     if (this.debugging) console.log(node);
     
     // check if the function is a built-in function
-    if (this.handleStandardFunctions(node, environment)) return;
+    if (this.handleStandardFunctions(node)) return;
 
     // fetch the values of each argument
     const callArguments = node.arguments;
     const argumentValues = [];
     for (let i = 0; i < callArguments.length; i++) {
-      argumentValues.push(this.interpretExpression(callArguments[i], environment));
+      argumentValues.push(this.interpretExpression(callArguments[i]));
     }
 
     // fetch the function declaration
@@ -473,29 +513,33 @@ export class Interpreter {
 
     // create a new environment for the function
     const newEnvironment = this.createEnvironment(this.globalEnvironment);
+    this.addNewEnvironment(newEnvironment);
 
     // add the parameters to the environment (new variables with values of callArguments)
     for (let i = 0; i < functionDeclaration.parameters.length; i++) {
       const parameter = functionDeclaration.parameters[i];
       const parameterValue = argumentValues[i];
-      this.createVariable(parameter.name, parameterValue, newEnvironment);
+      this.createVariable(parameter.name, parameterValue);
     }
 
     // interpret the body of the function
-    this.interpretBlockStatement(functionDeclaration.body, newEnvironment);
+    this.interpretBlockStatement(functionDeclaration.body);
 
     // exit the environment
-    this.updateStateVariables(environment);
+    this.removeCurrentEnvironment();
+
+    // update the state variables to that of the parent environment
+    this.updateStateVariables(this.getCurrentEnvironment());
 
     // return the return value of the function (if any)
     return newEnvironment.returnValue;
   }
 
-  handleStandardFunctions(node, environment) {
+  handleStandardFunctions(node) {
     if (node.callee.type === 'MemberExpression') {
       if (node.callee.object.name === 'console') {
         if (node.callee.property.name === 'log') {
-          this.interpretConsoleLog(node, environment);
+          this.interpretConsoleLog(node);
           return true;
         }
       }
@@ -503,19 +547,19 @@ export class Interpreter {
     return false;
   }
 
-  interpretMemberExpression(node, environment) {
+  interpretMemberExpression(node) {
     if (this.debugging) console.log("member expression");
     if (this.debugging) console.log(node);
 
-    const object = this.interpretExpression(node.object, environment);
-    const property = this.interpretExpression(node.property, environment);
+    const object = this.interpretExpression(node.object);
+    const property = this.interpretExpression(node.property);
 
     return object[property];
   }
 
   interpretConditionalExpression() {}
 
-  interpretObjectExpression(node, environment) {
+  interpretObjectExpression(node) {
     if (this.debugging) console.log("object expression");
     if (this.debugging) console.log(node);
 
@@ -526,61 +570,61 @@ export class Interpreter {
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
       const key = property.key.name;
-      const value = this.interpretExpression(property.value, environment);
+      const value = this.interpretExpression(property.value);
       object[key] = value;
     }
 
     return object;
   }
 
-  interpretArrayExpression(node, environment) {
+  interpretArrayExpression(node) {
     if (this.debugging) console.log("array expression");
     if (this.debugging) console.log(node);
 
     const values = [];
     for (let i = 0; i < node.elements.length; i++) {
-      values.push(this.interpretExpression(node.elements[i], environment));
+      values.push(this.interpretExpression(node.elements[i]));
     }
 
     return values;
   }
 
-  interpretVariableDeclaration(node, environment) {
+  interpretVariableDeclaration(node) {
     if (this.debugging) console.log("variable declaration");
     if (this.debugging) console.log(node);
 
     for (let i = 0; i < node.declarations.length; i++) {
       const declaration = node.declarations[i];
       const varName = declaration.id.name;
-      const varVal = this.interpretExpression(declaration.init, environment);
+      const varVal = this.interpretExpression(declaration.init);
       const varType = declaration.init.type;
 
       if (varType === 'Literal') {                                   // variable is a literal
-        this.createVariable(varName, varVal, environment);
+        this.createVariable(varName, varVal);
       } else if (varType === 'Identifier') {                         // variable is an identifier
-        const value = this.lookupVariableValue(declaration.init.name, environment);
-        this.createVariable(varName, value, environment);
+        const value = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
+        this.createVariable(varName, value);
       } else if (varType === 'BinaryExpression') {                   // variable is a binary expression
-        const value = this.interpretExpression(declaration.init, environment);
-        this.createVariable(varName, value, environment);
+        const value = this.interpretExpression(declaration.init);
+        this.createVariable(varName, value);
       } else if (varType === 'UnaryExpression') {                    // variable is a unary expression
-        const value = this.interpretExpression(declaration.init, environment);
-        this.createVariable(varName, value, environment);
+        const value = this.interpretExpression(declaration.init);
+        this.createVariable(varName, value);
       } else if (varType === 'CallExpression') {                     // variable is a function call
-        const value = this.interpretExpression(declaration.init, environment);
-        this.createVariable(varName, value, environment);
+        const value = this.interpretExpression(declaration.init);
+        this.createVariable(varName, value);
       } else if (varType === 'ArrayExpression') {                    // variable is an array
-        this.createArrayVariable(varName, varVal, environment);
+        this.createArrayVariable(varName, varVal);
       } else if (varType === 'ObjectExpression') {                   // variable is an object
-        this.createObjectVariable(varName, varVal, environment);
+        this.createObjectVariable(varName, varVal);
       } else if (varType === 'MemberExpression') {                   // variable is an array or object property
         // check type of value and create the variable accordingly
         if (Array.isArray(varVal)) {
-          this.createArrayVariable(varName, varVal, environment);
+          this.createArrayVariable(varName, varVal);
         } else if (typeof varVal === 'object') {
-          this.createObjectVariable(varName, varVal, environment);
+          this.createObjectVariable(varName, varVal);
         } else {
-          this.createVariable(varName, varVal, environment);
+          this.createVariable(varName, varVal);
         }
       } else {
         console.error("unknown variable type: " + declaration.init.type);
@@ -601,113 +645,128 @@ export class Interpreter {
     this.functionDeclarations.push(functionDeclaration);
   }
 
-  interpretBlockStatement(node, environment) {
+  interpretBlockStatement(node) {
     if (this.debugging) console.log("block statement");
 
     for (let i = 0; i < node.body.length; i++) {
-      this.executeNodeType(node.body[i], environment);
+      this.executeNodeType(node.body[i]);
     }
   }
 
-  interpretIfStatement(node, environment) {
+  interpretIfStatement(node) {
     if (this.debugging) console.log("if statement");
     if (this.debugging) console.log(node);
 
     // interpret the conditional expression
-    const test = this.interpretExpression(node.test, environment);
+    const test = this.interpretExpression(node.test);
     // interpret the consequent if the conditional expression is true
     if (test) {
       if (this.debugging) console.log("test is true");
-      this.interpretBlockStatement(node.consequent, environment);
+
+      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+      this.addNewEnvironment(newEnvironment); // enter a new environment
+
+      this.interpretBlockStatement(node.consequent);
+
+      this.removeCurrentEnvironment(); // exit the environment
     }
   }
 
-  interpretForStatement(node, environment) {
+  interpretForStatement(node) {
     if (this.debugging) console.log("for statement");
     if (this.debugging) console.log(node);
 
-    const newScope = this.createEnvironment(environment);      // enter a new environment
-    this.interpretVariableDeclaration(node.init, newScope);    // setup variables in the for loop
+    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+    this.addNewEnvironment(newEnvironment);
+    this.interpretVariableDeclaration(node.init);    // setup variables in the for loop
 
     // interpret the conditional expression
-    while (this.interpretExpression(node.test, newScope)) {
-      this.interpretBlockStatement(node.body, newScope);       // interpret the body of the for loop
-      this.interpretUpdateExpression(node.update, newScope);   // interpret the update expression
+    while (this.interpretExpression(node.test)) {
+      this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+      this.interpretUpdateExpression(node.update);   // interpret the update expression
     }
 
     // exit the environment
-    this.updateStateVariables(environment);
+    this.removeCurrentEnvironment();
+    this.updateStateVariables(this.getCurrentEnvironment());
   }
 
-  interpretWhileStatement(node, environment) {
+  interpretWhileStatement(node) {
     if (this.debugging) console.log("while statement");
     if (this.debugging) console.log(node);
 
-    const newScope = this.createEnvironment(environment);      // enter a new environment
+    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+    this.addNewEnvironment(newEnvironment);
 
     // interpret the conditional expression
-    while (this.interpretExpression(node.test, newScope)) {
-      this.interpretBlockStatement(node.body, newScope);       // interpret the body of the for loop
+    while (this.interpretExpression(node.test)) {
+      this.interpretBlockStatement(node.body);       // interpret the body of the for loop
     }
 
     // exit the environment
-    this.updateStateVariables(environment);
+    this.removeCurrentEnvironment();
+    this.updateStateVariables(this.getCurrentEnvironment());
   }
 
-  interpretDoWhileStatement(node, environment) {
+  interpretDoWhileStatement(node) {
     if (this.debugging) console.log("do while statement");
     if (this.debugging) console.log(node);
 
-    const newScope = this.createEnvironment(environment);      // enter a new environment
+    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+    this.addNewEnvironment(newEnvironment);
 
     // interpret the iteration
     do {
-      this.interpretBlockStatement(node.body, newScope);       // interpret the body of the for loop
-    } while (this.interpretExpression(node.test, newScope));
+      this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+    } while (this.interpretExpression(node.test));
 
     // exit the environment
-    this.updateStateVariables(environment);
+    this.removeCurrentEnvironment();
+    this.updateStateVariables(this.getCurrentEnvironment());
   }
 
-  interpretSwitchStatement(node, environment) {
+  interpretSwitchStatement(node) {
     if (this.debugging) console.log("switch statement");
     if (this.debugging) console.log(node);
 
-    const newScope = this.createEnvironment(environment);      // enter a new environment
+    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+    this.addNewEnvironment(newEnvironment);
 
-    const value = this.interpretExpression(node.discriminant, newScope);
+    const value = this.interpretExpression(node.discriminant);
 
     for (let i = 0; i < node.cases.length; i++) {
       const caseNode = node.cases[i];
-      const test = this.interpretExpression(caseNode.test, newScope);
+      const test = this.interpretExpression(caseNode.test);
 
       if (test === null || test === value) {  // if the test is null, it is the default case
         // interpret the body of the case
         for (let i = 0; i < caseNode.consequent.length; i++) {
-          this.executeNodeType(caseNode.consequent[i], newScope);
+          this.executeNodeType(caseNode.consequent[i]);
         }
         break;
       }
     }
 
     // exit the environment
-    this.updateStateVariables(environment);
+    this.removeCurrentEnvironment();
+    this.updateStateVariables(this.getCurrentEnvironment());
   }
 
-  interpretReturnStatement(node, environment) {
+  interpretReturnStatement(node) {
     if (this.debugging) console.log("return statement");
     if (this.debugging) console.log(node);
 
-    environment.returnValue = this.interpretExpression(node.argument, environment);
+    const environment = this.getCurrentEnvironment()
+    environment.returnValue = this.interpretExpression(node.argument);
   }
 
   /* STANDARD FUNCTIONS */
 
-  interpretConsoleLog(node, environment) {
+  interpretConsoleLog(node) {
     if (this.debugging) console.log("console log");
     if (this.debugging) console.log(node);
 
-    const argument = this.interpretExpression(node.arguments[0], environment);
+    const argument = this.interpretExpression(node.arguments[0]);
     this.updateCallback({ command: 'consoleLog', argument: argument });
   }
 
