@@ -8,7 +8,10 @@ self.addEventListener('message', (e) => {
     interpreter = new Interpreter(e.data.code, self.postMessage.bind(self));
   }
 
-  if (e.data.command === 'interpretAll') {
+  if (e.data.command === 'resetInterpreter') {
+    interpreter.clearInternalState();
+    interpreter.setParsedCode(e.data.code);
+  } else if (e.data.command === 'interpretAll') {
     interpreter.interpretAllInstructions();
   } else if (e.data.command === 'interpretNext') {
     interpreter.interpretNextInstruction();

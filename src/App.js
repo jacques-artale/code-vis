@@ -42,6 +42,7 @@ function App() {
     
     if (parsedCode !== '') {
       setLog([]); // Clear the console
+      worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
       worker.postMessage({ command: 'interpretAll', code: parsedCode });
     }
   }

@@ -20,14 +20,19 @@ export class Interpreter {
     this.updateCallback = updateCallback;
 
     this.globalEnvironment = this.createEnvironment(null);
-    this.currentExecutingEnvironment = this.globalEnvironment;
-
     this.environmentStack.push(this.globalEnvironment);
   }
 
   clearInternalState() {
     this.globalEnvironment = this.createEnvironment(null);
     this.functionDeclarations = [];
+    this.nextExecutingNode = 0;
+    this.environmentStack = [];
+    this.environmentStack.push(this.globalEnvironment);
+  }
+
+  setParsedCode(parsedCode) {
+    this.parsedCode = parsedCode;
   }
 
   /*
