@@ -4,7 +4,6 @@ import { Interpreter } from '../src/modules/Interpreter';
 let variables = [];
 let arrayVariables = [];
 let log = [];
-let parsedCode = '';
 
 function updateVariables(data) {
   if (data.command === 'updateVariables') {
@@ -22,7 +21,6 @@ beforeEach(() => {
   variables = [];
   arrayVariables = [];
   log = [];
-  parsedCode = '';
 });
 
 describe('Declarations', () => {
@@ -79,6 +77,15 @@ describe('Variable assignment', () => {
     expect(variables).toEqual([['a', -1]]);
   });
 
+  test('Assign variable to variable', () => {
+    const code = 'var a = 1; var b = a;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['a', 1]);
+    expect(variables).toContainEqual(['b', 1]);
+  });
+
   test('Arithmetic operations of variables assignment to variable', () => {
     const operations = [
       { code: 'var a = 1; var b = a;', expected: [['a', 1], ['b', 1]] },
@@ -105,6 +112,15 @@ describe('Variable assignment', () => {
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['b', 1]]);
+  });
+
+  test('Assign object property to variable', () => {
+    const code = 'var a = {b: 1}; var c = a.b;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['a', {b: 1}]);
+    expect(variables).toContainEqual(['c', 1]);
   });
 
   test('Assign array to variable', () => {});   // TODO: Implement
@@ -139,6 +155,14 @@ describe('Array assignment', () => {
     expect(arrayVariables).toEqual([['a', [-1, 2, 3]]]);
   });
 
+  test('Assign variable to array', () => {
+    const code = 'var a = 1; var b = [3, 3, 3]; b[0] = a;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
+  });
+
   test('Assign function call to array', () => {
     const code = 'function a() { return 1; } var b = [3, 3, 3]; b[0] = a();';
     const parsedCode = buildAst(code);
@@ -148,7 +172,65 @@ describe('Array assignment', () => {
   });
 });
 
-describe('Object assignment', () => {});
+describe('Object assignment', () => {
+  test('Assign function call to object', () => {
+    const code = 'function a() { return {b: 1}; } var c = a();';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['c', {b: 1}]]);
+  });
+
+  test('Assign value to object property', () => {
+    const code = 'var a = {b: 1}; a.b = 2;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['a', {b: 2}]]);
+  });
+
+  test('Assign object variable to object', () => {
+    const code = 'var a = {b: 1}; var c = a;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['a', {b: 1}]);
+    expect(variables).toContainEqual(['c', {b: 1}]);
+  });
+
+  test('Assign variable to object property', () => {
+    const code = 'var a = 1; var b = {c: 2}; b.c = a;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['a', 1], ['b', {c: 1}]]);
+  });
+
+  test('Assign array to object property', () => {
+    const code = 'var a = [1, 2, 3]; var b = {c: 2}; b.c = a;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
+    expect(variables).toEqual([['b', {c: [1, 2, 3]}]]);
+  });
+
+  test('Assign object to object property', () => {
+    const code = 'var a = {b: 1}; var c = {d: 2}; c.d = a;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['a', {b: 1}], ['c', {d: {b: 1}}]]);
+  });
+
+  test('Assign function call to object property', () => {
+    const code = 'function a() { return 1; } var b = {c: 2}; b.c = a();';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['b', {c: 1}]]);
+  });
+});
 
 describe('Variable access', () => {});
 describe('Array access', () => {});

@@ -370,11 +370,11 @@ export class Interpreter {
   }
 
   handleMemberExpressionAssignment(node) {
-    const identifier = node.expression.left.object.name;
+    const leftExpression = node.expression.left;
+    const identifier = leftExpression.object.name;
     const operator = node.expression.operator;
 
-    const property = this.interpretExpression(node.expression.left.property);
-
+    const property = this.handleMemberProperty(leftExpression.property);
     const oldValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment())[property];
     const value = this.interpretExpression(node.expression.right);
 
@@ -396,6 +396,14 @@ export class Interpreter {
     }
 
     this.updateVariableProperty(identifier, property, newValue, this.getCurrentEnvironment()); // identifier[property] = value;
+  }
+
+  handleMemberProperty(node) {
+    if (node.type === 'Identifier') { // [object].[property] is an identifier
+      return node.name;
+    } else {
+      return this.interpretExpression(node);
+    }
   }
 
   handleVariableAssignment(node) {
@@ -554,7 +562,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     const object = this.interpretExpression(node.object);
-    const property = this.interpretExpression(node.property);
+    const property = this.handleMemberProperty(node.property);
 
     return object[property];
   }

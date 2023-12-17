@@ -18,4 +18,4 @@ As of now, the project is in its initial development phase and includes:
 
 ## To run
 `npm start` runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Open [http://localhost:8080](http://localhost:8080) to view it in your browser.
