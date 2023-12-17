@@ -299,11 +299,55 @@ describe('Object assignment', () => {
   });
 });
 
-describe('Function declaration', () => {});
-describe('Function call', () => {});
+describe('Function call', () => {
+  test('Function call', () => {
+    const code = 'function a() { return 1; } var b = a();';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['b', 1]]);
+  });
+
+  test('Function call with argument', () => {
+    const code = 'function a(b) { return b; } var c = a(1);';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toEqual([['c', 1]]);
+  });
+
+  test('Function call with multiple arguments', () => {
+    const code = 'function a(b, c) { return b + c; } var d = a(1, 2);';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['d', 3]);
+  });
+
+  test('Function call to standard library functions', () => {
+    const code = [
+      { code: 'console.log("Hello world");', expected: ['Hello world'] },
+      { code: 'console.log(1);', expected: [1] },
+    ];
+    code.forEach(({ code, expected }) => {
+      log = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(log).toEqual(expected);
+    });
+  });
+});
+
 describe('If statement', () => {});
 describe('While statement', () => {});
 describe('For statement', () => {});
 describe('Do-while statement', () => {});
+describe('Switch statement', () => {});
 
 describe('Scope', () => {});
+
+describe('Error handling', () => {});
+
+describe('Full programs', () => {});
