@@ -237,6 +237,22 @@ describe('Array assignment', () => {
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
   });
+
+  test('Assign array to array', () => {
+    const code = 'var a = [1, 2, 3]; var b = [4, 5, 6]; a[0] = b;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(arrayVariables).toEqual([['a', [[4, 5, 6], 2, 3]], ['b', [4, 5, 6]]]);
+  });
+
+  test('Assign value to multidimensional array', () => {
+    const code = 'var a = [[1, 2, 3], [4, 5, 6]]; a[1][1] = 7;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(arrayVariables).toContainEqual(['a', [[1, 2, 3], [4, 7, 6]]]);
+  });
 });
 
 describe('Object assignment', () => {
@@ -297,6 +313,14 @@ describe('Object assignment', () => {
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['b', {c: 1}]]);
   });
+
+  test('Assign value to multidimensional object', () => {
+    const code = 'var a = {b: {c: 1}}; a.b.c = 2;';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['a', {b: {c: 2}}]);
+  });
 });
 
 describe('Function call', () => {
@@ -339,6 +363,8 @@ describe('Function call', () => {
     });
   });
 });
+
+describe('Update', () => {});
 
 describe('If statement', () => {});
 describe('While statement', () => {});

@@ -141,21 +141,29 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  updateVariableProperty(name, property, value, environment) {
+  updateVariableProperty(name, properties, value, environment) {
     // find and update the variable in the environment
     let currentEnvironment = environment;
     while (currentEnvironment !== null) {
       if (name in currentEnvironment.arrayVariables) {
-        currentEnvironment.arrayVariables[name][property] = value;
+        let variable = currentEnvironment.arrayVariables[name];
+        for (let i = 0; i < properties.length - 1; i++) {
+          variable = variable[properties[i]];
+        }
+        variable[properties[properties.length - 1]] = value;
         break;
       }
       if (name in currentEnvironment.objectVariables) {
-        currentEnvironment.objectVariables[name][property] = value;
+        let variable = currentEnvironment.objectVariables[name];
+        for (let i = 0; i < properties.length - 1; i++) {
+          variable = variable[properties[i]];
+        }
+        variable[properties[properties.length - 1]] = value;
         break;
       }
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
-
+  
     this.updateStateVariables(environment);
   }
 
@@ -371,11 +379,22 @@ export class Interpreter {
 
   handleMemberExpressionAssignment(node) {
     const leftExpression = node.expression.left;
-    const identifier = leftExpression.object.name;
     const operator = node.expression.operator;
 
-    const property = this.handleMemberProperty(leftExpression.property);
-    const oldValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment())[property];
+    let object = leftExpression;
+    let properties = [];
+    while (object.type === 'MemberExpression') {
+      properties.unshift(this.handleMemberProperty(object.property));
+      object = object.object;
+    }
+
+    const identifier = this.handleMemberProperty(object);
+    const objectValue = this.interpretExpression(object);
+    let oldValue = objectValue;
+    for (let i = 0; i < properties.length; i++) {
+      oldValue = oldValue[properties[i]];
+    }
+
     const value = this.interpretExpression(node.expression.right);
 
     let newValue = null;
@@ -395,7 +414,7 @@ export class Interpreter {
       console.error("unknown operator: " + operator);
     }
 
-    this.updateVariableProperty(identifier, property, newValue, this.getCurrentEnvironment()); // identifier[property] = value;
+    this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
   }
 
   handleMemberProperty(node) {
@@ -482,14 +501,14 @@ export class Interpreter {
   handleUpdateMemberExpression(node) {
     const identifier = node.argument.object.name;
     const operator = node.operator;
-    const property = this.interpretExpression(node.argument.property);
+    const property = this.interpretExpression(node.argument.property); // TODO: handle multiple properties
 
     let value = this.lookupVariableValue(identifier, this.getCurrentEnvironment())[property];
     if (operator === "++") value++;
     else if (operator === "--") value--;
     else console.error("weird error, operator not found");
 
-    this.updateVariableProperty(identifier, property, value, this.getCurrentEnvironment()); // identifier[property] = value;
+    this.updateVariableProperty(identifier, property, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
   }
 
   handleUpdateVariableExpression(node) {

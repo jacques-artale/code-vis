@@ -7,13 +7,13 @@ const ASTView = ({ code }) => {
   function getAST() {
     try {
       const parsedCode = buildAst(code);
-      return JSON.stringify(parsedCode, null, 2);
+      return JSON.stringify(parsedCode, null, 4);
     } catch (e) {
       const errorInfo = {
         message: e.message,
         stack: e.stack,
       };
-      return JSON.stringify(errorInfo, null, 2);
+      return JSON.stringify(errorInfo, null, 4);
     }
   }
 
