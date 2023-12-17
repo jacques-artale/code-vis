@@ -232,8 +232,44 @@ describe('Object assignment', () => {
   });
 });
 
-describe('Variable access', () => {});
-describe('Array access', () => {});
+describe('Array access', () => {
+  test('Array access', () => {
+    const code = 'var a = [1, 2, 3]; var b = a[0];';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
+    expect(variables).toEqual([['b', 1]]);
+  });
+
+  test('Array access of array', () => {
+    const code = 'var a = [[1, 2, 3], [4, 5, 6]]; var b = a[1][1];';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(arrayVariables).toEqual([['a', [[1, 2, 3], [4, 5, 6]]]]);
+    expect(variables).toEqual([['b', 5]]);
+  });
+
+  test('Array access of object', () => {
+    const code = 'var a = {b: [1,2,3]}; var c = a.b[1];';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['a', {b: [1, 2, 3]}]);
+    expect(variables).toContainEqual(['c', 2]);
+  });
+
+  test('Multidimensional array access of object property', () => {
+    const code = 'var a = {b: [[1, 2, 3], [4, 5, 6]]}; var c = a.b[1][1];';
+    const parsedCode = buildAst(code);
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();
+    expect(variables).toContainEqual(['a', {b: [[1, 2, 3], [4, 5, 6]]}]);
+    expect(variables).toContainEqual(['c', 5]);
+  });
+});
+
 describe('Object access', () => {});
 
 describe('Function declaration', () => {});
