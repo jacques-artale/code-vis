@@ -364,7 +364,112 @@ describe('Function call', () => {
   });
 });
 
-describe('Update', () => {});
+describe('Update', () => {
+  test('Update variable', () => {
+    const operations = [
+      { code: 'var a = 1; a++;', expected: [['a', 2]] },
+      { code: 'var a = 1; a--;', expected: [['a', 0]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Update array member', () => {
+    const operations = [
+      { code: 'var a = [1, 2, 3]; a[0]++;', expected: [['a', [2, 2, 3]]] },
+      { code: 'var a = [1, 2, 3]; a[0]--;', expected: [['a', [0, 2, 3]]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      arrayVariables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(arrayVariables).toEqual(expected);
+    });
+  });
+
+  test('Update object property', () => {
+    const operations = [
+      { code: 'var a = {b: 1}; a.b++;', expected: [['a', {b: 2}]] },
+      { code: 'var a = {b: 1}; a.b--;', expected: [['a', {b: 0}]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Update two-dimensional array member', () => {
+    const operations = [
+      { code: 'var a = [[1, 2, 3], [4, 5, 6]]; a[1][1]++;', expected: [['a', [[1, 2, 3], [4, 6, 6]]]] },
+      { code: 'var a = [[1, 2, 3], [4, 5, 6]]; a[1][1]--;', expected: [['a', [[1, 2, 3], [4, 4, 6]]]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      arrayVariables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(arrayVariables).toEqual(expected);
+    });
+  });
+
+  test('Update two-dimensional object property', () => {
+    const operations = [
+      { code: 'var a = {b: {c: 1}}; a.b.c++;', expected: [['a', {b: {c: 2}}]] },
+      { code: 'var a = {b: {c: 1}}; a.b.c--;', expected: [['a', {b: {c: 0}}]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Update three-dimensional array member', () => {
+    const operations = [
+      { code: 'var a = [[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]]]; a[1][1][1]++;', expected: [['a', [[[1,2,3], [4,5,6]], [[7,8,9], [10,12,12]]]]] },
+      { code: 'var a = [[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]]]; a[1][1][1]--;', expected: [['a', [[[1,2,3], [4,5,6]], [[7,8,9], [10,10,12]]]]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      arrayVariables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(arrayVariables).toEqual(expected);
+    });
+  });
+
+  test('Update three-dimensional object property', () => {
+    const operations = [
+      { code: 'var a = {b: {c: {d: 1}}}; a.b.c.d++;', expected: [['a', {b: {c: {d: 2}}}]] },
+      { code: 'var a = {b: {c: {d: 1}}}; a.b.c.d--;', expected: [['a', {b: {c: {d: 0}}}]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+});
 
 describe('If statement', () => {});
 describe('While statement', () => {});

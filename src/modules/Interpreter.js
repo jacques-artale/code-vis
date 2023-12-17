@@ -381,6 +381,7 @@ export class Interpreter {
     const leftExpression = node.expression.left;
     const operator = node.expression.operator;
 
+    // get the object we are updating
     let object = leftExpression;
     let properties = [];
     while (object.type === 'MemberExpression') {
@@ -389,14 +390,16 @@ export class Interpreter {
     }
 
     const identifier = this.handleMemberProperty(object);
+
+    // get the current value of the property we are updating
     const objectValue = this.interpretExpression(object);
     let oldValue = objectValue;
     for (let i = 0; i < properties.length; i++) {
       oldValue = oldValue[properties[i]];
     }
-
     const value = this.interpretExpression(node.expression.right);
 
+    // update
     let newValue = null;
     if (operator === "=") newValue = value;
     else if (operator === "+=") newValue = oldValue + value;
@@ -499,16 +502,30 @@ export class Interpreter {
   }
 
   handleUpdateMemberExpression(node) {
-    const identifier = node.argument.object.name;
-    const operator = node.operator;
-    const property = this.interpretExpression(node.argument.property); // TODO: handle multiple properties
+    // get the object we are updating
+    let object = node.argument;
+    let properties = [];
+    while (object.type === 'MemberExpression') {
+      properties.unshift(this.handleMemberProperty(object.property));
+      object = object.object;
+    }
 
-    let value = this.lookupVariableValue(identifier, this.getCurrentEnvironment())[property];
+    const identifier = this.handleMemberProperty(object);
+    const operator = node.operator;
+
+    // get the current value of the property we are updating
+    let objectValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
+    let value = objectValue;
+    for (let i = 0; i < properties.length; i++) {
+      value = value[properties[i]];
+    }
+
+    // update
     if (operator === "++") value++;
     else if (operator === "--") value--;
     else console.error("weird error, operator not found");
 
-    this.updateVariableProperty(identifier, property, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
+    this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
   }
 
   handleUpdateVariableExpression(node) {
