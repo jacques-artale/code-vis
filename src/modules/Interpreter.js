@@ -284,6 +284,8 @@ export class Interpreter {
         return this.interpretCallExpression(node);
       case 'MemberExpression':
         return this.interpretMemberExpression(node);
+      case 'UpdateExpression':
+        return this.interpretUpdateExpression(node);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -503,10 +505,10 @@ export class Interpreter {
 
     if (node.argument.type === 'MemberExpression') {
       // update the array or object property
-      this.handleUpdateMemberExpression(node);
+      return this.handleUpdateMemberExpression(node);
     } else {
       // update the variable
-      this.handleUpdateVariableExpression(node);
+      return this.handleUpdateVariableExpression(node);
     }
   }
 
@@ -539,6 +541,8 @@ export class Interpreter {
     else console.error("weird error, operator not found");
 
     this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
+
+    return value;
   }
 
   handleUpdateVariableExpression(node) {
@@ -551,6 +555,8 @@ export class Interpreter {
     else console.error("weird error, operator not found");
 
     this.updateVariableValue(varName, value, this.getCurrentEnvironment());
+
+    return value;
   }
 
   interpretCallExpression(node) {
