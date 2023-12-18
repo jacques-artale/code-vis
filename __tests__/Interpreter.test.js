@@ -425,6 +425,25 @@ describe('Update', () => {
     });
   });
 
+  test('Update two-dimensional array member with variable', () => {
+    const operations = [
+      { code: 'var a = [[1, 2, 3], [4, 5, 6]]; var b = 1; a[b][1]++;', expVars: [['b', 1]], expArrVars: [['a', [[1, 2, 3], [4, 6, 6]]]] },
+      { code: 'var a = [[1, 2, 3], [4, 5, 6]]; var b = 1; a[b][1]--;', expVars: [['b', 1]], expArrVars: [['a', [[1, 2, 3], [4, 4, 6]]]] },
+    ];
+    operations.forEach(({ code, expVars, expArrVars }) => {
+      variables = [];
+      arrayVariables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expVars.forEach(([name, value]) => {
+        expect(variables).toContainEqual([name, value]);
+      });
+      expect(arrayVariables).toEqual(expArrVars);
+    });
+  });
+
   test('Update two-dimensional object property', () => {
     const operations = [
       { code: 'var a = {b: {c: 1}}; a.b.c++;', expected: [['a', {b: {c: 2}}]] },
@@ -467,6 +486,47 @@ describe('Update', () => {
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Update array member with variable', () => {
+    const operations = [
+      { code: 'var a = [1,2,3]; var b = 0; a[b]++;', expVars: [['b', 0]], expArrVars: [['a', [2,2,3]]] },
+      { code: 'var a = [1,2,3]; var b = 0; a[b]--;', expVars: [['b', 0]], expArrVars: [['a', [0,2,3]]] },
+      { code: 'var a = [[1,2,3],[4,5,6]]; var b = 1; var c = 1; a[b][c]++;', expVars: [['b', 1], ['c', 1]], expArrVars: [['a', [[1,2,3],[4,6,6]]]] },
+      { code: 'var a = [[1,2,3],[4,5,6]]; var b = 1; var c = 1; a[b][c]--;', expVars: [['b', 1], ['c', 1]], expArrVars: [['a', [[1,2,3],[4,4,6]]]] },
+      { code: 'var a = [[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]]]; var b = 1; var c = 1; var d = 1; a[b][c][d]++;', expVars: [['b', 1], ['c', 1], ['d', 1]], expArrVars: [['a', [[[1,2,3],[4,5,6]], [[7,8,9],[10,12,12]]]]] },
+      { code: 'var a = [[[1,2,3],[4,5,6]], [[7,8,9],[10,11,12]]]; var b = 1; var c = 1; var d = 1; a[b][c][d]--;', expVars: [['b', 1], ['c', 1], ['d', 1]], expArrVars: [['a', [[[1,2,3],[4,5,6]], [[7,8,9],[10,10,12]]]]] },
+    ];
+    operations.forEach(({ code, expVars, expArrVars }) => {
+      variables = [];
+      arrayVariables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expVars);
+      expect(arrayVariables).toEqual(expArrVars);
+    });
+  });
+
+  test('Update object property with variable', () => {
+    const operations = [
+      { code: 'var a = {b: 1}; var c = "b"; a[c]++;', expVars: [['c', 'b'], ['a', {b: 2}]] },
+      { code: 'var a = {b: 1}; var c = "b"; a[c]--;', expVars: [['c', 'b'], ['a', {b: 0}]] },
+      { code: 'var a = {b: {c: 1}}; var d = "b"; var e = "c"; a[d][e]++;', expVars: [['d', 'b'], ['e', 'c'], ['a', {b: {c: 2}}]] },
+      { code: 'var a = {b: {c: 1}}; var d = "b"; var e = "c"; a[d][e]--;', expVars: [['d', 'b'], ['e', 'c'], ['a', {b: {c: 0}}]] },
+    ];
+    operations.forEach(({ code, expVars }) => {
+      variables = [];
+      arrayVariables = [];
+
+      const parsedCode = buildAst(code);
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expVars.forEach(([name, value]) => {
+        expect(variables).toContainEqual([name, value]);
+      });
     });
   });
 });

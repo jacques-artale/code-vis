@@ -74,7 +74,7 @@ export class Interpreter {
         return this.functionDeclarations[i];
       }
     }
-    console.error(`Expression interpreter error: Function ${name} not found`);
+    if (this.debugging) console.error(`Expression interpreter error: Function ${name} not found`);
     return null;
   }
 
@@ -115,7 +115,7 @@ export class Interpreter {
     if (environment.parentEnvironment !== null) {
       return this.lookupVariableValue(name, environment.parentEnvironment);
     }
-    console.error(`Expression interpreter error: Variable ${name} not found`);
+    if (this.debugging) console.error(`Expression interpreter error: Variable ${name} not found`);
     return null;
   }
 
@@ -389,7 +389,11 @@ export class Interpreter {
       object = object.object;
     }
 
-    const identifier = this.handleMemberProperty(object);
+    // TODO: handle this better as it could be something other than an identifier
+    let identifier = null;
+    if (object.type === 'Identifier') {
+      identifier = object.name;
+    }
 
     // get the current value of the property we are updating
     const objectValue = this.interpretExpression(object);
@@ -421,7 +425,12 @@ export class Interpreter {
   }
 
   handleMemberProperty(node) {
-    if (node.type === 'Identifier') { // [object].[property] is an identifier
+    if (node.type === 'Identifier') {
+      const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
+      if (value !== null) return value;
+      const functionDeclaration = this.lookupFunction(node.name);
+      if (functionDeclaration !== null) return functionDeclaration;
+      // if we get here then the identifier must be a property
       return node.name;
     } else {
       return this.interpretExpression(node);
@@ -510,7 +519,11 @@ export class Interpreter {
       object = object.object;
     }
 
-    const identifier = this.handleMemberProperty(object);
+    let identifier = null;
+    if (object.type === 'Identifier') {
+      identifier = object.name;
+    }
+
     const operator = node.operator;
 
     // get the current value of the property we are updating
