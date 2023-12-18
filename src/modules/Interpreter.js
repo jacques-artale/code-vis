@@ -479,7 +479,16 @@ export class Interpreter {
     return result;
   }
 
-  interpretLogicalExpression() {}
+  interpretLogicalExpression(node) {
+    if (this.debugging) console.log("logical expression");
+    if (this.debugging) console.log(node);
+
+    const leftValue = this.interpretExpression(node.left);
+    const rightValue = this.interpretExpression(node.right);
+    const operator = node.operator;
+
+    return this.evaluateBinaryExpression(leftValue, rightValue, operator);
+  }
 
   interpretUnaryExpression(node) {
     if (this.debugging) console.log("unary expression");
@@ -712,6 +721,7 @@ export class Interpreter {
 
   interpretBlockStatement(node) {
     if (this.debugging) console.log("block statement");
+    if (this.debugging) console.log(node);
 
     for (let i = 0; i < node.body.length; i++) {
       this.executeNodeType(node.body[i]);
@@ -734,6 +744,26 @@ export class Interpreter {
       this.interpretBlockStatement(node.consequent);
 
       this.removeCurrentEnvironment(); // exit the environment
+    } else {
+      if (this.debugging) console.log("test is false");
+
+      // interpret the alternate if it exists
+      if (node.alternate !== null) {
+        if (this.debugging) console.log("alternate exists");
+
+        if (node.alternate.type === 'IfStatement') {
+          // if else if ...
+          this.interpretIfStatement(node.alternate);
+        } else {
+          // else
+          const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+          this.addNewEnvironment(newEnvironment); // enter a new environment
+
+          this.interpretBlockStatement(node.alternate);
+
+          this.removeCurrentEnvironment(); // exit the environment
+        }
+      }
     }
   }
 

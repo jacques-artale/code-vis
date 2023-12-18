@@ -26,7 +26,7 @@ beforeEach(() => {
 describe('Declarations', () => {
   test('Declare variable', () => {
     const code = 'var a = 1;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', 1]]);
@@ -34,7 +34,7 @@ describe('Declarations', () => {
 
   test('Array declaration', () => {
     const code = 'var a = [1, 2, 3];';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
@@ -42,7 +42,7 @@ describe('Declarations', () => {
 
   test('Object declaration', () => {
     const code = 'var a = {b: 1, c: 2};';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', {b: 1, c: 2}]]);
@@ -52,7 +52,7 @@ describe('Declarations', () => {
 describe('Array access', () => {
   test('Array access', () => {
     const code = 'var a = [1, 2, 3]; var b = a[0];';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
@@ -61,7 +61,7 @@ describe('Array access', () => {
 
   test('Two-dimensional array access', () => {
     const code = 'var a = [[1, 2, 3], [4, 5, 6]]; var b = a[1][1];';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [[1, 2, 3], [4, 5, 6]]]]);
@@ -70,7 +70,7 @@ describe('Array access', () => {
 
   test('Three-dimensional array access', () => {
     const code = 'var a = [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]; var b = a[1][1][1];';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]]]);
@@ -81,7 +81,7 @@ describe('Array access', () => {
 describe('Object access', () => {
   test('Object property access', () => {
     const code = 'var a = {b: 1}; var c = a.b;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: 1}]);
@@ -90,7 +90,7 @@ describe('Object access', () => {
 
   test('Array access of object', () => {
     const code = 'var a = {b: [1,2,3]}; var c = a.b[1];';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: [1, 2, 3]}]);
@@ -99,7 +99,7 @@ describe('Object access', () => {
 
   test('Multidimensional array access of object property', () => {
     const code = 'var a = {b: [[1, 2, 3], [4, 5, 6]]}; var c = a.b[1][1];';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: [[1, 2, 3], [4, 5, 6]]}]);
@@ -108,7 +108,7 @@ describe('Object access', () => {
 
   test('Object access of object property', () => {
     const code = 'var a = {b: {c: 1}}; var d = a.b.c;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: {c: 1}}]);
@@ -129,7 +129,7 @@ describe('Variable assignment', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
@@ -138,7 +138,7 @@ describe('Variable assignment', () => {
 
   test('Assign unary expression to variable', () => {
     const code = 'var a = -1;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', -1]]);
@@ -146,7 +146,7 @@ describe('Variable assignment', () => {
 
   test('Assign variable to variable', () => {
     const code = 'var a = 1; var b = a;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', 1]);
@@ -166,7 +166,7 @@ describe('Variable assignment', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
@@ -175,7 +175,7 @@ describe('Variable assignment', () => {
 
   test('Assign function call to variable', () => {
     const code = 'function a() { return 1; } var b = a();';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['b', 1]]);
@@ -183,7 +183,7 @@ describe('Variable assignment', () => {
 
   test('Assign object property to variable', () => {
     const code = 'var a = {b: 1}; var c = a.b;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: 1}]);
@@ -207,7 +207,7 @@ describe('Array assignment', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(arrayVariables).toEqual(expected);
@@ -216,7 +216,7 @@ describe('Array assignment', () => {
 
   test('Assign unary expression to array', () => {
     const code = 'var a = [1, 2, 3]; a[0] = -1;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [-1, 2, 3]]]);
@@ -224,7 +224,7 @@ describe('Array assignment', () => {
 
   test('Assign variable to array', () => {
     const code = 'var a = 1; var b = [3, 3, 3]; b[0] = a;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
@@ -232,7 +232,7 @@ describe('Array assignment', () => {
 
   test('Assign function call to array', () => {
     const code = 'function a() { return 1; } var b = [3, 3, 3]; b[0] = a();';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
@@ -240,7 +240,7 @@ describe('Array assignment', () => {
 
   test('Assign array to array', () => {
     const code = 'var a = [1, 2, 3]; var b = [4, 5, 6]; a[0] = b;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [[4, 5, 6], 2, 3]], ['b', [4, 5, 6]]]);
@@ -248,7 +248,7 @@ describe('Array assignment', () => {
 
   test('Assign value to multidimensional array', () => {
     const code = 'var a = [[1, 2, 3], [4, 5, 6]]; a[1][1] = 7;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toContainEqual(['a', [[1, 2, 3], [4, 7, 6]]]);
@@ -258,7 +258,7 @@ describe('Array assignment', () => {
 describe('Object assignment', () => {
   test('Assign function call to object', () => {
     const code = 'function a() { return {b: 1}; } var c = a();';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['c', {b: 1}]]);
@@ -266,7 +266,7 @@ describe('Object assignment', () => {
 
   test('Assign value to object property', () => {
     const code = 'var a = {b: 1}; a.b = 2;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', {b: 2}]]);
@@ -274,7 +274,7 @@ describe('Object assignment', () => {
 
   test('Assign object variable to object', () => {
     const code = 'var a = {b: 1}; var c = a;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: 1}]);
@@ -283,7 +283,7 @@ describe('Object assignment', () => {
 
   test('Assign variable to object property', () => {
     const code = 'var a = 1; var b = {c: 2}; b.c = a;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', 1], ['b', {c: 1}]]);
@@ -291,7 +291,7 @@ describe('Object assignment', () => {
 
   test('Assign array to object property', () => {
     const code = 'var a = [1, 2, 3]; var b = {c: 2}; b.c = a;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
@@ -300,7 +300,7 @@ describe('Object assignment', () => {
 
   test('Assign object to object property', () => {
     const code = 'var a = {b: 1}; var c = {d: 2}; c.d = a;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['a', {b: 1}], ['c', {d: {b: 1}}]]);
@@ -308,7 +308,7 @@ describe('Object assignment', () => {
 
   test('Assign function call to object property', () => {
     const code = 'function a() { return 1; } var b = {c: 2}; b.c = a();';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['b', {c: 1}]]);
@@ -316,7 +316,7 @@ describe('Object assignment', () => {
 
   test('Assign value to multidimensional object', () => {
     const code = 'var a = {b: {c: 1}}; a.b.c = 2;';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['a', {b: {c: 2}}]);
@@ -326,7 +326,7 @@ describe('Object assignment', () => {
 describe('Function call', () => {
   test('Function call', () => {
     const code = 'function a() { return 1; } var b = a();';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['b', 1]]);
@@ -334,7 +334,7 @@ describe('Function call', () => {
 
   test('Function call with argument', () => {
     const code = 'function a(b) { return b; } var c = a(1);';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toEqual([['c', 1]]);
@@ -342,7 +342,7 @@ describe('Function call', () => {
 
   test('Function call with multiple arguments', () => {
     const code = 'function a(b, c) { return b + c; } var d = a(1, 2);';
-    const parsedCode = buildAst(code);
+    const parsedCode = buildAst(code).code;
     const interpreter = new Interpreter(parsedCode, updateVariables);
     interpreter.interpretAllInstructions();
     expect(variables).toContainEqual(['d', 3]);
@@ -358,7 +358,7 @@ describe('Function call', () => {
     code.forEach(({ code, expected }) => {
       log = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(log).toEqual(expected);
@@ -375,7 +375,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
@@ -390,7 +390,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(arrayVariables).toEqual(expected);
@@ -405,7 +405,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
@@ -420,7 +420,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(arrayVariables).toEqual(expected);
@@ -436,7 +436,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expVars.forEach(([name, value]) => {
@@ -454,7 +454,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
@@ -469,7 +469,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(arrayVariables).toEqual(expected);
@@ -484,7 +484,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expected);
@@ -504,7 +504,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expect(variables).toEqual(expVars);
@@ -523,7 +523,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code).code;
       const interpreter = new Interpreter(parsedCode, updateVariables);
       interpreter.interpretAllInstructions();
       expVars.forEach(([name, value]) => {
@@ -533,7 +533,206 @@ describe('Update', () => {
   });
 });
 
-describe('If statement', () => {});
+describe('if statement', () => {
+  test('if condition boolean', () => {
+    const operations = [
+      { code: 'var a = 0; if (true) { a = 1; }', expected: [['a', 1]] },
+      { code: 'var a = 0; if (false) { a = 1; }', expected: [['a', 0]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if unary condition boolean', () => {
+    const operations = [
+      { code: 'var a = 0; if (!true) { a = 1; }', expected: [['a', 0]] },
+      { code: 'var a = 0; if (!false) { a = 1; }', expected: [['a', 1]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if-else condition boolean', () => {
+    const operations = [
+      { code: 'var a = 0; if (true) { a = 1; } else { a = 2; }', expected: [['a', 1]] },
+      { code: 'var a = 0; if (false) { a = 1; } else { a = 2; }', expected: [['a', 2]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Nested if-else', () => {
+    const operations = [
+      { code: 'var a = 0; if (true) { if (true) { a = 1; } else { a = 2; } } else { a = 3; }', expected: [['a', 1]] },
+      { code: 'var a = 0; if (true) { if (false) { a = 1; } else { a = 2; } } else { a = 3; }', expected: [['a', 2]] },
+      { code: 'var a = 0; if (false) { if (true) { a = 1; } else { a = 2; } } else { a = 3; }', expected: [['a', 3]] },
+      { code: 'var a = 0; if (false) { if (false) { a = 1; } else { a = 2; } } else { a = 3; }', expected: [['a', 3]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if condition with boolean variable', () => {
+    const operations = [
+      { code: 'var a = true; var b = 0; if (a) { b = 1; }', expected: [['a', true], ['b', 1]] },
+      { code: 'var a = false; var b = 0; if (a) { b = 1; }', expected: [['a', false], ['b', 0]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expected.forEach(([name, value]) => {
+        expect(variables).toContainEqual([name, value]);
+      });
+    });
+  });
+
+  test('if-else condition with boolean variable', () => {
+    const operations = [
+      { code: 'var a = true; var b = 0; if (a) { b = 1; } else { b = 2; }', expected: [['a', true], ['b', 1]] },
+      { code: 'var a = false; var b = 0; if (a) { b = 1; } else { b = 2; }', expected: [['a', false], ['b', 2]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+
+      expected.forEach(([name, value]) => {
+        expect(variables).toContainEqual([name, value]);
+      });
+    });
+  });
+
+  test('if contition with array member access', () => {
+    const operations = [
+      { code: 'var a = [1, 2, 3]; var b = 0; if (a[0] === 1) { b = 1; }', expVar: [['b', 1]], expArr: [['a', [1, 2, 3]]] },
+      { code: 'var a = [1, 2, 3]; var b = 0; if (a[0] === 2) { b = 1; }', expVar: [['b', 0]], expArr: [['a', [1, 2, 3]]] },
+    ];
+    operations.forEach(({ code, expVar, expArr }) => {
+      variables = [];
+      arrayVariables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(arrayVariables).toEqual(expArr);
+      expect(variables).toEqual(expVar);
+    });
+  });
+
+  test('if condition with function call', () => {
+    const operations = [
+      { code: 'function a() { return true; } var b = 0; if (a()) { b = 1; }', expected: [['b', 1]] },
+      { code: 'function a() { return false; } var b = 0; if (a()) { b = 1; }', expected: [['b', 0]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if condition with arithmetic operation', () => {
+    const operations = [
+      { code: 'var a = 1; var b = 0; if (a + 1 === 2) { b = 1; }', expected: [['a', 1], ['b', 1]] },
+      { code: 'var a = 1; var b = 0; if (a + 1 === 3) { b = 1; }', expected: [['a', 1], ['b', 0]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if condition with boolean operation', () => {
+    const operations = [
+      { code: 'var a = true; var b = false; var c = 0; if (a && b) { c = 1; }', expected: [['a', true], ['b', false], ['c', 0]] },
+      { code: 'var a = true; var b = false; var c = 0; if (a || b) { c = 1; }', expected: [['a', true], ['b', false], ['c', 1]] },
+      { code: 'var a = true; var b = false; var c = 0; if (!(a && b) && (a || b)) { c = 1; }', expected: [['a', true], ['b', false], ['c', 1]] },
+      { code: 'var a = true; var b = 0; if (!b) { b = 1; }', expected: [['a', true], ['b', 1]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if-else-if condition', () => {
+    const operations = [
+      { code: 'var a = 0; if (a === 1) { a = 1; } else if (a === 0) { a = 2; }', expected: [['a', 2]] },
+      { code: 'var a = 1; if (a === 0) { a = 1; } else if (a === 1) { a = 2; }', expected: [['a', 2]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('if-else-if-else condition', () => {
+    const operations = [
+      { code: 'var a = 0; if (a === 0) { a = 1; } else if (a === 1) { a = 2; } else { a = 3; }', expected: [['a', 1]] },
+      { code: 'var a = 1; if (a === 0) { a = 1; } else if (a === 1) { a = 2; } else { a = 3; }', expected: [['a', 2]] },
+      { code: 'var a = 2; if (a === 0) { a = 1; } else if (a === 1) { a = 2; } else { a = 3; }', expected: [['a', 3]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+});
+
 describe('While statement', () => {});
 describe('For statement', () => {});
 describe('Do-while statement', () => {});
