@@ -10,7 +10,7 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 
 function App() {
-  const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]++;\n}\n');
+  const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]+;\n}\n');
   const [viewAST, setViewAST] = useState(false);
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
@@ -39,11 +39,15 @@ function App() {
 
   function simulateCode() {
     const parsedCode = buildAst(code);
+    if (parsedCode.type === 'error') {
+      alert(`Error parsing code: ${parsedCode.description} at line ${parsedCode.line}, column ${parsedCode.column}`);
+      return;
+    }
     
     if (parsedCode !== '') {
       setLog([]); // Clear the console
-      worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
-      worker.postMessage({ command: 'interpretAll', code: parsedCode });
+      worker.postMessage({ command: 'resetInterpreter', code: parsedCode.code });
+      worker.postMessage({ command: 'interpretAll', code: parsedCode.code });
     }
   }
 
@@ -51,7 +55,7 @@ function App() {
     const parsedCode = buildAst(code);
 
     if (parsedCode !== '') {
-      worker.postMessage({ command: 'interpretNext', code: parsedCode });
+      worker.postMessage({ command: 'interpretNext', code: parsedCode.code });
     }
   }
 

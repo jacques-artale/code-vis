@@ -1,17 +1,12 @@
 import { parseScript } from 'esprima';
 
 function buildAst(code) {
-  const parsedCode = JSON.parse(parseCode(code));
-  return parsedCode;
-}
-
-function parseCode(code) {
   try {
-    const parsedCode = parseScript(code);
-    return JSON.stringify(parsedCode, null, 2);
+    const ast = parseScript(code);
+    return { type: 'parsed', code: ast};
   } catch (e) {
     console.log("Error parsing code: ", e);
-    return e;
+    return { type: 'error', description: e.description, line: e.lineNumber, column: e.column };
   }
 }
 

@@ -7,7 +7,10 @@ const ASTView = ({ code }) => {
   function getAST() {
     try {
       const parsedCode = buildAst(code);
-      return JSON.stringify(parsedCode, null, 4);
+      if (parsedCode.type === 'error') {
+        return JSON.stringify(parsedCode, null, 4);
+      }
+      return JSON.stringify(parsedCode.code, null, 4);
     } catch (e) {
       const errorInfo = {
         message: e.message,
