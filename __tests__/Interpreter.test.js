@@ -76,6 +76,30 @@ describe('Array access', () => {
     expect(arrayVariables).toEqual([['a', [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]]]);
     expect(variables).toEqual([['b', 11]]);
   });
+
+  test('Array access with variable', () => {
+    const code = 'var a = [1, 2, 3]; var b = 1; var c = a[b];';
+    const parsedCode = buildAst(code).code;
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();    
+    expect(variables).toEqual([['b', 1], ['c', 2]]);
+  });
+
+  test('Array access of function call', () => {
+    const code = 'function a() { return [1, 2, 3]; } var b = a()[1];';
+    const parsedCode = buildAst(code).code;
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();    
+    expect(variables).toEqual([['b', 2]]);
+  });
+
+  test('Array access of function call with variable', () => {
+    const code = 'function a() { return [1, 2, 3]; } var b = 1; var c = a()[b];';
+    const parsedCode = buildAst(code).code;
+    const interpreter = new Interpreter(parsedCode, updateVariables);
+    interpreter.interpretAllInstructions();    
+    expect(variables).toEqual([['b', 1], ['c', 2]]);
+  });
 });
 
 describe('Object access', () => {
@@ -733,7 +757,114 @@ describe('if statement', () => {
   });
 });
 
-describe('While statement', () => {});
+describe('While statement', () => {
+  test('while condition with boolean variable', () => {
+    const operations = [
+      { code: 'var a = true; while (a) { a = false; }', expected: [['a', false]] },
+      { code: 'var a = false; while (a) { a = true; }', expected: [['a', false]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('while unary condition with boolean variable', () => {
+    const operations = [
+      { code: 'var a = true; while (!a) { a = false; }', expected: [['a', true]] },
+      { code: 'var a = false; while (!a) { a = true; }', expected: [['a', true]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('while condition with array member access', () => {
+    const operations = [
+      { code: 'var a = [1, 2, 3]; var i = 0; while (a[i] === 1) { i++; }', expVars: [['i', 1]], expArrVars: [['a', [1, 2, 3]]] },
+      { code: 'var a = [1, 2, 3]; var i = 0; while (a[i] === 2) { i++; }', expVars: [['i', 0]], expArrVars: [['a', [1, 2, 3]]] },
+    ];
+    operations.forEach(({ code, expVars, expArrVars }) => {
+      variables = [];
+      arrayVariables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(arrayVariables).toEqual(expArrVars);
+      expect(variables).toEqual(expVars);
+    });
+  });
+
+  test('while condition with function call', () => {
+    const operations = [
+      { code: 'var cond = true; function a() { return cond; } while (a()) { cond = false; }', expected: [['cond', false]] },
+      { code: 'var cond = false; function a() { return cond; } while (a()) { a = true; }', expected: [['cond', false]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('while condition with arithmetic operation', () => {
+    const operations = [
+      { code: 'var a = 1; while (a + 1 === 2) { a++; }', expected: [['a', 2]] },
+      { code: 'var a = 1; while (a + 1 === 3) { a++; }', expected: [['a', 1]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('while condition with boolean operation', () => {
+    const operations = [
+      { code: 'var a = true; var b = false; while (a && b) { a = false; }', expected: [['a', true], ['b', false]] },
+      { code: 'var a = true; var b = false; while (a || b) { a = false; }', expected: [['a', false], ['b', false]] },
+      { code: 'var a = true; var b = false; while (!(a && b) && (a || b)) { a = false; }', expected: [['a', false], ['b', false]] },
+      { code: 'var a = true; var b = false; while (!b === a) { b = true; }', expected: [['a', true], ['b', true]] },
+      { code: 'var a = 5; var b = 10; while (a < b) { a++; }', expected: [['a', 10], ['b', 10]] },
+      { code: 'var a = 5; var b = 10; while (a > b) { a++; }', expected: [['a', 5], ['b', 10]] },
+      { code: 'var a = 5; var b = 10; while (a <= b) { a++; }', expected: [['a', 11], ['b', 10]] },
+      { code: 'var a = 5; var b = 10; while (a >= b) { a++; }', expected: [['a', 5], ['b', 10]] },
+      { code: 'var a = 5; var b = 10; while (a === b) { a++; }', expected: [['a', 5], ['b', 10]] },
+      { code: 'var a = 5; var b = 10; while (a !== b) { a++; }', expected: [['a', 10], ['b', 10]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
+});
+
 describe('For statement', () => {});
 describe('Do-while statement', () => {});
 describe('Switch statement', () => {});

@@ -255,8 +255,12 @@ export class Interpreter {
         return this.interpretConditionalExpression(node);
       case 'SwitchStatement':
         return this.interpretSwitchStatement(node);
+      case 'BreakStatement':
+        return 'break'; // do nothing
+      case 'EmptyStatement':
+        return; // do nothing
       default:
-        console.log('unrecognized node type');
+        console.log('unrecognized node type: ' + node.type);
     }
   }
 
@@ -724,8 +728,12 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     for (let i = 0; i < node.body.length; i++) {
-      this.executeNodeType(node.body[i]);
+      const result = this.executeNodeType(node.body[i]);
+      if (result === 'break') return result;
+      if (result === 'continue') return;
     }
+
+    return null;
   }
 
   interpretIfStatement(node) {
@@ -741,9 +749,10 @@ export class Interpreter {
       const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
       this.addNewEnvironment(newEnvironment); // enter a new environment
 
-      this.interpretBlockStatement(node.consequent);
+      const result = this.interpretBlockStatement(node.consequent);
 
       this.removeCurrentEnvironment(); // exit the environment
+      return result;
     } else {
       if (this.debugging) console.log("test is false");
 
@@ -759,9 +768,10 @@ export class Interpreter {
           const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
           this.addNewEnvironment(newEnvironment); // enter a new environment
 
-          this.interpretBlockStatement(node.alternate);
+          const result = this.interpretBlockStatement(node.alternate);
 
           this.removeCurrentEnvironment(); // exit the environment
+          return result;
         }
       }
     }
@@ -795,7 +805,8 @@ export class Interpreter {
 
     // interpret the conditional expression
     while (this.interpretExpression(node.test)) {
-      this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+      const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+      if (result === 'break') break;
     }
 
     // exit the environment
