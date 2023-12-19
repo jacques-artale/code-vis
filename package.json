@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "webpack serve --mode development --open --hot",
-    "build": "webpack --mode production",
+    "build": "npm install && webpack --mode production",
     "test": "jest --coverage",
     "eject": "react-scripts eject"
   },
