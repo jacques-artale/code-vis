@@ -856,17 +856,19 @@ export class Interpreter {
     if (this.debugging) console.log("do while statement");
     if (this.debugging) console.log(node);
 
-    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
-    this.addNewEnvironment(newEnvironment);
-
     // interpret the iteration
     do {
-      this.interpretBlockStatement(node.body);       // interpret the body of the for loop
-    } while (this.interpretExpression(node.test));
+      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+      this.addNewEnvironment(newEnvironment);
 
-    // exit the environment
-    this.removeCurrentEnvironment();
-    this.updateStateVariables(this.getCurrentEnvironment());
+      const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+
+      // exit the environment
+      this.removeCurrentEnvironment();
+      this.updateStateVariables(this.getCurrentEnvironment());
+
+      if (result === 'break') break;
+    } while (this.interpretExpression(node.test));
   }
 
   interpretSwitchStatement(node) {
