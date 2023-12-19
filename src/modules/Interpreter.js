@@ -80,7 +80,10 @@ export class Interpreter {
 
   createVariable(name, value) {
     const environment = this.getCurrentEnvironment();
-    if (name in environment.variables) return;
+    if (name in environment.variables) {
+      console.error(`Expression interpreter error: Variable ${name} already exists`);
+      return;
+    }
     environment.variables[name] = value;
 
     this.updateStateVariables(environment);
@@ -88,7 +91,10 @@ export class Interpreter {
 
   createArrayVariable(name, values) {
     const environment = this.getCurrentEnvironment();
-    if (name in environment.arrayVariables) return;
+    if (name in environment.arrayVariables) {
+      console.error(`Expression interpreter error: Array variable ${name} already exists`);
+      return;
+    }
     environment.arrayVariables[name] = values;
 
     this.updateStateVariables(environment);
@@ -96,7 +102,10 @@ export class Interpreter {
 
   createObjectVariable(name, value) {
     const environment = this.getCurrentEnvironment();
-    if (name in environment.objectVariables) return;
+    if (name in environment.objectVariables) {
+      console.error(`Expression interpreter error: Object variable ${name} already exists`);
+      return;
+    }
     environment.objectVariables[name] = value;
 
     this.updateStateVariables(environment);
@@ -290,6 +299,8 @@ export class Interpreter {
         return this.interpretMemberExpression(node);
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node);
+      case 'SequenceExpression':
+        return this.interpretSequenceExpression(node);
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -432,10 +443,13 @@ export class Interpreter {
 
   handleMemberProperty(node) {
     if (node.type === 'Identifier') {
+      if (node.name === 'length') return node.name;
+
       const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
       if (value !== null) return value;
       const functionDeclaration = this.lookupFunction(node.name);
       if (functionDeclaration !== null) return functionDeclaration;
+
       // if we get here then the identifier must be a property
       return node.name;
     } else {
@@ -631,6 +645,8 @@ export class Interpreter {
 
     const object = this.interpretExpression(node.object);
     const property = this.handleMemberProperty(node.property);
+    
+    if (property === 'length') return object.length;
 
     return object[property];
   }
@@ -665,6 +681,17 @@ export class Interpreter {
     }
 
     return values;
+  }
+
+  interpretSequenceExpression(node) {
+    if (this.debugging) console.log("sequence expression");
+    if (this.debugging) console.log(node);
+
+    for (let i = 0; i < node.expressions.length; i++) {
+      this.interpretExpression(node.expressions[i]);
+    }
+
+    return null;
   }
 
   interpretVariableDeclaration(node) {
@@ -781,17 +808,27 @@ export class Interpreter {
     if (this.debugging) console.log("for statement");
     if (this.debugging) console.log(node);
 
-    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+    // enter a new environment (where for loop variables will be stored)
+    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      
     this.addNewEnvironment(newEnvironment);
     this.interpretVariableDeclaration(node.init);    // setup variables in the for loop
 
     // interpret the conditional expression
     while (this.interpretExpression(node.test)) {
+      // enter a new environment (for loop body)
+      const bodyEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+      this.addNewEnvironment(bodyEnvironment);
+
       this.interpretBlockStatement(node.body);       // interpret the body of the for loop
-      this.interpretUpdateExpression(node.update);   // interpret the update expression
+
+      // exit the body environment
+      this.removeCurrentEnvironment();
+      this.updateStateVariables(this.getCurrentEnvironment());
+
+      this.interpretExpression(node.update);   // interpret the last (update part) expression
     }
 
-    // exit the environment
+    // exit the for loop environment
     this.removeCurrentEnvironment();
     this.updateStateVariables(this.getCurrentEnvironment());
   }
@@ -800,18 +837,19 @@ export class Interpreter {
     if (this.debugging) console.log("while statement");
     if (this.debugging) console.log(node);
 
-    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
-    this.addNewEnvironment(newEnvironment);
-
     // interpret the conditional expression
     while (this.interpretExpression(node.test)) {
+      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+      this.addNewEnvironment(newEnvironment);
+
       const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+
+      // exit the environment
+      this.removeCurrentEnvironment();
+      this.updateStateVariables(this.getCurrentEnvironment());
+
       if (result === 'break') break;
     }
-
-    // exit the environment
-    this.removeCurrentEnvironment();
-    this.updateStateVariables(this.getCurrentEnvironment());
   }
 
   interpretDoWhileStatement(node) {

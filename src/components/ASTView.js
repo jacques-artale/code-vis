@@ -26,7 +26,7 @@ const ASTView = ({ code }) => {
         display: "flex",
         flexDirection: "column",
         overflow: "scroll",
-        height: "80%",
+        height: "76%",
         padding: "1%",
         whiteSpace: "pre-wrap"
       }

@@ -28,7 +28,7 @@ class CodeEditor extends React.Component {
         width="100%"
         height="100%"
         language="javascript"
-        theme="vs-dark"
+        theme="vs-light"
         value={code}
         options={options}
         onChange={this.onChange.bind(this)}
@@ -40,7 +40,7 @@ class CodeEditor extends React.Component {
 
 function CodeInput({ code, setCode }) {
   return (
-    <div style={{ float: 'right', width: '50%', height: '100%' }}>
+    <div style={{ float: 'right', width: '50%', height: '100%', border: '1px solid black' }}>
       <CodeEditor code={code} setCode={setCode} />
     </div>
   );

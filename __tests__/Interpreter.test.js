@@ -863,11 +863,159 @@ describe('While statement', () => {
       expect(variables).toEqual(expected);
     });
   });
+
+  test('nested while', () => {
+    const operations = [
+      { code: 'var c = 0; var a = 0; while (a < 10) { var b = 0; while (b < 10) { c++; b++; } a++; }', expected: [['c', 100],['a', 10]] },
+      { code: 'var c = 0; var a = 0; while (a < 10) { var b = 0; while (b < 5) { c++; b++; } a++; }', expected: [['c', 50],['a', 10]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+
+      expect(variables).toEqual(expected);
+    });
+  });
 });
 
-describe('For statement', () => {});
+describe('For statement', () => {
+  test('for basic update', () => {
+    const operations = [
+      { code: 'var a = 0; for (var i = 0; i < 10; i++) { a++; }', expected: [['a', 10]] },
+      { code: 'var a = 10; for (var i = 10; i > 0; i--) { a--; }', expected: [['a', 0]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('for iterate over array', () => {
+    const operations = [
+      { code: 'var a = [1, 2, 3, 4, 5]; var sum = 0; for (var i = 0; i < 5; i++) { sum += a[i]; }', expected: [['sum', 15]] },
+      { code: 'var a = [1, 2, 3, 4, 5]; var sum = 0; for (var i = 4; i >= 0; i--) { sum += a[i]; }', expected: [['sum', 15]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('nested for', () => {
+    const operations = [
+      { code: 'var a = 0; for (var i = 0; i < 5; i++) { for (var j = 0; j < 5; j++) { a++; } }', expected: [['a', 25]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('for multiple variable declaration', () => {
+    const operations = [
+      { code: 'var a = 0; var b = 10; for (var i = 0, j = 10; i < j; i++, j--) { a++; b--; }', expected: [['a', 5], ['b', 5]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('for condition with arithmetic operation', () => {
+    const operations = [
+      { code: 'var a = 0; for (var i = 0; i < 10 * 2; i++) { a++; }', expected: [['a', 20]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('for condition with boolean operation', () => {
+    const operations = [
+      { code: 'var a = 0; for (var i = 0; i < 10 && a < 5; i++) { a++; }', expected: [['a', 5]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('for condition with array member access', () => {
+    const operations = [
+      { code: 'var a = [1, 2, 3, 4, 5]; var sum = 0; for (var i = 0; i < a[2]; i++) { sum += i; }', expected: [['sum', 3]] }
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+      expect(variables).toEqual(expected);
+    });
+  });
+});
+
 describe('Do-while statement', () => {});
 describe('Switch statement', () => {});
+
+describe('break', () => {
+  test('while break', () => {
+    const operations = [
+      { code: 'var a = 0; while (true) { a++; break; }', expected: [['a', 1]] },
+      { code: 'var a = 0; while (false) { a++; break; }', expected: [['a', 0]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('for break', () => {});
+  test('do-while break', () => {});
+
+  test('while if break', () => {
+    const operations = [
+      { code: 'var a = 0; while (a < 10) { a++; if (a === 5) { break; } }', expected: [['a', 5]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+
+      expect(variables).toEqual(expected);
+    });
+  });
+});
+
+describe('continue', () => {});
 
 describe('Scope', () => {});
 
