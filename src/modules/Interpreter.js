@@ -875,27 +875,34 @@ export class Interpreter {
     if (this.debugging) console.log("switch statement");
     if (this.debugging) console.log(node);
 
-    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
-    this.addNewEnvironment(newEnvironment);
-
     const value = this.interpretExpression(node.discriminant);
+
+    let foundMatch = false;
 
     for (let i = 0; i < node.cases.length; i++) {
       const caseNode = node.cases[i];
       const test = this.interpretExpression(caseNode.test);
 
-      if (test === null || test === value) {  // if the test is null, it is the default case
+      if (test === null || test === value) foundMatch = true;
+
+      if (foundMatch) {  // if the test is null, it is the default case
+        // enter a new environment
+        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+        this.addNewEnvironment(newEnvironment);
+
         // interpret the body of the case
+        let result = null;
         for (let i = 0; i < caseNode.consequent.length; i++) {
-          this.executeNodeType(caseNode.consequent[i]);
+          result = this.executeNodeType(caseNode.consequent[i]);
+          if (result === 'break') break;
         }
-        break;
+
+        // exit the environment
+        this.removeCurrentEnvironment();
+        this.updateStateVariables(this.getCurrentEnvironment());
+        if (result === 'break') break;
       }
     }
-
-    // exit the environment
-    this.removeCurrentEnvironment();
-    this.updateStateVariables(this.getCurrentEnvironment());
   }
 
   interpretReturnStatement(node) {
