@@ -283,6 +283,8 @@ export class Interpreter {
         return node.value;
       case 'Identifier':
         return this.lookupVariableValue(node.name, this.getCurrentEnvironment());
+      case 'AssignmentExpression':
+        return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node);
       case 'LogicalExpression':
@@ -557,33 +559,37 @@ export class Interpreter {
 
     // get the current value of the property we are updating
     let objectValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
-    let value = objectValue;
+    let oldValue = objectValue;
     for (let i = 0; i < properties.length; i++) {
-      value = value[properties[i]];
+      oldValue = oldValue[properties[i]];
     }
 
     // update
-    if (operator === "++") value++;
-    else if (operator === "--") value--;
+    let value = oldValue;
+    if (operator === '++') value++;
+    else if (operator === '--') value--;
     else console.error("weird error, operator not found");
 
     this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
 
-    return value;
+    if (node.prefix) return value;
+    return oldValue;
   }
 
   handleUpdateVariableExpression(node) {
     const varName = node.argument.name;
     const operator = node.operator;
-    let value = this.lookupVariableValue(varName, this.getCurrentEnvironment());
+    const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
 
-    if (operator === "++") value++;
-    else if (operator === "--") value--;
+    let value = oldValue;
+    if (operator === '++') value++;
+    else if (operator === '--') value--;
     else console.error("weird error, operator not found");
 
     this.updateVariableValue(varName, value, this.getCurrentEnvironment());
 
-    return value;
+    if (node.prefix) return value;
+    return oldValue;
   }
 
   interpretCallExpression(node) {
@@ -701,35 +707,34 @@ export class Interpreter {
     for (let i = 0; i < node.declarations.length; i++) {
       const declaration = node.declarations[i];
       const varName = declaration.id.name;
-      const varVal = this.interpretExpression(declaration.init);
+      const value = this.interpretExpression(declaration.init);
       const varType = declaration.init.type;
 
-      if (varType === 'Literal') {                                   // variable is a literal
+      if (varType === 'Literal') {
+        this.createVariable(varName, value);
+      } else if (varType === 'Identifier') {
+        const varVal = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
         this.createVariable(varName, varVal);
-      } else if (varType === 'Identifier') {                         // variable is an identifier
-        const value = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
+      } else if (varType === 'BinaryExpression') {
         this.createVariable(varName, value);
-      } else if (varType === 'BinaryExpression') {                   // variable is a binary expression
-        const value = this.interpretExpression(declaration.init);
+      } else if (varType === 'UnaryExpression') {
         this.createVariable(varName, value);
-      } else if (varType === 'UnaryExpression') {                    // variable is a unary expression
-        const value = this.interpretExpression(declaration.init);
+      } else if (varType === 'CallExpression') {
         this.createVariable(varName, value);
-      } else if (varType === 'CallExpression') {                     // variable is a function call
-        const value = this.interpretExpression(declaration.init);
+      } else if (varType === 'UpdateExpression') {
         this.createVariable(varName, value);
-      } else if (varType === 'ArrayExpression') {                    // variable is an array
-        this.createArrayVariable(varName, varVal);
-      } else if (varType === 'ObjectExpression') {                   // variable is an object
-        this.createObjectVariable(varName, varVal);
-      } else if (varType === 'MemberExpression') {                   // variable is an array or object property
+      } else if (varType === 'ArrayExpression') {
+        this.createArrayVariable(varName, value);
+      } else if (varType === 'ObjectExpression') {
+        this.createObjectVariable(varName, value);
+      } else if (varType === 'MemberExpression') {
         // check type of value and create the variable accordingly
-        if (Array.isArray(varVal)) {
-          this.createArrayVariable(varName, varVal);
-        } else if (typeof varVal === 'object') {
-          this.createObjectVariable(varName, varVal);
+        if (Array.isArray(value)) {
+          this.createArrayVariable(varName, value);
+        } else if (typeof value === 'object') {
+          this.createObjectVariable(varName, value);
         } else {
-          this.createVariable(varName, varVal);
+          this.createVariable(varName, value);
         }
       } else {
         console.error("unknown variable type: " + declaration.init.type);
@@ -811,7 +816,15 @@ export class Interpreter {
     // enter a new environment (where for loop variables will be stored)
     const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      
     this.addNewEnvironment(newEnvironment);
-    this.interpretVariableDeclaration(node.init);    // setup variables in the for loop
+
+    // initialize the for loop
+    if (node.init !== null) {
+      if (node.init.type === 'VariableDeclaration') {
+        this.interpretVariableDeclaration(node.init);
+      } else {
+        this.interpretExpression(node.init);
+      }
+    }
 
     // interpret the conditional expression
     while (this.interpretExpression(node.test)) {
@@ -819,12 +832,13 @@ export class Interpreter {
       const bodyEnvironment = this.createEnvironment(this.getCurrentEnvironment());
       this.addNewEnvironment(bodyEnvironment);
 
-      this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+      const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
 
       // exit the body environment
       this.removeCurrentEnvironment();
       this.updateStateVariables(this.getCurrentEnvironment());
 
+      if (result === 'break') break;
       this.interpretExpression(node.update);   // interpret the last (update part) expression
     }
 
