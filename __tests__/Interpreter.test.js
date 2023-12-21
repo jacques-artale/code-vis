@@ -1364,7 +1364,7 @@ describe('break', () => {
     const operations = [
       { code: 'var a = 0; var b = 0; for (a = 0; a < 5; a++) { for (b = 0; b < 5; b++) { break; } }', expected: [['a', 5], ['b', 0]] },
       { code: 'var a = 0; var b = 0; for (a = 0; a < 5; a++) { for (b = 0; b < 5; b++) { if (b === 3) { break; } } }', expected: [['a', 5], ['b', 3]] },
-      { code: 'var a = 0; var b = 0; for (a = 0; a < 5; a++) { if (a === 3) { break; } for (b = 0; b < 5; b++) { } }', expected: [['a', 3], ['b', 0]] },
+      { code: 'var a = 0; var b = 0; for (a = 0; a < 5; a++) { if (a === 3) { break; } for (b = 0; b < 5; b++) { } }', expected: [['a', 3], ['b', 5]] },
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
@@ -1377,7 +1377,23 @@ describe('break', () => {
     });
   });
 
-  test('nested do-while loops with break statement', () => {});
+  test('nested do-while loops with break statement', () => {
+    const operations = [
+      { code: 'var a = 0; var b = 0; do { a++; do { b++; break; } while (b < 5); } while (a < 5);', expected: [['a', 5], ['b', 5]] },
+      { code: 'var a = 0; var b = 0; do { a++; do { b++; if (b === 3) { break; } } while (b < 5); } while (a < 5);', expected: [['a', 5], ['b', 8]] },
+      { code: 'var a = 0; var b = 0; do { a++; if (a === 3) { break; } do { b++; } while (b < 5); } while (a < 5);', expected: [['a', 3], ['b', 6]] },
+      { code: 'var a = 0; var b = 0; do { a++; do { if (b === 3) { break; } b++; } while (b < 5); } while (a < 5);', expected: [['a', 5], ['b', 3]] },
+    ];
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+  
+      const parsedCode = buildAst(code).code;
+      const interpreter = new Interpreter(parsedCode, updateVariables);
+      interpreter.interpretAllInstructions();
+  
+      expect(variables).toEqual(expected);
+    });
+  });
 });
 
 describe('continue', () => {});

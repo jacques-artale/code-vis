@@ -235,7 +235,7 @@ export class Interpreter {
       case 'BlockStatement':
         return this.interpretBlockStatement(node);
       case 'ExpressionStatement':
-        return this.interpretExpressionStatement(node);
+        return this.interpretExpressionStatement(node.expression);
       case 'AssignmentExpression':
         return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
@@ -365,17 +365,17 @@ export class Interpreter {
     if (this.debugging) console.log("expression statement");
     if (this.debugging) console.log(node);
 
-    switch (node.expression.type) {
+    switch (node.type) {
       case 'AssignmentExpression':
         return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node);
       case 'UpdateExpression':
-        return this.interpretUpdateExpression(node.expression);
+        return this.interpretUpdateExpression(node);
       case 'CallExpression':
-        return this.interpretCallExpression(node.expression);
+        return this.interpretCallExpression(node);
       case 'MemberExpression':
-        return this.interpretMemberExpression(node.expression);
+        return this.interpretMemberExpression(node);
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
@@ -387,7 +387,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     // check if the assignment is to an object property
-    if (node.expression.left.type === 'MemberExpression') {
+    if (node.left.type === 'MemberExpression') {
       // we update the property
       this.handleMemberExpressionAssignment(node);
     } else {
@@ -397,8 +397,8 @@ export class Interpreter {
   }
 
   handleMemberExpressionAssignment(node) {
-    const leftExpression = node.expression.left;
-    const operator = node.expression.operator;
+    const leftExpression = node.left;
+    const operator = node.operator;
 
     // get the object we are updating
     let object = leftExpression;
@@ -420,7 +420,7 @@ export class Interpreter {
     for (let i = 0; i < properties.length; i++) {
       oldValue = oldValue[properties[i]];
     }
-    const value = this.interpretExpression(node.expression.right);
+    const value = this.interpretExpression(node.right);
 
     // update
     let newValue = null;
@@ -460,9 +460,9 @@ export class Interpreter {
   }
 
   handleVariableAssignment(node) {
-    const varName = node.expression.left.name;
-    const value = this.interpretExpression(node.expression.right);
-    const operator = node.expression.operator;
+    const varName = node.left.name;
+    const value = this.interpretExpression(node.right);
+    const operator = node.operator;
 
     const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
     let newValue = null;
