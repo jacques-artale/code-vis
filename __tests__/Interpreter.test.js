@@ -235,6 +235,12 @@ describe('Array assignment', () => {
     interpret(code);
     expect(arrayVariables).toContainEqual(['a', [[1, 2, 3], [4, 7, 6]]]);
   });
+
+  test('Push to array', () => {
+    const code = 'var a = [1, 2, 3]; a.push(4);';
+    interpret(code);
+    expect(arrayVariables).toEqual([['a', [1, 2, 3, 4]]]);
+  });
 });
 
 describe('Object assignment', () => {

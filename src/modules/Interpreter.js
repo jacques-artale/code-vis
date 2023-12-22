@@ -649,13 +649,14 @@ export class Interpreter {
     if (node.callee.type === 'MemberExpression') {
       if (node.callee.object.name === 'Math') {
         if (node.callee.property.name === 'max') return this.interpretMathMax(node);
-        else if (node.callee.property.name === 'min') return this.interpretMathMin(node);
-        else if (node.callee.property.name === 'abs') return this.interpretMathAbs(node);
+        if (node.callee.property.name === 'min') return this.interpretMathMin(node);
+        if (node.callee.property.name === 'abs') return this.interpretMathAbs(node);
       }
+      if (node.callee.property.name === 'push') return this.interpretArrayPush(node);
     }
     return null;
   }
-
+  
   interpretMemberExpression(node) {
     if (this.debugging) console.log("member expression");
     if (this.debugging) console.log(node);
@@ -669,6 +670,19 @@ export class Interpreter {
   }
 
   interpretConditionalExpression() {}
+
+  interpretArrayPush(node) {
+    if (this.debugging) console.log("array push");
+    if (this.debugging) console.log(node);
+
+    let value = this.interpretExpression(node.callee.object);
+    const argument = this.interpretExpression(node.arguments[0]);
+    value.push(argument);
+
+    const identifier = node.callee.object.name;
+    this.updateVariableValue(identifier, value, this.getCurrentEnvironment());
+    return argument;
+  }
 
   interpretObjectExpression(node) {
     if (this.debugging) console.log("object expression");
