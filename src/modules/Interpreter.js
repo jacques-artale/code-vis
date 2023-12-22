@@ -266,6 +266,8 @@ export class Interpreter {
         return this.interpretSwitchStatement(node);
       case 'BreakStatement':
         return 'break'; // do nothing
+      case 'ContinueStatement':
+        return 'continue'; // do nothing
       case 'EmptyStatement':
         return; // do nothing
       default:
@@ -762,7 +764,7 @@ export class Interpreter {
     for (let i = 0; i < node.body.length; i++) {
       const result = this.executeNodeType(node.body[i]);
       if (result === 'break') return result;
-      if (result === 'continue') return;
+      if (result === 'continue') return 'continue';
     }
 
     return null;
