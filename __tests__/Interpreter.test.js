@@ -308,7 +308,7 @@ describe('Function call', () => {
     expect(variables).toContainEqual(['d', 3]);
   });
 
-  test('Function call to standard library functions', () => {
+  test('Function call to console log function', () => {
     const code = [
       { code: 'console.log("Hello world");', expected: ['Hello world'] },
       { code: 'console.log(1);', expected: [1] },
@@ -321,6 +321,42 @@ describe('Function call', () => {
 
       interpret(code);
       expect(log).toEqual(expected);
+    });
+  });
+
+  test('Function call to Math functions', () => {
+    const operations = [
+      { code: 'var a = Math.max(1,2);', expected: [['a', 2]] },
+      { code: 'var a = Math.max(2,1);', expected: [['a', 2]] },
+      { code: 'var a = -100; var b = 100; var c = Math.max(a,b);', expected: [['a', -100],['b', 100],['c', 100]] },
+      { code: 'var a = Math.max(23 * 124, 32 / 2 + 4);', expected: [['a', 2852]] },
+      { code: 'function a() { return 10; } function b() { return 12; } var c = Math.max(a(), b());', expected: [['c', 12]] },
+      { code: 'var a = Math.max(1,1);', expected: [['a', 1]] },
+      { code: 'var a = Math.max(0,0);', expected: [['a', 0]] },
+
+      { code: 'var a = Math.min(1,2);', expected: [['a', 1]] },
+      { code: 'var a = Math.min(2,1);', expected: [['a', 1]] },
+      { code: 'var a = -100; var b = 100; var c = Math.min(a,b);', expected: [['a', -100],['b', 100],['c', -100]] },
+      { code: 'var a = Math.min(23 * 124, 32 / 2 + 4);', expected: [['a', 20]] },
+      { code: 'function a() { return 10; } function b() { return 12; } var c = Math.min(a(), b());', expected: [['c', 10]] },
+      { code: 'var a = Math.min(1,1);', expected: [['a', 1]] },
+      { code: 'var a = Math.min(0,0);', expected: [['a', 0]] },
+
+      { code: 'var a = Math.abs(1);', expected: [['a', 1]] },
+      { code: 'var a = Math.abs(-1);', expected: [['a', 1]] },
+      { code: 'var a = Math.abs(-100);', expected: [['a', 100]] },
+      { code: 'var a = Math.abs(100);', expected: [['a', 100]] },
+      { code: 'var a = Math.abs(0);', expected: [['a', 0]] },
+      { code: 'var a = Math.abs(23 * 124);', expected: [['a', 2852]] },
+      { code: 'var a = Math.abs(10 - 100);', expected: [['a', 90]] },
+      { code: 'var a = 10; var b = 100; var c = Math.abs(a - b);', expected: [['a', 10],['b', 100],['c', 90]] },
+    ];
+
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      interpret(code);
+      expect(variables).toEqual(expected);
     });
   });
 

@@ -598,8 +598,18 @@ export class Interpreter {
     if (this.debugging) console.log("call expression");
     if (this.debugging) console.log(node);
     
-    // check if the function is a built-in function
-    if (this.handleStandardFunctions(node)) return;
+    const callee = node.callee;
+    if (callee.type === 'MemberExpression') {
+      // check if the function is a built-in function with return type
+      const standard = this.handleStandardFunctions(node);
+      if (standard !== null) return standard;
+
+      // check if the function is a built-in function without return type
+      if (callee.object.name === 'console' && callee.property.name === 'log') {
+        this.interpretConsoleLog(node);
+        return;
+      }
+    }
 
     // fetch the values of each argument
     const callArguments = node.arguments;
@@ -637,14 +647,13 @@ export class Interpreter {
 
   handleStandardFunctions(node) {
     if (node.callee.type === 'MemberExpression') {
-      if (node.callee.object.name === 'console') {
-        if (node.callee.property.name === 'log') {
-          this.interpretConsoleLog(node);
-          return true;
-        }
+      if (node.callee.object.name === 'Math') {
+        if (node.callee.property.name === 'max') return this.interpretMathMax(node);
+        else if (node.callee.property.name === 'min') return this.interpretMathMin(node);
+        else if (node.callee.property.name === 'abs') return this.interpretMathAbs(node);
       }
     }
-    return false;
+    return null;
   }
 
   interpretMemberExpression(node) {
@@ -763,8 +772,7 @@ export class Interpreter {
 
     for (let i = 0; i < node.body.length; i++) {
       const result = this.executeNodeType(node.body[i]);
-      if (result === 'break') return result;
-      if (result === 'continue') return 'continue';
+      if (result === 'break' || result === 'continue') return result;
     }
 
     return null;
@@ -937,6 +945,35 @@ export class Interpreter {
 
     const argument = this.interpretExpression(node.arguments[0]);
     this.updateCallback({ command: 'consoleLog', argument: argument });
+  }
+
+  interpretMathMax(node) {
+    if (this.debugging) console.log("math max");
+    if (this.debugging) console.log(node);
+
+    const argument1 = this.interpretExpression(node.arguments[0]);
+    const argument2 = this.interpretExpression(node.arguments[1]);
+
+    return Math.max(argument1, argument2);
+  }
+
+  interpretMathMin(node) {
+    if (this.debugging) console.log("math min");
+    if (this.debugging) console.log(node);
+
+    const argument1 = this.interpretExpression(node.arguments[0]);
+    const argument2 = this.interpretExpression(node.arguments[1]);
+
+    return Math.min(argument1, argument2);
+  }
+
+  interpretMathAbs(node) {
+    if (this.debugging) console.log("math abs");
+    if (this.debugging) console.log(node);
+
+    const argument = this.interpretExpression(node.arguments[0]);
+
+    return Math.abs(argument);
   }
 
 }
