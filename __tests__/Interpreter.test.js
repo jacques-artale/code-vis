@@ -23,28 +23,28 @@ beforeEach(() => {
   log = [];
 });
 
+function interpret(code) {
+  const parsedCode = buildAst(code).code;
+  const interpreter = new Interpreter(parsedCode, updateVariables);
+  interpreter.interpretAllInstructions();
+}
+
 describe('Declarations', () => {
   test('Declare variable', () => {
     const code = 'var a = 1;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['a', 1]]);
   });
 
   test('Array declaration', () => {
     const code = 'var a = [1, 2, 3];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
   });
 
   test('Object declaration', () => {
     const code = 'var a = {b: 1, c: 2};';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['a', {b: 1, c: 2}]]);
   });
 });
@@ -52,52 +52,40 @@ describe('Declarations', () => {
 describe('Array access', () => {
   test('Array access', () => {
     const code = 'var a = [1, 2, 3]; var b = a[0];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
     expect(variables).toEqual([['b', 1]]);
   });
 
   test('Two-dimensional array access', () => {
     const code = 'var a = [[1, 2, 3], [4, 5, 6]]; var b = a[1][1];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [[1, 2, 3], [4, 5, 6]]]]);
     expect(variables).toEqual([['b', 5]]);
   });
 
   test('Three-dimensional array access', () => {
     const code = 'var a = [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]; var b = a[1][1][1];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]]]);
     expect(variables).toEqual([['b', 11]]);
   });
 
   test('Array access with variable', () => {
     const code = 'var a = [1, 2, 3]; var b = 1; var c = a[b];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();    
+    interpret(code); 
     expect(variables).toEqual([['b', 1], ['c', 2]]);
   });
 
   test('Array access of function call', () => {
     const code = 'function a() { return [1, 2, 3]; } var b = a()[1];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();    
+    interpret(code);  
     expect(variables).toEqual([['b', 2]]);
   });
 
   test('Array access of function call with variable', () => {
     const code = 'function a() { return [1, 2, 3]; } var b = 1; var c = a()[b];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();    
+    interpret(code);   
     expect(variables).toEqual([['b', 1], ['c', 2]]);
   });
 });
@@ -105,36 +93,28 @@ describe('Array access', () => {
 describe('Object access', () => {
   test('Object property access', () => {
     const code = 'var a = {b: 1}; var c = a.b;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: 1}]);
     expect(variables).toContainEqual(['c', 1]);
   });
 
   test('Array access of object', () => {
     const code = 'var a = {b: [1,2,3]}; var c = a.b[1];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: [1, 2, 3]}]);
     expect(variables).toContainEqual(['c', 2]);
   });
 
   test('Multidimensional array access of object property', () => {
     const code = 'var a = {b: [[1, 2, 3], [4, 5, 6]]}; var c = a.b[1][1];';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: [[1, 2, 3], [4, 5, 6]]}]);
     expect(variables).toContainEqual(['c', 5]);
   });
 
   test('Object access of object property', () => {
     const code = 'var a = {b: {c: 1}}; var d = a.b.c;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: {c: 1}}]);
     expect(variables).toContainEqual(['d', 1]);
   });
@@ -153,26 +133,20 @@ describe('Variable assignment', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
 
   test('Assign unary expression to variable', () => {
     const code = 'var a = -1;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['a', -1]]);
   });
 
   test('Assign variable to variable', () => {
     const code = 'var a = 1; var b = a;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', 1]);
     expect(variables).toContainEqual(['b', 1]);
   });
@@ -186,30 +160,26 @@ describe('Variable assignment', () => {
       { code: 'var a = 1; var b = 2; var c = a / b;', expected: [['a', 1], ['b', 2], ['c', 0.5]] },
       { code: 'var a = 1; var b = 2; var c = a % b;', expected: [['a', 1], ['b', 2], ['c', 1]] },
       { code: 'var a = 1; var b = 2; var c = (a + b) * 3 / 4 % b;', expected: [['a', 1], ['b', 2], ['c', 0.25]] },
+      { code: 'var a = "hello "; var b = "world"; var c = a + b;', expected: [['a', 'hello '], ['b', 'world'], ['c', 'hello world']] },
+      { code: 'var a = "hello "; var b = 10; var c = a + b;', expected: [['a', 'hello '], ['b', 10], ['c', 'hello 10']] },
     ]
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
 
   test('Assign function call to variable', () => {
     const code = 'function a() { return 1; } var b = a();';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['b', 1]]);
   });
 
   test('Assign object property to variable', () => {
     const code = 'var a = {b: 1}; var c = a.b;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: 1}]);
     expect(variables).toContainEqual(['c', 1]);
   });
@@ -231,50 +201,38 @@ describe('Array assignment', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(arrayVariables).toEqual(expected);
     });
   });
 
   test('Assign unary expression to array', () => {
     const code = 'var a = [1, 2, 3]; a[0] = -1;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [-1, 2, 3]]]);
   });
 
   test('Assign variable to array', () => {
     const code = 'var a = 1; var b = [3, 3, 3]; b[0] = a;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
   });
 
   test('Assign function call to array', () => {
     const code = 'function a() { return 1; } var b = [3, 3, 3]; b[0] = a();';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['b', [1, 3, 3]]]);
   });
 
   test('Assign array to array', () => {
     const code = 'var a = [1, 2, 3]; var b = [4, 5, 6]; a[0] = b;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [[4, 5, 6], 2, 3]], ['b', [4, 5, 6]]]);
   });
 
   test('Assign value to multidimensional array', () => {
     const code = 'var a = [[1, 2, 3], [4, 5, 6]]; a[1][1] = 7;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toContainEqual(['a', [[1, 2, 3], [4, 7, 6]]]);
   });
 });
@@ -282,67 +240,51 @@ describe('Array assignment', () => {
 describe('Object assignment', () => {
   test('Assign function call to object', () => {
     const code = 'function a() { return {b: 1}; } var c = a();';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['c', {b: 1}]]);
   });
 
   test('Assign value to object property', () => {
     const code = 'var a = {b: 1}; a.b = 2;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['a', {b: 2}]]);
   });
 
   test('Assign object variable to object', () => {
     const code = 'var a = {b: 1}; var c = a;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: 1}]);
     expect(variables).toContainEqual(['c', {b: 1}]);
   });
 
   test('Assign variable to object property', () => {
     const code = 'var a = 1; var b = {c: 2}; b.c = a;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['a', 1], ['b', {c: 1}]]);
   });
 
   test('Assign array to object property', () => {
     const code = 'var a = [1, 2, 3]; var b = {c: 2}; b.c = a;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
     expect(variables).toEqual([['b', {c: [1, 2, 3]}]]);
   });
 
   test('Assign object to object property', () => {
     const code = 'var a = {b: 1}; var c = {d: 2}; c.d = a;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['a', {b: 1}], ['c', {d: {b: 1}}]]);
   });
 
   test('Assign function call to object property', () => {
     const code = 'function a() { return 1; } var b = {c: 2}; b.c = a();';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['b', {c: 1}]]);
   });
 
   test('Assign value to multidimensional object', () => {
     const code = 'var a = {b: {c: 1}}; a.b.c = 2;';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['a', {b: {c: 2}}]);
   });
 });
@@ -350,25 +292,19 @@ describe('Object assignment', () => {
 describe('Function call', () => {
   test('Function call', () => {
     const code = 'function a() { return 1; } var b = a();';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['b', 1]]);
   });
 
   test('Function call with argument', () => {
     const code = 'function a(b) { return b; } var c = a(1);';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toEqual([['c', 1]]);
   });
 
   test('Function call with multiple arguments', () => {
     const code = 'function a(b, c) { return b + c; } var d = a(1, 2);';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
+    interpret(code);
     expect(variables).toContainEqual(['d', 3]);
   });
 
@@ -383,12 +319,30 @@ describe('Function call', () => {
     code.forEach(({ code, expected }) => {
       log = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(log).toEqual(expected);
     });
   });
+
+  test('Function call with arithmetic expression argument', () => {
+    const code = 'function a(b) { return b; } var c = a(1 + 2);';
+    interpret(code);    
+    expect(variables).toEqual([['c', 3]]);
+  });
+
+  test('Function call with array argument', () => {
+    const code = 'function a(b) { return b; } var c = a([1, 2, 3]);';
+    interpret(code);    
+    expect(variables).toEqual([['c', [1, 2, 3]]]);
+  });
+
+  test('Function call with object argument', () => {
+    const code = 'function a(b) { return b; } var c = a({d: 1});';
+    interpret(code);    
+    expect(variables).toEqual([['c', {d: 1}]]);
+  });
+
+  test('Recursive function call', () => {}); // TODO: Implement
 });
 
 describe('Update', () => {
@@ -400,9 +354,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -415,9 +367,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(arrayVariables).toEqual(expected);
     });
   });
@@ -430,9 +380,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -445,9 +393,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(arrayVariables).toEqual(expected);
     });
   });
@@ -461,9 +407,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expVars.forEach(([name, value]) => {
         expect(variables).toContainEqual([name, value]);
       });
@@ -479,9 +423,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -494,9 +436,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(arrayVariables).toEqual(expected);
     });
   });
@@ -509,9 +449,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -529,9 +467,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expVars);
       expect(arrayVariables).toEqual(expArrVars);
     });
@@ -548,9 +484,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expVars.forEach(([name, value]) => {
         expect(variables).toContainEqual([name, value]);
       });
@@ -567,10 +501,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -586,10 +517,7 @@ describe('Update', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(arrayVariables).toEqual(expArr);
       expect(variables).toEqual(expVar);
     });
@@ -605,10 +533,7 @@ describe('Update', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expected.forEach(([name, value]) => {
         expect(variables).toContainEqual([name, value]);
       });
@@ -625,9 +550,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -640,9 +563,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -655,9 +576,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -672,9 +591,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -687,9 +604,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expected.forEach(([name, value]) => {
         expect(variables).toContainEqual([name, value]);
       });
@@ -704,10 +619,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expected.forEach(([name, value]) => {
         expect(variables).toContainEqual([name, value]);
       });
@@ -723,10 +635,7 @@ describe('if statement', () => {
       variables = [];
       arrayVariables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(arrayVariables).toEqual(expArr);
       expect(variables).toEqual(expVar);
     });
@@ -740,10 +649,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -756,9 +662,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
   
       expect(variables).toEqual(expected);
     });
@@ -774,10 +678,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -790,10 +691,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -807,10 +705,7 @@ describe('if statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -825,10 +720,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -841,10 +733,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -858,10 +747,7 @@ describe('While statement', () => {
       variables = [];
       arrayVariables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(arrayVariables).toEqual(expArrVars);
       expect(variables).toEqual(expVars);
     });
@@ -875,10 +761,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -891,10 +774,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -915,10 +795,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -931,10 +808,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -947,10 +821,7 @@ describe('While statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -964,9 +835,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -978,9 +847,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -991,9 +858,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1004,9 +869,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1017,9 +880,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1030,9 +891,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1043,9 +902,7 @@ describe('For statement', () => {
     ];
     operations.forEach(({ code, expected }) => {
       variables = [];
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1060,10 +917,7 @@ describe('Do-while statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1077,10 +931,7 @@ describe('Do-while statement', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(arrayVariables).toEqual(expArrVars);
       expect(variables).toEqual(expVars);
     });
@@ -1088,10 +939,7 @@ describe('Do-while statement', () => {
 
   test('do-while condition with function call', () => {
     const code = 'var count = 0; var cond = true; function a() { return cond; } do { count++; cond = false; } while (a());';
-    const parsedCode = buildAst(code).code;
-    const interpreter = new Interpreter(parsedCode, updateVariables);
-    interpreter.interpretAllInstructions();
-
+    interpret(code);
     expect(variables).toEqual([['count', 1], ['cond', false]]);
   });
 
@@ -1105,10 +953,7 @@ describe('Do-while statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1125,10 +970,7 @@ describe('Do-while statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1141,10 +983,7 @@ describe('Do-while statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1160,10 +999,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1178,10 +1014,7 @@ describe('Switch statement', () => {
       variables = [];
       arrayVariables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(arrayVariables).toEqual(expArrVars);
       expect(variables).toEqual(expVars);
     });
@@ -1196,10 +1029,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1213,10 +1043,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1230,10 +1057,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });    
   });
@@ -1247,10 +1071,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);      
     });
   });
@@ -1263,10 +1084,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);      
     });
   });
@@ -1279,10 +1097,7 @@ describe('Switch statement', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
 
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);      
     });
   });
@@ -1300,10 +1115,7 @@ describe('break', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1318,10 +1130,7 @@ describe('break', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1335,10 +1144,7 @@ describe('break', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1352,10 +1158,7 @@ describe('break', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1369,10 +1172,7 @@ describe('break', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1387,10 +1187,7 @@ describe('break', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1407,10 +1204,7 @@ describe('continue', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1425,10 +1219,7 @@ describe('continue', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1443,10 +1234,7 @@ describe('continue', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1460,10 +1248,7 @@ describe('continue', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1477,10 +1262,7 @@ describe('continue', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
@@ -1494,10 +1276,7 @@ describe('continue', () => {
     operations.forEach(({ code, expected }) => {
       variables = [];
   
-      const parsedCode = buildAst(code).code;
-      const interpreter = new Interpreter(parsedCode, updateVariables);
-      interpreter.interpretAllInstructions();
-  
+      interpret(code);
       expect(variables).toEqual(expected);
     });
   });
