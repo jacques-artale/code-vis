@@ -19,3 +19,34 @@ As of now, the project is in its initial development phase and includes:
 ## To run
 `npm start` runs the app in the development mode.\
 Open [http://localhost:8080](http://localhost:8080) to view it in your browser.
+
+## Interpreter - supported features
+The following features are currently supported/unsupported:
+- ✅ Variable declarations (Primitive, Arrays, Objects)
+- ✅ Variable assignment
+- ✅ Function declarations
+- ✅ Function calls
+- ✅ Built-in functions (console.log, Math.max, Math.min, Math.abs)
+- ❌ Arrow functions
+- ❌ Recursive function calls
+- ❌ Promises & Async/Await
+- ✅ Return
+- ✅ Binary expressions
+- ✅ Unary expressions
+- ✅ Update expressions (x++, x--)
+- ❌ Spread operator
+- ✅ If statements
+- ✅ For statements
+- ✅ While statements
+- ✅ Do-while statements
+- ✅ Switch case
+- ❌ Try-catch
+- ❌ Ternary operation
+- ✅ Break & continue
+- ❌ Classes
+
+## Visual - supported features
+- ✅ View variable values
+- ✅ View arrays (1D & 2D)
+- ✅ View output from console
+- ✅ View AST
