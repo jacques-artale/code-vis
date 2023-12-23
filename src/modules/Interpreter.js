@@ -7,44 +7,47 @@ export class Interpreter {
   updateCallback = null;
   globalEnvironment = null;
   functionDeclarations = [];
-
-  parsedCode = null;
-  nextExecutingNode = 0;
-
   environmentStack = [];
 
-  // TODO: keep track of call stack (where do executeNodeType returns go?)
+  parsedCode = null;
 
   constructor(parsedCode, updateCallback) {
     this.parsedCode = parsedCode;
     this.updateCallback = updateCallback;
 
-    this.globalEnvironment = this.createEnvironment(null);
+    this.globalEnvironment = this.createEnvironment(null, parsedCode.body);
     this.environmentStack.push(this.globalEnvironment);
   }
 
+  // This function will reset the interpreter to its initial state, keeping the parsed code
   clearInternalState() {
-    this.globalEnvironment = this.createEnvironment(null);
+    this.globalEnvironment = this.createEnvironment(null, this.parsedCode.body);
     this.functionDeclarations = [];
-    this.nextExecutingNode = 0;
     this.environmentStack = [];
     this.environmentStack.push(this.globalEnvironment);
   }
 
+  // This function will reset the interpreter as well as the parsed code
   setParsedCode(parsedCode) {
     this.parsedCode = parsedCode;
+    this.functionDeclarations = [];
+    this.environmentStack = [];
+    this.globalEnvironment = this.createEnvironment(null, parsedCode.body);
+    this.environmentStack.push(this.globalEnvironment);
   }
 
   /*
     HANDLE SCOPE AND ENVIRONMENT VARIABLES
   */
-  createEnvironment(parent) {
+  createEnvironment(parent, instructions) {
     return {
-      variables: [],
-      arrayVariables: [],
-      objectVariables: [],
-      parentEnvironment: parent,
-      returnValue: null,
+      variables: [],                // variables in our current scope
+      arrayVariables: [],           // array variables in our current scope
+      objectVariables: [],          // object variables in our current scope
+      parentEnvironment: parent,    // the parent environment
+      returnValue: null,            // the return value of the function or block
+      instructions: instructions,   // parsed code instructions
+      instructionPointer: 0,        // where we currently are in the instructions
     };
   }
 
@@ -218,12 +221,16 @@ export class Interpreter {
     if (node === null) return;
 
     this.executeNodeType(node);
-    this.nextExecutingNode++;
+    this.getCurrentEnvironment().instructionPointer++;
   }
 
   getExecutingNode() {
-    if (this.nextExecutingNode >= this.parsedCode.body.length) return null;
-    return this.parsedCode.body[this.nextExecutingNode];
+    const environment = this.getCurrentEnvironment();
+    const instructions = environment.instructions;
+    const instructionPointer = environment.instructionPointer;
+
+    if (instructionPointer >= instructions.length) return null;
+    return instructions[instructionPointer];
   }
 
   executeNodeType(node) {
@@ -622,7 +629,7 @@ export class Interpreter {
     const functionDeclaration = this.lookupFunction(node.callee.name);
 
     // create a new environment for the function
-    const newEnvironment = this.createEnvironment(this.globalEnvironment);
+    const newEnvironment = this.createEnvironment(this.globalEnvironment, functionDeclaration.body);
     this.addNewEnvironment(newEnvironment);
 
     // add the parameters to the environment (new variables with values of callArguments)
@@ -802,7 +809,7 @@ export class Interpreter {
     if (test) {
       if (this.debugging) console.log("test is true");
 
-      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.consequent);
       this.addNewEnvironment(newEnvironment); // enter a new environment
 
       const result = this.interpretBlockStatement(node.consequent);
@@ -821,7 +828,7 @@ export class Interpreter {
           this.interpretIfStatement(node.alternate);
         } else {
           // else
-          const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+          const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.alternate);
           this.addNewEnvironment(newEnvironment); // enter a new environment
 
           const result = this.interpretBlockStatement(node.alternate);
@@ -838,7 +845,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     // enter a new environment (where for loop variables will be stored)
-    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      
+    const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.init);
     this.addNewEnvironment(newEnvironment);
 
     // initialize the for loop
@@ -853,7 +860,7 @@ export class Interpreter {
     // interpret the conditional expression
     while (this.interpretExpression(node.test)) {
       // enter a new environment (for loop body)
-      const bodyEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+      const bodyEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.body);
       this.addNewEnvironment(bodyEnvironment);
 
       const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
@@ -877,7 +884,7 @@ export class Interpreter {
 
     // interpret the conditional expression
     while (this.interpretExpression(node.test)) {
-      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.body);      // enter a new environment
       this.addNewEnvironment(newEnvironment);
 
       const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
@@ -896,7 +903,7 @@ export class Interpreter {
 
     // interpret the iteration
     do {
-      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());      // enter a new environment
+      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.body);      // enter a new environment
       this.addNewEnvironment(newEnvironment);
 
       const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
@@ -925,7 +932,7 @@ export class Interpreter {
 
       if (foundMatch) {  // if the test is null, it is the default case
         // enter a new environment
-        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment());
+        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), caseNode.consequent);
         this.addNewEnvironment(newEnvironment);
 
         // interpret the body of the case
