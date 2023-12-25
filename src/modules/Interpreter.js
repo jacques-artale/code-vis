@@ -948,7 +948,7 @@ export class Interpreter {
         break;
       case 'body':
         // enter a new environment
-        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.body);
+        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node, node.body);
         this.addNewEnvironment(newEnvironment);
 
         // interpret the body of the while loop
@@ -959,6 +959,7 @@ export class Interpreter {
         this.updateStateVariables(this.getCurrentEnvironment());
 
         if (result === 'break') this.getCurrentEnvironment().executionState.phase = 'end';
+        else this.getCurrentEnvironment().executionState.phase = 'test';
         break;
       case 'end':
         this.gotoNextInstruction();
@@ -969,19 +970,37 @@ export class Interpreter {
     if (this.debugging) console.log("do while statement");
     if (this.debugging) console.log(node);
 
-    // interpret the iteration
-    do {
-      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.body);      // enter a new environment
-      this.addNewEnvironment(newEnvironment);
+    if (this.getCurrentEnvironment().executionState.type !== 'doWhile') {
+      this.getCurrentEnvironment().executionState.type = 'doWhile';
+      this.getCurrentEnvironment().executionState.phase = 'body';
+    }
 
-      const result = this.interpretBlockStatement(node.body);       // interpret the body of the for loop
+    switch (this.getCurrentEnvironment().executionState.phase) {
+      case 'test':
+        if (this.interpretExpression(node.test)) {
+          this.getCurrentEnvironment().executionState.phase = 'body';
+        } else {
+          this.getCurrentEnvironment().executionState.phase = 'end';
+        }
+        break;
+      case 'body':
+        // enter a new environment
+        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node, node.body);
+        this.addNewEnvironment(newEnvironment);
 
-      // exit the environment
-      this.removeCurrentEnvironment();
-      this.updateStateVariables(this.getCurrentEnvironment());
+        // interpret the body of the while loop
+        const result = this.interpretBlockStatement(node.body);
 
-      if (result === 'break') break;
-    } while (this.interpretExpression(node.test));
+        // exit the environment
+        this.removeCurrentEnvironment();
+        this.updateStateVariables(this.getCurrentEnvironment());
+
+        if (result === 'break') this.getCurrentEnvironment().executionState.phase = 'end';
+        else this.getCurrentEnvironment().executionState.phase = 'test';
+        break;
+      case 'end':
+        this.gotoNextInstruction();
+    }
   }
 
   interpretSwitchStatement(node) {
