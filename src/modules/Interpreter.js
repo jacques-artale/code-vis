@@ -57,6 +57,7 @@ export class Interpreter {
   }
 
   getCurrentEnvironment() {
+    if (this.environmentStack.length === 0) return null;
     return this.environmentStack[this.environmentStack.length - 1];
   }
 
@@ -65,6 +66,7 @@ export class Interpreter {
   }
 
   removeCurrentEnvironment() {
+    if (this.environmentStack.length === 1) return; // do not remove the global environment
     this.environmentStack.pop();
   }
 
@@ -239,28 +241,52 @@ export class Interpreter {
     const node = this.getExecutingNode();
     if (node === null) return;
 
+    // IF WE ARE IN A BLOCK WE MIGHT GET A 'break' OR 'continue' HERE
+    // IF WE GET A 'break' WE SHOULD EXIT THE BLOCK, THAT IS, REMOVE THE BLOCK ENVIRONMENT AND THE WHILE OR FOR ENVIRONMENT CONTAINING IT
+    // IF WE GET A 'continue' WE SHOULD EXIT THE BLOCK, BUT NOT THE WHILE OR FOR ENVIRONMENT CONTAINING IT
+    // WE ALSO NEED TO CHECK HOW THIS MIGHT AFFECT SWITCH STATEMENTS AND SUCH
     this.executeNodeType(node);
   }
 
   getExecutingNode() {
     const environment = this.getCurrentEnvironment();
-    const type = environment.executionState.type;
+    if (environment === null) return null;
+
     const node = environment.executionState.node;
+    return node;
+  }
+
+  getNextInstruction() {
+    const environment = this.getCurrentEnvironment();
+    if (environment === null) return null;
+
     const instructions = environment.executionState.instructions;
     const instructionPointer = environment.executionState.instructionPointer;
 
-    if (type === 'for') return node;
-    if (instructionPointer >= instructions.length) return null;
+    if (instructionPointer >= instructions.length) return null; // end of program
     return instructions[instructionPointer];
   }
 
   gotoNextInstruction() {
     const environment = this.getCurrentEnvironment();
+    const instructions = environment.executionState.instructions;
+
     environment.executionState.instructionPointer++;
+
+    // have we reached the end of the instructions?
+    if (environment.executionState.instructionPointer >= instructions.length) {
+      this.removeCurrentEnvironment();
+      this.updateStateVariables(this.getCurrentEnvironment());
+    }
   }
 
   executeNodeType(node) {
+    if (this.debugging) console.log("execute node type");
+    if (this.debugging) console.log(node);
+
     switch (node.type) {
+      case 'Program':
+        return this.interpretProgram(node);
       case 'VariableDeclaration':
         return this.interpretVariableDeclaration(node);
       case 'FunctionDeclaration':
@@ -306,6 +332,16 @@ export class Interpreter {
       default:
         console.log('unrecognized node type: ' + node.type);
     }
+  }
+
+  interpretProgram(node) {
+    if (this.debugging) console.log("program");
+    if (this.debugging) console.log(node);
+
+    const instruction = this.getNextInstruction();
+    if (instruction === null) return;
+
+    this.executeNodeType(instruction);
   }
 
   interpretExpression(node) {
@@ -820,10 +856,12 @@ export class Interpreter {
     if (this.debugging) console.log("block statement");
     if (this.debugging) console.log(node);
 
-    for (let i = 0; i < node.body.length; i++) {
-      const result = this.executeNodeType(node.body[i]);
-      if (result === 'break' || result === 'continue') return result;
-    }
+    const instruction = this.getNextInstruction();
+    const result = this.executeNodeType(instruction);
+
+    if (result === 'break' || result === 'continue') return result;
+
+    this.gotoNextInstruction(); // SHOULD THIS BE HERE OR BEFORE WE RETURN RESULT IN THE EVENT OF A 'break' OR 'continue'?
 
     return null;
   }
@@ -933,33 +971,44 @@ export class Interpreter {
     if (this.debugging) console.log("while statement");
     if (this.debugging) console.log(node);
 
-    if (this.getCurrentEnvironment().executionState.type !== 'while') {
-      this.getCurrentEnvironment().executionState.type = 'while';
-      this.getCurrentEnvironment().executionState.phase = 'test';
+    const environment = this.getCurrentEnvironment();
+
+    if (environment.executionState.type !== 'while') {
+      environment.executionState.type = 'while';
+      environment.executionState.phase = 'test';
     }
 
-    switch (this.getCurrentEnvironment().executionState.phase) {
+    switch (environment.executionState.phase) {
       case 'test':
         if (this.interpretExpression(node.test)) {
-          this.getCurrentEnvironment().executionState.phase = 'body';
+          environment.executionState.phase = 'body';
         } else {
-          this.getCurrentEnvironment().executionState.phase = 'end';
+          environment.executionState.phase = 'end';
         }
         break;
       case 'body':
+        let instructions = null;
+        if (node.body.type === 'BlockStatement') instructions = node.body.body;
+        else instructions = [node.body];
+
         // enter a new environment
-        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node, node.body);
+        const newEnvironment = this.createEnvironment(environment, node.body, instructions);
         this.addNewEnvironment(newEnvironment);
 
         // interpret the body of the while loop
-        const result = this.interpretBlockStatement(node.body);
+        const result = this.executeNodeType(node.body);
 
-        // exit the environment
-        this.removeCurrentEnvironment();
-        this.updateStateVariables(this.getCurrentEnvironment());
+        // WE SHOULD STILL CHECK IF WE GET A BREAK HERE, THAT WOULD BE THE FIRST INSTRUCTION WITHIN THE BLOCK IN THAT CASE
+        // AND WE SHOULD EXIT THE WHILE LOOP AND REMOVE THE WHILE ENVIRONMENT
+        // IS THIS DONE BY MOVING TO THE NEXT INSTRUCTION? CHECK THIS
+        if (result === 'break') environment.executionState.phase = 'end';
 
-        if (result === 'break') this.getCurrentEnvironment().executionState.phase = 'end';
-        else this.getCurrentEnvironment().executionState.phase = 'test';
+        // THIS SHOULD BE DONE IN THE ENVIRONMENT OF THE WHILE, NOT THE BODY ENVIRONMENT WE CREATE ABOVE
+        // THE BLOCK WILL BE CALLED FROM INTERPRETNEXT() AS SOON AS WE CREATE THE NEW ENVIRONMENT SO WE
+        // SET THE PHASE TO TEST HERE
+        // WHEN BLOCK IS DONE, GETEXECUTINGNODE WILL REMOVE THE BLOCK ENVIRONMENT AND WE WILL BE BACK IN THE WHILE ENVIRONMENT
+        // THIS IS WHERE WE SHOULD SEE THE PHASE 'test' AND WE CAN DO EVERYTHING AGAIN
+        else environment.executionState.phase = 'test';
         break;
       case 'end':
         this.gotoNextInstruction();
