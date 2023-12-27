@@ -45,7 +45,6 @@ export class Interpreter {
       arrayVariables: [],             // array variables in our current scope
       objectVariables: [],            // object variables in our current scope
       parentEnvironment: parent,      // the parent environment
-      returnValue: null,              // the return value of the function or block
       executionState: {
         type: '',                     // the type of the current instruction (for, while, if, etc.)
         phase: '',                    // the phase of the current instruction (init, test, body, update, etc.)
@@ -698,13 +697,13 @@ export class Interpreter {
     }
 
     // interpret the body of the function
-    this.interpretBlockStatement(functionDeclaration.body);
+    const result = this.interpretBlockStatement(functionDeclaration.body);
 
     // exit the environment
     this.removeCurrentEnvironment();
 
     // return the return value of the function (if any)
-    return newEnvironment.returnValue;
+    return result
   }
 
   handleStandardFunctions(node) {
@@ -861,13 +860,20 @@ export class Interpreter {
 
     if (instruction === null) {
       this.removeCurrentEnvironment();
-    } else {
-      const result = this.executeNodeType(instruction);
-      if (result === 'break' || result === 'continue') return result;
-
-      this.gotoNextInstruction(); // SHOULD THIS BE HERE OR BEFORE WE RETURN RESULT IN THE EVENT OF A 'break' OR 'continue'?
+      return null;
+    }
+    
+    const result = this.executeNodeType(instruction);
+    if (result === 'break' || result === 'continue') {
+      return result;
+    }
+    
+    if (result !== null && result !== undefined) {
+      this.removeCurrentEnvironment();
+      return result;
     }
 
+    this.gotoNextInstruction();
     return null;
   }
 
@@ -975,22 +981,12 @@ export class Interpreter {
 
     switch (environment.executionState.phase) {
       case 'test':
-        if (this.interpretExpression(node.test)) {
-          environment.executionState.phase = 'body';
-        } else {
-          environment.executionState.phase = 'end';
-        }
+        if (this.interpretExpression(node.test)) environment.executionState.phase = 'body';
+        else environment.executionState.phase = 'end';
         break;
       case 'body':
         const result = this.executeNodeType(node.body); // interpret the body of the while loop
-
         if (result === 'break') environment.executionState.phase = 'end';
-
-        // THIS SHOULD BE DONE IN THE ENVIRONMENT OF THE WHILE, NOT THE BODY ENVIRONMENT WE CREATE ABOVE
-        // THE BLOCK WILL BE CALLED FROM INTERPRETNEXT() AS SOON AS WE CREATE THE NEW ENVIRONMENT SO WE
-        // SET THE PHASE TO TEST HERE
-        // WHEN BLOCK IS DONE, GETEXECUTINGNODE WILL REMOVE THE BLOCK ENVIRONMENT AND WE WILL BE BACK IN THE WHILE ENVIRONMENT
-        // THIS IS WHERE WE SHOULD SEE THE PHASE 'test' AND WE CAN DO EVERYTHING AGAIN
         else environment.executionState.phase = 'test';
         break;
       case 'end':
@@ -1071,8 +1067,7 @@ export class Interpreter {
     if (this.debugging) console.log("return statement");
     if (this.debugging) console.log(node);
 
-    const environment = this.getCurrentEnvironment()
-    environment.returnValue = this.interpretExpression(node.argument);
+    return this.interpretExpression(node.argument);
   }
 
   /* STANDARD FUNCTIONS */
