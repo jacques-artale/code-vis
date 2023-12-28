@@ -16,15 +16,17 @@ export class Interpreter {
     this.updateCallback = updateCallback;
 
     this.globalEnvironment = this.createEnvironment(null, parsedCode, parsedCode.body);
+    this.globalEnvironment.executionState.type = 'global';
     this.environmentStack.push(this.globalEnvironment);
   }
 
   // This function will reset the interpreter to its initial state, keeping the parsed code
   clearInternalState() {
     this.globalEnvironment = this.createEnvironment(null, this.parsedCode, this.parsedCode.body);
+    this.globalEnvironment.executionState.type = 'global';
+    this.environmentStack.push(this.globalEnvironment);
     this.functionDeclarations = [];
     this.environmentStack = [];
-    this.environmentStack.push(this.globalEnvironment);
   }
 
   // This function will reset the interpreter as well as the parsed code
@@ -33,6 +35,7 @@ export class Interpreter {
     this.functionDeclarations = [];
     this.environmentStack = [];
     this.globalEnvironment = this.createEnvironment(null, parsedCode, parsedCode.body);
+    this.globalEnvironment.executionState.type = 'global';
     this.environmentStack.push(this.globalEnvironment);
   }
 
@@ -320,7 +323,7 @@ export class Interpreter {
       case 'SwitchStatement':
         return this.interpretSwitchStatement(node);
       case 'BreakStatement':
-        return 'break'; // do nothing
+        return this.interpretBreakStatement(node);
       case 'ContinueStatement':
         return 'continue'; // do nothing
       case 'EmptyStatement':
@@ -848,7 +851,7 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     let environment = this.getCurrentEnvironment();
-    if (environment.executionState.type !== 'block') {
+    if (environment.executionState.node !== node) {
       // Create a new environment for the block's scope
       const instructions = node.body;
       const newEnvironment = this.createEnvironment(environment, node, instructions);
@@ -866,7 +869,8 @@ export class Interpreter {
     }
     
     const result = this.executeNodeType(instruction);
-    if (result === 'break' || result === 'continue') {
+    if (result === 'continue') {
+      this.removeCurrentEnvironment();
       return result;
     }
     
@@ -883,41 +887,14 @@ export class Interpreter {
     if (this.debugging) console.log("if statement");
     if (this.debugging) console.log(node);
 
-    // interpret the conditional expression
     const test = this.interpretExpression(node.test);
-    // interpret the consequent if the conditional expression is true
-    if (test) {
-      if (this.debugging) console.log("test is true");
 
-      const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.consequent);
-      this.addNewEnvironment(newEnvironment); // enter a new environment
+    if (test) return this.executeNodeType(node.consequent);
 
-      const result = this.interpretBlockStatement(node.consequent);
+    if (node.alternate === null) return;
+    if (node.alternate.type === 'IfStatement') return this.interpretIfStatement(node.alternate);
 
-      this.removeCurrentEnvironment(); // exit the environment
-      return result;
-    } else {
-      if (this.debugging) console.log("test is false");
-
-      // interpret the alternate if it exists
-      if (node.alternate !== null) {
-        if (this.debugging) console.log("alternate exists");
-
-        if (node.alternate.type === 'IfStatement') {
-          // if else if ...
-          this.interpretIfStatement(node.alternate);
-        } else {
-          // else
-          const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), node.alternate);
-          this.addNewEnvironment(newEnvironment); // enter a new environment
-
-          const result = this.interpretBlockStatement(node.alternate);
-
-          this.removeCurrentEnvironment(); // exit the environment
-          return result;
-        }
-      }
-    }
+    return this.executeNodeType(node.alternate);
   }
 
   interpretForStatement(node) {
@@ -926,7 +903,7 @@ export class Interpreter {
 
     let environment = this.getCurrentEnvironment();
 
-    if (environment.executionState.type !== 'for') {
+    if (environment.executionState.node !== node) {
       // Create a new environment for the for loop's scope
       const instructions = [node.init];
       const newEnvironment = this.createEnvironment(environment, node, instructions);
@@ -939,24 +916,23 @@ export class Interpreter {
 
     switch (environment.executionState.phase) {
       case 'init':
+        environment.executionState.phase = 'test';
         if (node.init !== null) {
           if (node.init.type === 'VariableDeclaration') this.interpretVariableDeclaration(node.init);
           else this.interpretExpression(node.init);
         }
-        environment.executionState.phase = 'test';
         break;
       case 'test':
         if (node.test !== null && this.interpretExpression(node.test)) environment.executionState.phase = 'body';
         else environment.executionState.phase = 'end';
         break;
       case 'body':
-        const result = this.executeNodeType(node.body); // interpret the body of the for loop
-        if (result === 'break') environment.executionState.phase = 'end';
-        else environment.executionState.phase = 'update';
+        environment.executionState.phase = 'update';
+        this.executeNodeType(node.body); // interpret the body of the for loop
         break;
       case 'update':
-        this.interpretExpression(node.update);
         environment.executionState.phase = 'test';
+        this.interpretExpression(node.update);
         break;
       case 'end':
         this.removeCurrentEnvironment(); // removes the for-loop environment (containing the init variables)
@@ -969,7 +945,7 @@ export class Interpreter {
 
     let environment = this.getCurrentEnvironment();
 
-    if (environment.executionState.type !== 'while') {
+    if (environment.executionState.node !== node) {
       // Create a new environment for the while loop's scope
       const instructions = [];
       const newEnvironment = this.createEnvironment(environment, node, instructions);
@@ -986,9 +962,8 @@ export class Interpreter {
         else environment.executionState.phase = 'end';
         break;
       case 'body':
-        const result = this.executeNodeType(node.body); // interpret the body of the while loop
-        if (result === 'break') environment.executionState.phase = 'end';
-        else environment.executionState.phase = 'test';
+        environment.executionState.phase = 'test';
+        this.executeNodeType(node.body); // interpret the body of the while loop
         break;
       case 'end':
         this.removeCurrentEnvironment(); // removes the while-loop environment
@@ -1001,7 +976,7 @@ export class Interpreter {
 
     let environment = this.getCurrentEnvironment();
 
-    if (environment.executionState.type !== 'doWhile') {
+    if (environment.executionState.node !== node) {
       // Create a new environment for the do while loop's scope
       const instructions = [];
       const newEnvironment = this.createEnvironment(environment, node, instructions);
@@ -1018,9 +993,8 @@ export class Interpreter {
         else environment.executionState.phase = 'end';
         break;
       case 'body':
-        const result = this.executeNodeType(node.body); // interpret the body of the do while loop
-        if (result === 'break') environment.executionState.phase = 'end';
-        else environment.executionState.phase = 'test';
+        environment.executionState.phase = 'test';
+        this.executeNodeType(node.body); // interpret the body of the do while loop
         break;
       case 'end':
         this.removeCurrentEnvironment(); // removes the do while-loop environment
@@ -1058,6 +1032,25 @@ export class Interpreter {
         if (result === 'break') break;
       }
     }
+  }
+
+  interpretBreakStatement(node) {
+    if (this.debugging) console.log("break statement");
+    if (this.debugging) console.log(node);
+
+    let environment = this.getCurrentEnvironment();
+    let type = environment.executionState.type;
+    // purge all environments until we reach a statement that can handle a break
+    while (type != 'global' && type != 'for' && type != 'while' && type != 'doWhile' && type != 'switch') {
+      this.removeCurrentEnvironment();
+      environment = this.getCurrentEnvironment();
+      type = environment.executionState.type;
+    }
+
+    this.removeCurrentEnvironment();
+    environment = this.getCurrentEnvironment();
+
+    return 'break';
   }
 
   interpretReturnStatement(node) {
