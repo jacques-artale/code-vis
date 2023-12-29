@@ -665,7 +665,7 @@ export class Interpreter {
   interpretCallExpression(node) {
     if (this.debugging) console.log("call expression");
     if (this.debugging) console.log(node);
-    
+
     const callee = node.callee;
     if (callee.type === 'MemberExpression') {
       // check if the function is a built-in function with return type
@@ -679,35 +679,45 @@ export class Interpreter {
       }
     }
 
-    // fetch the values of each argument
-    const callArguments = node.arguments;
-    const argumentValues = [];
-    for (let i = 0; i < callArguments.length; i++) {
-      argumentValues.push(this.interpretExpression(callArguments[i]));
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      // Create a new environment for the function call's scope
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(this.globalEnvironment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'call';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
     }
 
-    // fetch the function declaration
     const functionDeclaration = this.lookupFunction(node.callee.name);
-
-    // create a new environment for the function
-    const newEnvironment = this.createEnvironment(this.globalEnvironment, functionDeclaration.body);
-    this.addNewEnvironment(newEnvironment);
-
-    // add the parameters to the environment (new variables with values of callArguments)
-    for (let i = 0; i < functionDeclaration.parameters.length; i++) {
-      const parameter = functionDeclaration.parameters[i];
-      const parameterValue = argumentValues[i];
-      this.createVariable(parameter.name, parameterValue);
+    switch (environment.executionState.phase) {
+      case 'init':
+        environment.executionState.phase = 'call';
+        // load arguments into the environment
+        const callArguments = node.arguments;
+        const argumentValues = [];
+        for (let i = 0; i < callArguments.length; i++) {
+          argumentValues.push(this.interpretExpression(callArguments[i]));
+        }
+        // add the parameters to the environment (new variables with values of callArguments)
+        for (let i = 0; i < functionDeclaration.parameters.length; i++) {
+          const parameter = functionDeclaration.parameters[i];
+          const parameterValue = argumentValues[i];
+          this.createVariable(parameter.name, parameterValue);
+        }
+        break;
+      case 'call':
+        environment.executionState.phase = 'end';
+        this.interpretBlockStatement(functionDeclaration.body);  // interpret the body of the function
+        break;
+      case 'end':
+        const returnValue = environment.returnValue;
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValue = returnValue; // pass the return value to the previous environment
     }
-
-    // interpret the body of the function
-    const result = this.interpretBlockStatement(functionDeclaration.body); // TODO: check if this will always be a block statement or if we should call nodeType() instead
-
-    // exit the environment
-    this.removeCurrentEnvironment();
-
-    // return the return value of the function (if any)
-    return result
   }
 
   handleStandardFunctions(node) {
@@ -877,7 +887,8 @@ export class Interpreter {
     if (result === 'return') {
       const returnValue = environment.returnValue;
       this.removeCurrentEnvironment();
-      return returnValue;
+      this.getCurrentEnvironment().returnValue = returnValue; // pass the return value to the parent environment (should always be a call)
+      return 'return';
     }
 
     return null;
