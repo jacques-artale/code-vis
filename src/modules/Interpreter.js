@@ -356,11 +356,13 @@ export class Interpreter {
       case 'AssignmentExpression':
         return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node);
+        this.interpretBinaryExpression(node);
+        break;
       case 'LogicalExpression':
         return this.interpretLogicalExpression(node);
       case 'UnaryExpression':
-        return this.interpretUnaryExpression(node);
+        this.interpretUnaryExpression(node);
+        break;
       case 'ArrayExpression':
         this.interpretArrayExpression(node);
         break;
@@ -571,11 +573,36 @@ export class Interpreter {
     if (this.debugging) console.log("binary expression");
     if (this.debugging) console.log(node);
 
-    const leftValue = this.interpretExpression(node.left);
-    const rightValue = this.interpretExpression(node.right);
-    const operator = node.operator;
-    
-    return this.evaluateBinaryExpression(leftValue, rightValue, operator);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      // Create a new environment for the binary expression's scope
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'binary';
+      newEnvironment.executionState.phase = 'left';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'left':
+        environment.executionState.phase = 'right';
+        this.interpretExpression(node.left);
+        break;
+      case 'right':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.right);
+      case 'end':
+        const rightResult = environment.returnValues.pop();
+        const leftResult = environment.returnValues.pop();
+        const operator = node.operator;
+
+        this.removeCurrentEnvironment();
+
+        const result = this.evaluateBinaryExpression(leftResult, rightResult, operator);
+        this.getCurrentEnvironment().returnValues.push(result);
+    }
   }
 
   interpretLogicalExpression(node) {
@@ -593,17 +620,40 @@ export class Interpreter {
     if (this.debugging) console.log("unary expression");
     if (this.debugging) console.log(node);
 
-    const value = this.interpretExpression(node.argument);
-    const operator = node.operator;
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    if (operator === "!") return !value;
-    else if (operator === "-") return -value;
-    else if (operator === "+") return +value;
-    else if (operator === "~") return ~value;
-    else if (operator === "typeof") return typeof value;
-    else if (operator === "void") return void value;
-    else {
-      console.error("unknown operator: " + operator);
+      newEnvironment.executionState.type = 'unary';
+      newEnvironment.executionState.phase = 'evaluate';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'evaluate':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.argument);
+        break;
+      case 'end':
+        const value = environment.returnValues.pop();
+        const operator = node.operator;
+
+        this.removeCurrentEnvironment();
+
+        let result = value;
+        if (operator === "!") result = !value;
+        else if (operator === "-") result = -value;
+        else if (operator === "+") result = +value;
+        else if (operator === "~") result = ~value;
+        else if (operator === "typeof") result = typeof value;
+        else if (operator === "void") result = void value;
+        else {
+          console.error("unknown operator: " + operator);
+        }
+
+        this.getCurrentEnvironment().returnValues.push(result);
     }
   }
 
@@ -903,6 +953,7 @@ export class Interpreter {
           case 'Identifier':
             const varVal = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
             this.createVariable(varName, varVal, parent);
+            break;
           default:
             console.error(`Unrecognized variable type: ${varType}`);
         }
