@@ -48,7 +48,7 @@ export class Interpreter {
       arrayVariables: [],             // array variables in our current scope
       objectVariables: [],            // object variables in our current scope
       parentEnvironment: parent,      // the parent environment
-      returnValue: null,              // the return value of the current function
+      returnValues: [],               // a stack of return values
       executionState: {
         type: '',                     // the type of the current instruction (for, while, if, etc.)
         phase: '',                    // the phase of the current instruction (init, test, body, update, etc.)
@@ -343,11 +343,16 @@ export class Interpreter {
     if (this.debugging) console.log(node);
     if (node === null) return null;
 
+    const environment = this.getCurrentEnvironment();
+
     switch (node.type) {
       case 'Literal':
-        return node.value;
+        environment.returnValues.push(node.value);
+        break;
       case 'Identifier':
-        return this.lookupVariableValue(node.name, this.getCurrentEnvironment());
+        const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
+        environment.returnValues.push(value);
+        break;
       case 'AssignmentExpression':
         return this.interpretAssignmentExpression(node);
       case 'BinaryExpression':
@@ -357,13 +362,17 @@ export class Interpreter {
       case 'UnaryExpression':
         return this.interpretUnaryExpression(node);
       case 'ArrayExpression':
-        return this.interpretArrayExpression(node);
+        this.interpretArrayExpression(node);
+        break;
       case 'ObjectExpression':
-        return this.interpretObjectExpression(node);
+        this.interpretObjectExpression(node);
+        break;
       case 'CallExpression':
-        return this.interpretCallExpression(node);
+        this.interpretCallExpression(node);
+        break;
       case 'MemberExpression':
-        return this.interpretMemberExpression(node);
+        this.interpretMemberExpression(node);
+        break;
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node);
       case 'SequenceExpression':
@@ -513,14 +522,21 @@ export class Interpreter {
       if (node.name === 'length') return node.name;
 
       const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
-      if (value !== null) return value;
+      if (value !== null) {
+        this.getCurrentEnvironment().returnValues.push(value);
+        return;
+      }
+
       const functionDeclaration = this.lookupFunction(node.name);
-      if (functionDeclaration !== null) return functionDeclaration;
+      if (functionDeclaration !== null) {
+        this.getCurrentEnvironment().returnValues.push(functionDeclaration);
+        return;
+      }
 
       // if we get here then the identifier must be a property
-      return node.name;
+      this.getCurrentEnvironment().returnValues.push(node.name);
     } else {
-      return this.interpretExpression(node);
+      this.interpretExpression(node);
     }
   }
 
@@ -706,10 +722,10 @@ export class Interpreter {
         this.interpretBlockStatement(functionDeclaration.body);  // interpret the body of the function
         break;
       case 'end':
-        const returnValue = environment.returnValue;
+        const value = environment.returnValues.pop();
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValue = returnValue; // pass the return value to the previous environment
+        environment.returnValues.push(value); // pass the return value to the previous environment
     }
   }
 
@@ -729,12 +745,37 @@ export class Interpreter {
     if (this.debugging) console.log("member expression");
     if (this.debugging) console.log(node);
 
-    const object = this.interpretExpression(node.object);
-    const property = this.handleMemberProperty(node.property);
-    
-    if (property === 'length') return object.length;
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      // Create a new environment for the member expression's scope
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(this.globalEnvironment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    return object[property];
+      newEnvironment.executionState.type = 'member';
+      newEnvironment.executionState.phase = 'object';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'object':
+        environment.executionState.phase = 'property';
+        this.interpretExpression(node.object);
+        break;
+      case 'property':
+        environment.executionState.phase = 'end';
+        this.handleMemberProperty(node.property);
+        break;
+      case 'end':
+        const property = environment.returnValues.pop();
+        const object = environment.returnValues.pop();
+
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+
+        if (property === 'length') environment.returnValues.push(object.length);
+        else environment.returnValues.push(object[property]);
+    }
   }
 
   interpretConditionalExpression() {}
@@ -763,11 +804,13 @@ export class Interpreter {
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
       const key = property.key.name;
-      const value = this.interpretExpression(property.value);
+      this.interpretExpression(property.value);
+      const value = this.getCurrentEnvironment().returnValues.pop();
       object[key] = value;
     }
 
-    return object;
+    const environment = this.getCurrentEnvironment();
+    environment.returnValues.push(object);
   }
 
   interpretArrayExpression(node) {
@@ -776,10 +819,13 @@ export class Interpreter {
 
     const values = [];
     for (let i = 0; i < node.elements.length; i++) {
-      values.push(this.interpretExpression(node.elements[i]));
+      this.interpretExpression(node.elements[i]);
+      const value = this.getCurrentEnvironment().returnValues.pop();
+      values.push(value);
     }
 
-    return values;
+    const environment = this.getCurrentEnvironment();
+    environment.returnValues.push(values);
   }
 
   interpretSequenceExpression(node) {
@@ -825,7 +871,7 @@ export class Interpreter {
         environment.executionState.phase = 'init';
         const varName = declaration.id.name;
         const varType = declaration.init.type;
-        const value = environment.returnValue;
+        const value = environment.returnValues.pop();
         const parent = environment.parentEnvironment;
 
         // check type of value and create the variable accordingly
@@ -866,8 +912,6 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         this.gotoNextInstruction();
     }
-    // NOTE: EVERYTHING WHICH HAS SOMETHING TO DO WITH VARIABLE DECLARATIONS (PRETTY MUCH ALL TESTS) WILL ALSO FAIL
-    // UNTIL I MAKE SURE THAT EACH EXPRESSION USES THE environment.returnValue VARIABLE TO PASS VALUES BETWEEN ENVIRONMENTS INSTEAD OF JUST RETURNING
   }
 
   interpretFunctionDeclaration(node) {
@@ -914,9 +958,9 @@ export class Interpreter {
     }
     
     if (result === 'return') {
-      const returnValue = environment.returnValue;
+      const value = environment.returnValues.pop();
       this.removeCurrentEnvironment();
-      this.getCurrentEnvironment().returnValue = returnValue; // pass the return value to the parent environment (should always be a call)
+      this.getCurrentEnvironment().returnValues.push(value); // pass the return value to the parent environment (should always be a call)
       return 'return';
     }
 
@@ -1097,8 +1141,7 @@ export class Interpreter {
     if (this.debugging) console.log("return statement");
     if (this.debugging) console.log(node);
 
-    const environment = this.getCurrentEnvironment();
-    environment.returnValue = this.interpretExpression(node.argument);
+    this.interpretExpression(node.argument);
 
     return 'return';
   }

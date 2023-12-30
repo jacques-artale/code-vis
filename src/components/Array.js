@@ -3,6 +3,10 @@ import ArrayCell from './ArrayCell';
 
 const ArrayGrid = ({ name, values }) => {
 
+  if (!Array.isArray(values)) {
+    return null;
+  }
+
   // Check if the array is one-dimensional
   const isOneDimensional = values.every((item) => !Array.isArray(item));
 
