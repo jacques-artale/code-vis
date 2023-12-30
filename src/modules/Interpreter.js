@@ -92,8 +92,7 @@ export class Interpreter {
     return null;
   }
 
-  createVariable(name, value) {
-    const environment = this.getCurrentEnvironment();
+  createVariable(name, value, environment) {
     if (name in environment.variables) {
       console.error(`Expression interpreter error: Variable ${name} already exists`);
       return;
@@ -103,8 +102,7 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  createArrayVariable(name, values) {
-    const environment = this.getCurrentEnvironment();
+  createArrayVariable(name, values, environment) {
     if (name in environment.arrayVariables) {
       console.error(`Expression interpreter error: Array variable ${name} already exists`);
       return;
@@ -114,8 +112,7 @@ export class Interpreter {
     this.updateStateVariables(environment);
   }
 
-  createObjectVariable(name, value) {
-    const environment = this.getCurrentEnvironment();
+  createObjectVariable(name, value, environment) {
     if (name in environment.objectVariables) {
       console.error(`Expression interpreter error: Object variable ${name} already exists`);
       return;
@@ -251,8 +248,6 @@ export class Interpreter {
     // IF WE GET A 'continue' WE SHOULD EXIT THE BLOCK, BUT NOT THE WHILE OR FOR ENVIRONMENT CONTAINING IT
     // WE ALSO NEED TO CHECK HOW THIS MIGHT AFFECT SWITCH STATEMENTS AND SUCH
     this.executeNodeType(node);
-
-    this.gotoNextInstruction();
   }
 
   getExecutingNode() {
@@ -563,10 +558,8 @@ export class Interpreter {
     const leftValue = this.interpretExpression(node.left);
     const rightValue = this.interpretExpression(node.right);
     const operator = node.operator;
-
-    const result = this.evaluateBinaryExpression(leftValue, rightValue, operator);
     
-    return result;
+    return this.evaluateBinaryExpression(leftValue, rightValue, operator);
   }
 
   interpretLogicalExpression(node) {
@@ -705,7 +698,7 @@ export class Interpreter {
         for (let i = 0; i < functionDeclaration.parameters.length; i++) {
           const parameter = functionDeclaration.parameters[i];
           const parameterValue = argumentValues[i];
-          this.createVariable(parameter.name, parameterValue);
+          this.createVariable(parameter.name, parameterValue, environment); // TODO: check if this could be array or object variables as well
         }
         break;
       case 'call':
@@ -804,43 +797,77 @@ export class Interpreter {
     if (this.debugging) console.log("variable declaration");
     if (this.debugging) console.log(node);
 
-    for (let i = 0; i < node.declarations.length; i++) {
-      const declaration = node.declarations[i];
-      const varName = declaration.id.name;
-      const varType = declaration.init.type;
-      
-      const value = this.interpretExpression(declaration.init);
-      
-      if (varType === 'Literal') {
-        this.createVariable(varName, value);
-      } else if (varType === 'Identifier') {
-        const varVal = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
-        this.createVariable(varName, varVal);
-      } else if (varType === 'BinaryExpression') {
-        this.createVariable(varName, value);
-      } else if (varType === 'UnaryExpression') {
-        this.createVariable(varName, value);
-      } else if (varType === 'CallExpression') {
-        this.createVariable(varName, value);
-      } else if (varType === 'UpdateExpression') {
-        this.createVariable(varName, value);
-      } else if (varType === 'ArrayExpression') {
-        this.createArrayVariable(varName, value);
-      } else if (varType === 'ObjectExpression') {
-        this.createObjectVariable(varName, value);
-      } else if (varType === 'MemberExpression') {
-        // check type of value and create the variable accordingly
-        if (Array.isArray(value)) {
-          this.createArrayVariable(varName, value);
-        } else if (typeof value === 'object') {
-          this.createObjectVariable(varName, value);
-        } else {
-          this.createVariable(varName, value);
-        }
-      } else {
-        console.error("unknown variable type: " + declaration.init.type);
-      }
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      // Create a new environment for the variable declaration
+      const instructions = node.declarations;
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'variableDeclaration';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
     }
+
+    const declaration = this.getNextInstruction();
+
+    if (declaration === null) environment.executionState.phase = 'end';
+
+    switch (environment.executionState.phase) {
+      case 'init':
+        environment.executionState.phase = 'evaluate';
+        break;
+      case 'evaluate':
+        environment.executionState.phase = 'declare';
+        this.interpretExpression(declaration.init);
+        break;
+      case 'declare':
+        environment.executionState.phase = 'init';
+        const varName = declaration.id.name;
+        const varType = declaration.init.type;
+        const value = environment.returnValue;
+        const parent = environment.parentEnvironment;
+
+        // check type of value and create the variable accordingly
+        switch (varType) {
+          case 'Literal':
+          case 'BinaryExpression':
+          case 'LogicalExpression':
+          case 'UnaryExpression':
+          case 'CallExpression':
+          case 'UpdateExpression':
+            this.createVariable(varName, value, parent);
+            break;
+          case 'ArrayExpression':
+            this.createArrayVariable(varName, value, parent);
+            break;
+          case 'ObjectExpression':
+            this.createObjectVariable(varName, value, parent);
+            break;
+          case 'MemberExpression':
+            // check type of value and create the variable accordingly
+            if (Array.isArray(value)) {
+              this.createArrayVariable(varName, value, parent);
+            } else if (typeof value === 'object') {
+              this.createObjectVariable(varName, value, parent);
+            } else {
+              this.createVariable(varName, value, parent);
+            }
+            break;
+          case 'Identifier':
+            const varVal = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
+            this.createVariable(varName, varVal, parent);
+          default:
+            console.error(`Unrecognized variable type: ${varType}`);
+        }
+        this.gotoNextInstruction();
+        break;
+      case 'end':
+        this.removeCurrentEnvironment();
+        this.gotoNextInstruction();
+    }
+    // NOTE: EVERYTHING WHICH HAS SOMETHING TO DO WITH VARIABLE DECLARATIONS (PRETTY MUCH ALL TESTS) WILL ALSO FAIL
+    // UNTIL I MAKE SURE THAT EACH EXPRESSION USES THE environment.returnValue VARIABLE TO PASS VALUES BETWEEN ENVIRONMENTS INSTEAD OF JUST RETURNING
   }
 
   interpretFunctionDeclaration(node) {
@@ -854,6 +881,8 @@ export class Interpreter {
     const functionDeclaration = this.createFunction(name, parameters, body);
 
     this.functionDeclarations.push(functionDeclaration);
+
+    this.gotoNextInstruction();
   }
 
   interpretBlockStatement(node) {
