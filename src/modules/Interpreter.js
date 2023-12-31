@@ -654,6 +654,7 @@ export class Interpreter {
       case 'right':
         environment.executionState.phase = 'end';
         this.interpretExpression(node.right);
+        break;
       case 'end':
         const rightResult = environment.returnValues.pop();
         const leftResult = environment.returnValues.pop();
@@ -786,6 +787,7 @@ export class Interpreter {
     if (this.debugging) console.log("call expression");
     if (this.debugging) console.log(node);
 
+    // TODO: merge this with the switch case
     const callee = node.callee;
     if (callee.type === 'MemberExpression') {
       // check if the function is a built-in function with return type
@@ -847,7 +849,10 @@ export class Interpreter {
         if (node.callee.property.name === 'min') return this.interpretMathMin(node);
         if (node.callee.property.name === 'abs') return this.interpretMathAbs(node);
       }
-      if (node.callee.property.name === 'push') return this.interpretArrayPush(node);
+      if (node.callee.property.name === 'push') {
+        this.interpretArrayPush(node);
+        return true;
+      }
     }
     return null;
   }
@@ -860,7 +865,7 @@ export class Interpreter {
     if (environment.executionState.node !== node) {
       // Create a new environment for the member expression's scope
       const instructions = [];
-      const newEnvironment = this.createEnvironment(this.globalEnvironment, node, instructions);
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
       this.addNewEnvironment(newEnvironment);
 
       newEnvironment.executionState.type = 'member';
@@ -895,13 +900,38 @@ export class Interpreter {
     if (this.debugging) console.log("array push");
     if (this.debugging) console.log(node);
 
-    let value = this.interpretExpression(node.callee.object);
-    const argument = this.interpretExpression(node.arguments[0]);
-    value.push(argument);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    const identifier = node.callee.object.name;
-    this.updateVariableValue(identifier, value, this.getCurrentEnvironment());
-    return argument;
+      newEnvironment.executionState.type = 'arrayPush';
+      newEnvironment.executionState.phase = 'value';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'value':
+        environment.executionState.phase = 'argument';
+        this.interpretExpression(node.callee.object);
+        break;
+      case 'argument':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.arguments[0]);
+        break;
+      case 'end':
+        const argument = environment.returnValues.pop();
+        const value = environment.returnValues.pop();
+        const identifier = node.callee.object.name;
+        const result = [...value, argument];
+        this.removeCurrentEnvironment();
+
+        this.updateVariableValue(identifier, result, this.getCurrentEnvironment());
+        environment.returnValues.push(argument); // TODO: check all functions which should both update a value and then return a value, such as a++/++a etc
+
+        this.gotoNextInstruction();
+    }
   }
 
   interpretObjectExpression(node) {
