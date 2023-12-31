@@ -472,51 +472,113 @@ export class Interpreter {
     }
   }
 
-  handleMemberExpressionAssignment(node) {
-    const leftExpression = node.left;
-    const operator = node.operator;
+  handleMemberExpressionAssignment(node) { // TODO: fix this horrible abomination of a function into clean code which does not make me want to torch my eyes
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      let object = node.left;
+      while (object.type === 'MemberExpression') { // example: object.property1.property2.property3 or object[0][1][2]
+        instructions.unshift(object.property);
+        object = object.object;
+      }
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    // get the object we are updating
-    let object = leftExpression;
-    let properties = [];
-    while (object.type === 'MemberExpression') {
-      properties.unshift(this.handleMemberProperty(object.property));
-      object = object.object;
+      newEnvironment.executionState.type = 'memberAssignment';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+
+      environment.returnValues.push([]); // properties
     }
 
-    // TODO: handle this better as it could be something other than an identifier
-    let identifier = null;
-    if (object.type === 'Identifier') {
-      identifier = object.name;
-    }
+    switch (environment.executionState.phase) {
+      case 'init': {
+        const instruction = this.getNextInstruction();
+        if (instruction === null) {
+          environment.executionState.phase = 'object';
+        } else {
+          environment.executionState.phase = 'property';
+          this.handleMemberProperty(instruction);
+        }
+        break;
+      }
+      case 'property': {
+        environment.executionState.phase = 'init';
+        // get the property
+        const property = this.getCurrentEnvironment().returnValues.pop();
+        let properties = this.getCurrentEnvironment().returnValues.pop();
+        properties.unshift(property); // TODO: check the order of shift and unshift here
+        this.getCurrentEnvironment().returnValues.push(properties);
 
-    // get the current value of the property we are updating
-    const objectValue = this.interpretExpression(object);
-    let oldValue = objectValue;
-    for (let i = 0; i < properties.length; i++) {
-      oldValue = oldValue[properties[i]];
-    }
-    const value = this.interpretExpression(node.right);
+        this.gotoNextInstruction();
+        break;
+      }
+      case 'object': {
+        environment.executionState.phase = 'evaluate';
+        // use properties and object to find the value
+        let object = node.left;
+        while (object.type === 'MemberExpression') {
+          object = object.object; // TODO: fix horrible code
+        }
+        this.interpretExpression(object);
+        break;
+      }
+      case 'evaluate': {
+        environment.executionState.phase = 'end';
+        // evaluate the right side of the assignment
+        const objectValue = this.getCurrentEnvironment().returnValues.pop();
+        const properties = this.getCurrentEnvironment().returnValues.pop();
+        
+        let oldValue = objectValue;
+        for (let i = 0; i < properties.length; i++) {
+          oldValue = oldValue[properties[i]];
+        }
+        this.getCurrentEnvironment().returnValues.push(properties);
+        this.getCurrentEnvironment().returnValues.push(oldValue);
 
-    // update
-    let newValue = null;
-    if (operator === "=") newValue = value;
-    else if (operator === "+=") newValue = oldValue + value;
-    else if (operator === "-=") newValue = oldValue - value;
-    else if (operator === "*=") newValue = oldValue * value;
-    else if (operator === "/=") newValue = oldValue / value;
-    else if (operator === "%=") newValue = oldValue % value;
-    else if (operator === "<<=") newValue = oldValue << value;
-    else if (operator === ">>=") newValue = oldValue >> value;
-    else if (operator === ">>>=") newValue = oldValue >>> value;
-    else if (operator === "&=") newValue = oldValue & value;
-    else if (operator === "|=") newValue = oldValue | value;
-    else if (operator === "^=") newValue = oldValue ^ value;
-    else {
-      console.error("unknown operator: " + operator);
-    }
+        this.interpretExpression(node.right);
+        break;
+      }
+      case 'end': {
+        // update the value
+        const operator = node.operator;
+        const value = this.getCurrentEnvironment().returnValues.pop();
+        const oldValue = this.getCurrentEnvironment().returnValues.pop();
+        const properties = this.getCurrentEnvironment().returnValues.pop();
 
-    this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
+        let newValue = null;
+        if (operator === "=") newValue = value;
+        else if (operator === "+=") newValue = oldValue + value;
+        else if (operator === "-=") newValue = oldValue - value;
+        else if (operator === "*=") newValue = oldValue * value;
+        else if (operator === "/=") newValue = oldValue / value;
+        else if (operator === "%=") newValue = oldValue % value;
+        else if (operator === "<<=") newValue = oldValue << value;
+        else if (operator === ">>=") newValue = oldValue >> value;
+        else if (operator === ">>>=") newValue = oldValue >>> value;
+        else if (operator === "&=") newValue = oldValue & value;
+        else if (operator === "|=") newValue = oldValue | value;
+        else if (operator === "^=") newValue = oldValue ^ value;
+        else {
+          console.error("unknown operator: " + operator);
+        }
+
+        // TODO: handle this better as it could be something other than an identifier
+        let object = node.left;
+        while (object.type === 'MemberExpression') {
+          object = object.object; // TODO: fix horrible code
+        }
+
+        let identifier = null;
+        if (object.type === 'Identifier') {
+          identifier = object.name;
+        }
+
+        this.removeCurrentEnvironment();
+        this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
+        this.gotoNextInstruction();
+      }
+    }
   }
 
   handleMemberProperty(node) {

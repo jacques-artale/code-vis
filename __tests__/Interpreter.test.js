@@ -184,6 +184,13 @@ describe('Variable assignment', () => {
     expect(variables).toContainEqual(['c', 1]);
   });
 
+  test('Assign arithmetic operation of array members to variable', () => {
+    const code = 'var a = [1, 2, 3]; var b = a[0] + a[1];';
+    interpret(code);
+    expect(arrayVariables).toEqual([['a', [1, 2, 3]]]);
+    expect(variables).toEqual([['b', 3]]);
+  });
+
   test('Assign array to variable', () => {});   // TODO: Implement
   test('Assign object to variable', () => {});  // TODO: Implement
 });
@@ -197,6 +204,7 @@ describe('Array assignment', () => {
       { code: 'var a = [1, 2, 3]; a[0] = 1 / 2;', expected: [['a', [0.5, 2, 3]]] },
       { code: 'var a = [1, 2, 3]; a[0] = 1 % 2;', expected: [['a', [1, 2, 3]]] },
       { code: 'var a = [1, 2, 3]; a[0] = (1 + 2) * 3 / 4 % 5;', expected: [['a', [2.25, 2, 3]]] },
+      { code: 'var a = [[1,2,3], [4,5,6], [7,8,9]]; a[1][1] = 1 + 2;', expected: [['a', [[1,2,3], [4,3,6], [7,8,9]]]] },
     ]
     operations.forEach(({ code, expected }) => {
       arrayVariables = [];
