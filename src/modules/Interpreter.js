@@ -507,7 +507,7 @@ export class Interpreter {
       case 'property': { // adds the property value to the properties array
         environment.executionState.phase = 'init';
         const property = environment.returnValues.pop();
-        const properties = [property, ...environment.returnValues.pop()];
+        const properties = [...environment.returnValues.pop(), property];
         environment.returnValues.push(properties);
 
         this.gotoNextInstruction();
@@ -549,9 +549,8 @@ export class Interpreter {
 
         // TODO: handle this better as it could be something other than an identifier
         let identifier = null;
-        if (object.type === 'Identifier') {
-          identifier = object.name;
-        }
+        if (object.type === 'Identifier') identifier = object.name;
+        else console.error("object does not have an identifier");
 
         this.removeCurrentEnvironment();
         this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[properties[0]][properties[1]][...] = value;
