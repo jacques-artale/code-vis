@@ -14,9 +14,9 @@ function Console({ log }) {
       }
     }>
       {
-        log.map((line) => {
+        log.map((line, index) => {
           return (
-            <p style={{margin: "0px"}}>: {line}</p>
+            <p key={index} style={{margin: "0px"}}>: {line}</p>
           );
         })
       }

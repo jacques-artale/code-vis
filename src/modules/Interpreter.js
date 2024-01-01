@@ -359,7 +359,7 @@ export class Interpreter {
         this.interpretBinaryExpression(node);
         break;
       case 'LogicalExpression':
-        return this.interpretLogicalExpression(node);
+        return this.interpretLogicalExpression(node); // TODO: make this work with single instructions
       case 'UnaryExpression':
         this.interpretUnaryExpression(node);
         break;
@@ -376,7 +376,8 @@ export class Interpreter {
         this.interpretMemberExpression(node);
         break;
       case 'UpdateExpression':
-        return this.interpretUpdateExpression(node);
+        this.interpretUpdateExpression(node);
+        break;
       case 'SequenceExpression':
         return this.interpretSequenceExpression(node);
       // Add other expression types as needed
@@ -424,7 +425,8 @@ export class Interpreter {
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node);
       case 'UpdateExpression':
-        return this.interpretUpdateExpression(node);
+        this.interpretUpdateExpression(node);
+        break;
       case 'CallExpression':
         return this.interpretCallExpression(node);
       case 'MemberExpression':
@@ -701,46 +703,80 @@ export class Interpreter {
 
     if (node.argument.type === 'MemberExpression') {
       // update the array or object property
-      return this.handleUpdateMemberExpression(node);
+      this.handleUpdateMemberExpression(node);
     } else {
       // update the variable
-      return this.handleUpdateVariableExpression(node);
+      this.handleUpdateVariableExpression(node);
     }
   }
 
   handleUpdateMemberExpression(node) {
-    // get the object we are updating
-    let object = node.argument;
-    let properties = [];
-    while (object.type === 'MemberExpression') {
-      properties.unshift(this.handleMemberProperty(object.property));
-      object = object.object;
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      let object = node.argument;
+      // example: object.property1.property2.property3 or object[0][1][2]
+      while (object.type === 'MemberExpression') {
+        instructions.unshift(object.property);
+        object = object.object;
+      }
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'memberUpdate';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+
+      environment.returnValues.push(object);
+      environment.returnValues.push([]); // array of properties such as [property1, property2, property3]
     }
 
-    let identifier = null;
-    if (object.type === 'Identifier') {
-      identifier = object.name;
+    switch (environment.executionState.phase) {
+      case 'init': { // interprets the property into a value
+        const property = this.getNextInstruction();
+        if (property === null) {
+          environment.executionState.phase = 'end';
+          break;
+        }
+        environment.executionState.phase = 'property';
+        this.handleMemberProperty(property);
+        break;
+      }
+      case 'property': { // adds the property value to the properties array
+        environment.executionState.phase = 'init';
+        const property = environment.returnValues.pop();
+        const properties = [...environment.returnValues.pop(), property];
+        environment.returnValues.push(properties);
+
+        this.gotoNextInstruction();
+        break;
+      }
+      case 'end': { // finds the value of the final property and updates it
+        const properties = environment.returnValues.pop();
+        const operator = node.operator;
+        const object = environment.returnValues.pop();
+        const identifier = (object.type === 'Identifier') ? object.name : null;
+
+        let objectValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
+        for (let i = 0; i < properties.length; i++) {
+          objectValue = objectValue[properties[i]];
+        }
+        
+        let value = objectValue;
+        if (operator === '++') value++;
+        else if (operator === '--') value--;
+        else console.error("weird error, operator not found");
+
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
+        
+        if (node.prefix) environment.returnValues.push(value);
+        else environment.returnValues.push(objectValue);
+        
+        this.gotoNextInstruction();
+      }
     }
-
-    const operator = node.operator;
-
-    // get the current value of the property we are updating
-    let objectValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
-    let oldValue = objectValue;
-    for (let i = 0; i < properties.length; i++) {
-      oldValue = oldValue[properties[i]];
-    }
-
-    // update
-    let value = oldValue;
-    if (operator === '++') value++;
-    else if (operator === '--') value--;
-    else console.error("weird error, operator not found");
-
-    this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
-
-    if (node.prefix) return value;
-    return oldValue;
   }
 
   handleUpdateVariableExpression(node) {
@@ -755,8 +791,12 @@ export class Interpreter {
 
     this.updateVariableValue(varName, value, this.getCurrentEnvironment());
 
-    if (node.prefix) return value;
-    return oldValue;
+    this.gotoNextInstruction();
+
+    console.log(this.getCurrentEnvironment());
+
+    if (node.prefix) this.getCurrentEnvironment().returnValues.push(value);
+    return this.getCurrentEnvironment().returnValues.push(oldValue);
   }
 
   interpretCallExpression(node) {
@@ -1289,8 +1329,28 @@ export class Interpreter {
     if (this.debugging) console.log("console log");
     if (this.debugging) console.log(node);
 
-    const argument = this.interpretExpression(node.arguments[0]);
-    this.updateCallback({ command: 'consoleLog', argument: argument });
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'consoleLog';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'init':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.arguments[0]);
+        break;
+      case 'end':
+        const argument = environment.returnValues.pop();
+        this.removeCurrentEnvironment();
+        this.updateCallback({ command: 'consoleLog', argument: argument });
+        this.gotoNextInstruction();
+    }
   }
 
   interpretMathMax(node) {

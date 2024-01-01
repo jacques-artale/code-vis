@@ -10,7 +10,7 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 
 function App() {
-  const [code, setCode] = useState('function a(b, c) {\n  return b + c;\n}\n\nvar d = a(1, 2);\n');
+  const [code, setCode] = useState('var a = [1,2,3];\na[0]++;\n');
   const [viewAST, setViewAST] = useState(false);
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
