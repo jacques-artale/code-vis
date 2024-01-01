@@ -383,7 +383,7 @@ describe('Function call', () => {
   test('Function call with array argument', () => {
     const code = 'function a(b) { return b; } var c = a([1, 2, 3]);';
     interpret(code);    
-    expect(variables).toEqual([['c', [1, 2, 3]]]);
+    expect(arrayVariables).toEqual([['c', [1, 2, 3]]]);
   });
 
   test('Function call with object argument', () => {

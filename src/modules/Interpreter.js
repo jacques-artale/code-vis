@@ -387,53 +387,30 @@ export class Interpreter {
 
   evaluateBinaryExpression(left, right, operator) {
     switch (operator) {
-      case '+':
-        return left + right;
-      case '-':
-        return left - right;
-      case '*':
-        return left * right;
-      case '/':
-        return left / right;
-      case '%':
-        return left % right;
-      case '==':
-        return left == right;
-      case '===':
-        return left === right;
-      case '!=':
-        return left != right;
-      case '!==':
-        return left !== right;
-      case '<':
-        return left < right;
-      case '<=':
-        return left <= right;
-      case '>':
-        return left > right;
-      case '>=':
-        return left >= right;
-      case '&&':
-        return left && right;
-      case '||':
-        return left || right;
-      case '<<':
-        return left << right;
-      case '>>':
-        return left >> right;
-      case '>>>':
-        return left >>> right;
-      case '&':
-        return left & right;
-      case '|':
-        return left | right;
-      case '^':
-        return left ^ right;
-      case 'in':
-        return left in right;
+      case '+':   return left + right;
+      case '-':   return left - right;
+      case '*':   return left * right;
+      case '/':   return left / right;
+      case '%':   return left % right;
+      case '==':  return left == right;
+      case '===': return left === right;
+      case '!=':  return left != right;
+      case '!==': return left !== right;
+      case '<':   return left < right;
+      case '<=':  return left <= right;
+      case '>':   return left > right;
+      case '>=':  return left >= right;
+      case '&&':  return left && right;
+      case '||':  return left || right;
+      case '<<':  return left << right;
+      case '>>':  return left >> right;
+      case '>>>': return left >>> right;
+      case '&':   return left & right;
+      case '|':   return left | right;
+      case '^':   return left ^ right;
+      case 'in':  return left in right;
       // Add other operators as needed, possibly power operator and such
-      default:
-        console.error(`Unrecognized operator: ${operator}`);
+      default: console.error(`Unrecognized operator: ${operator}`);
     }
   }
 
@@ -803,7 +780,7 @@ export class Interpreter {
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       // Create a new environment for the function call's scope
-      const instructions = [];
+      const instructions = node.arguments;
       const newEnvironment = this.createEnvironment(this.globalEnvironment, node, instructions);
       this.addNewEnvironment(newEnvironment);
 
@@ -812,22 +789,25 @@ export class Interpreter {
       environment = newEnvironment;
     }
 
+    const argument = this.getNextInstruction();
+    const instructionPointer = environment.executionState.instructionPointer;
+
     const functionDeclaration = this.lookupFunction(node.callee.name);
     switch (environment.executionState.phase) {
       case 'init':
-        environment.executionState.phase = 'call';
-        // load arguments into the environment
-        const callArguments = node.arguments;
-        const argumentValues = [];
-        for (let i = 0; i < callArguments.length; i++) {
-          argumentValues.push(this.interpretExpression(callArguments[i]));
-        }
-        // add the parameters to the environment (new variables with values of callArguments)
-        for (let i = 0; i < functionDeclaration.parameters.length; i++) {
-          const parameter = functionDeclaration.parameters[i];
-          const parameterValue = argumentValues[i];
-          this.createVariable(parameter.name, parameterValue, environment); // TODO: check if this could be array or object variables as well
-        }
+        if (argument === null) environment.executionState.phase = 'call';
+        else environment.executionState.phase = 'argument';
+        break;
+      case 'argument':
+        environment.executionState.phase = 'declare';
+        this.interpretExpression(argument);
+        break;
+      case 'declare': // TODO: this will create a need for an extra unnecessary call to interpretNextInstruction()
+        environment.executionState.phase = 'init';
+        const argumentValue = environment.returnValues.pop();
+        const parameter = functionDeclaration.parameters[instructionPointer];
+        this.handleVariableCreation(argument.type, parameter.name, argumentValue, environment, argument.name);
+        this.gotoNextInstruction();
         break;
       case 'call':
         environment.executionState.phase = 'end';
@@ -997,11 +977,10 @@ export class Interpreter {
 
     const declaration = this.getNextInstruction();
 
-    if (declaration === null) environment.executionState.phase = 'end';
-
     switch (environment.executionState.phase) {
       case 'init':
-        environment.executionState.phase = 'evaluate';
+        if (declaration === null) environment.executionState.phase = 'end';
+        else environment.executionState.phase = 'evaluate';
         break;
       case 'evaluate':
         environment.executionState.phase = 'declare';
@@ -1014,44 +993,48 @@ export class Interpreter {
         const value = environment.returnValues.pop();
         const parent = environment.parentEnvironment;
 
-        // check type of value and create the variable accordingly
-        switch (varType) {
-          case 'Literal':
-          case 'BinaryExpression':
-          case 'LogicalExpression':
-          case 'UnaryExpression':
-          case 'CallExpression':
-          case 'UpdateExpression':
-            this.createVariable(varName, value, parent);
-            break;
-          case 'ArrayExpression':
-            this.createArrayVariable(varName, value, parent);
-            break;
-          case 'ObjectExpression':
-            this.createObjectVariable(varName, value, parent);
-            break;
-          case 'MemberExpression':
-            // check type of value and create the variable accordingly
-            if (Array.isArray(value)) {
-              this.createArrayVariable(varName, value, parent);
-            } else if (typeof value === 'object') {
-              this.createObjectVariable(varName, value, parent);
-            } else {
-              this.createVariable(varName, value, parent);
-            }
-            break;
-          case 'Identifier':
-            const varVal = this.lookupVariableValue(declaration.init.name, this.getCurrentEnvironment());
-            this.createVariable(varName, varVal, parent);
-            break;
-          default:
-            console.error(`Unrecognized variable type: ${varType}`);
-        }
+        this.handleVariableCreation(varType, varName, value, parent, declaration.init.name);
         this.gotoNextInstruction();
         break;
       case 'end':
         this.removeCurrentEnvironment();
         this.gotoNextInstruction();
+    }
+  }
+
+  handleVariableCreation(varType, varName, value, environment, identifier = null) {
+    switch (varType) {
+      case 'Literal':
+      case 'BinaryExpression':
+      case 'LogicalExpression':
+      case 'UnaryExpression':
+      case 'UpdateExpression':
+        this.createVariable(varName, value, environment);
+        break;
+      case 'ArrayExpression':
+        this.createArrayVariable(varName, value, environment);
+        break;
+      case 'ObjectExpression':
+        this.createObjectVariable(varName, value, environment);
+        break;
+      case 'CallExpression':
+      case 'MemberExpression':
+        // check type of value and create the variable accordingly
+        if (Array.isArray(value)) {
+          this.createArrayVariable(varName, value, environment);
+        } else if (typeof value === 'object') {
+          this.createObjectVariable(varName, value, environment);
+        } else {
+          this.createVariable(varName, value, environment);
+        }
+        break;
+      case 'Identifier':
+        if (identifier === null) console.error("identifier was not provided");
+        const varVal = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
+        this.createVariable(varName, varVal, environment);
+        break;
+      default:
+        console.error(`Unrecognized variable type: ${varType}`);
     }
   }
 
@@ -1093,16 +1076,9 @@ export class Interpreter {
     }
     
     const result = this.executeNodeType(instruction);
-    if (result === 'continue') {
+    if (result === 'continue') { // TODO: move this to its own interpret function
       this.removeCurrentEnvironment();
       return result;
-    }
-    
-    if (result === 'return') {
-      const value = environment.returnValues.pop();
-      this.removeCurrentEnvironment();
-      this.getCurrentEnvironment().returnValues.push(value); // pass the return value to the parent environment (should always be a call)
-      return 'return';
     }
 
     return null;
@@ -1282,9 +1258,29 @@ export class Interpreter {
     if (this.debugging) console.log("return statement");
     if (this.debugging) console.log(node);
 
-    this.interpretExpression(node.argument);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    return 'return';
+      newEnvironment.executionState.type = 'return';
+      newEnvironment.executionState.phase = 'evaluate';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'evaluate':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.argument);
+        break;
+      case 'end':
+        const value = environment.returnValues.pop();
+        this.removeCurrentEnvironment(); // remove the return environment
+        this.removeCurrentEnvironment(); // remove the block environment (as we return)
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(value); // pass the return value to the parent environment
+    }
   }
 
   /* STANDARD FUNCTIONS */
