@@ -20,7 +20,7 @@
   "scripts": {
     "start": "webpack serve --mode development --open --hot",
     "build": "webpack --mode production",
-    "test": "jest --coverage",
+    "test": "jest --coverage --verbose --silent",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
