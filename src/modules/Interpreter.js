@@ -428,7 +428,8 @@ export class Interpreter {
         this.interpretUpdateExpression(node);
         break;
       case 'CallExpression':
-        return this.interpretCallExpression(node);
+        this.interpretCallExpression(node);
+        break;
       case 'MemberExpression':
         return this.interpretMemberExpression(node);
       // Add other expression types as needed
@@ -808,7 +809,7 @@ export class Interpreter {
     if (callee.type === 'MemberExpression') {
       // check if the function is a built-in function with return type
       const standard = this.handleStandardFunctions(node);
-      if (standard !== null) return standard;
+      if (standard) return;
 
       // check if the function is a built-in function without return type
       if (callee.object.name === 'console' && callee.property.name === 'log') {
@@ -864,16 +865,22 @@ export class Interpreter {
   handleStandardFunctions(node) {
     if (node.callee.type === 'MemberExpression') {
       if (node.callee.object.name === 'Math') {
-        if (node.callee.property.name === 'max') return this.interpretMathMax(node);
-        if (node.callee.property.name === 'min') return this.interpretMathMin(node);
-        if (node.callee.property.name === 'abs') return this.interpretMathAbs(node);
-      }
-      if (node.callee.property.name === 'push') {
+        if (node.callee.property.name === 'max') {
+          this.interpretMathMax(node);
+          return true;
+        } else if (node.callee.property.name === 'min') {
+          this.interpretMathMin(node);
+          return true;
+        } else if (node.callee.property.name === 'abs') {
+          this.interpretMathAbs(node);
+          return true;
+        }
+      } else if (node.callee.property.name === 'push') {
         this.interpretArrayPush(node);
         return true;
       }
     }
-    return null;
+    return false;
   }
   
   interpretMemberExpression(node) {
@@ -1357,29 +1364,97 @@ export class Interpreter {
     if (this.debugging) console.log("math max");
     if (this.debugging) console.log(node);
 
-    const argument1 = this.interpretExpression(node.arguments[0]);
-    const argument2 = this.interpretExpression(node.arguments[1]);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    return Math.max(argument1, argument2);
+      newEnvironment.executionState.type = 'mathMax';
+      newEnvironment.executionState.phase = 'argument1';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'argument1':
+        environment.executionState.phase = 'argument2';
+        this.interpretExpression(node.arguments[0]);
+        break;
+      case 'argument2':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.arguments[1]);
+        break;
+      case 'end':
+        const argument1 = environment.returnValues.pop();
+        const argument2 = environment.returnValues.pop();
+        const result = Math.max(argument1, argument2);
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(result);
+    }
   }
 
   interpretMathMin(node) {
     if (this.debugging) console.log("math min");
     if (this.debugging) console.log(node);
 
-    const argument1 = this.interpretExpression(node.arguments[0]);
-    const argument2 = this.interpretExpression(node.arguments[1]);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    return Math.min(argument1, argument2);
+      newEnvironment.executionState.type = 'mathMin';
+      newEnvironment.executionState.phase = 'argument1';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'argument1':
+        environment.executionState.phase = 'argument2';
+        this.interpretExpression(node.arguments[0]);
+        break;
+      case 'argument2':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.arguments[1]);
+        break;
+      case 'end':
+        const argument1 = environment.returnValues.pop();
+        const argument2 = environment.returnValues.pop();
+        const result = Math.min(argument1, argument2);
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(result);
+    }
   }
 
   interpretMathAbs(node) {
     if (this.debugging) console.log("math abs");
     if (this.debugging) console.log(node);
 
-    const argument = this.interpretExpression(node.arguments[0]);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    return Math.abs(argument);
+      newEnvironment.executionState.type = 'mathAbs';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'init':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.arguments[0]);
+        break;
+      case 'end':
+        const argument = environment.returnValues.pop();
+        const result = Math.abs(argument);
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(result);
+    }
   }
 
 }

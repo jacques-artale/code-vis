@@ -64,7 +64,7 @@ describe('Function call', () => {
     });
   });
 
-  test('Function call to Math functions', () => {
+  test('Function call to Math max function', () => {
     const operations = [
       { code: 'var a = Math.max(1,2);', expected: [['a', 2]] },
       { code: 'var a = Math.max(2,1);', expected: [['a', 2]] },
@@ -73,7 +73,18 @@ describe('Function call', () => {
       { code: 'function a() { return 10; } function b() { return 12; } var c = Math.max(a(), b());', expected: [['c', 12]] },
       { code: 'var a = Math.max(1,1);', expected: [['a', 1]] },
       { code: 'var a = Math.max(0,0);', expected: [['a', 0]] },
+    ];
 
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      interpret(code);
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Function call to Math min function', () => {
+    const operations = [
       { code: 'var a = Math.min(1,2);', expected: [['a', 1]] },
       { code: 'var a = Math.min(2,1);', expected: [['a', 1]] },
       { code: 'var a = -100; var b = 100; var c = Math.min(a,b);', expected: [['a', -100],['b', 100],['c', -100]] },
@@ -81,7 +92,18 @@ describe('Function call', () => {
       { code: 'function a() { return 10; } function b() { return 12; } var c = Math.min(a(), b());', expected: [['c', 10]] },
       { code: 'var a = Math.min(1,1);', expected: [['a', 1]] },
       { code: 'var a = Math.min(0,0);', expected: [['a', 0]] },
+    ];
 
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      interpret(code);
+      expect(variables).toEqual(expected);
+    });
+  });
+
+  test('Function call to Math abs function', () => {
+    const operations = [
       { code: 'var a = Math.abs(1);', expected: [['a', 1]] },
       { code: 'var a = Math.abs(-1);', expected: [['a', 1]] },
       { code: 'var a = Math.abs(-100);', expected: [['a', 100]] },
