@@ -421,7 +421,8 @@ export class Interpreter {
 
     switch (node.type) {
       case 'AssignmentExpression':
-        return this.interpretAssignmentExpression(node);
+        this.interpretAssignmentExpression(node);
+        break;
       case 'BinaryExpression':
         return this.interpretBinaryExpression(node);
       case 'UpdateExpression':
@@ -583,30 +584,52 @@ export class Interpreter {
   }
 
   handleVariableAssignment(node) {
-    const varName = node.left.name;
-    const value = this.interpretExpression(node.right);
-    const operator = node.operator;
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
-    let newValue = null;
-
-    if (operator === "=") newValue = value;
-    else if (operator === "+=") newValue = oldValue + value;
-    else if (operator === "-=") newValue = oldValue - value;
-    else if (operator === "*=") newValue = oldValue * value;
-    else if (operator === "/=") newValue = oldValue / value;
-    else if (operator === "%=") newValue = oldValue % value;
-    else if (operator === "<<=") newValue = oldValue << value;
-    else if (operator === ">>=") newValue = oldValue >> value;
-    else if (operator === ">>>=") newValue = oldValue >>> value;
-    else if (operator === "&=") newValue = oldValue & value;
-    else if (operator === "|=") newValue = oldValue | value;
-    else if (operator === "^=") newValue = oldValue ^ value;
-    else {
-      console.error("unknown operator: " + operator);
+      newEnvironment.executionState.type = 'variableAssignment';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
     }
-    
-    this.updateVariableValue(varName, newValue, this.getCurrentEnvironment());
+
+    switch (environment.executionState.phase) {
+      case 'init':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.right);
+        break;
+      case 'end':
+        environment.executionState.phase = 'end';
+        const value = environment.returnValues.pop();
+        const varName = node.left.name;
+        const operator = node.operator;
+
+        const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
+        let newValue = oldValue;
+
+        if (operator === "=") newValue = value;
+        else if (operator === "+=") newValue = oldValue + value;
+        else if (operator === "-=") newValue = oldValue - value;
+        else if (operator === "*=") newValue = oldValue * value;
+        else if (operator === "/=") newValue = oldValue / value;
+        else if (operator === "%=") newValue = oldValue % value;
+        else if (operator === "<<=") newValue = oldValue << value;
+        else if (operator === ">>=") newValue = oldValue >> value;
+        else if (operator === ">>>=") newValue = oldValue >>> value;
+        else if (operator === "&=") newValue = oldValue & value;
+        else if (operator === "|=") newValue = oldValue | value;
+        else if (operator === "^=") newValue = oldValue ^ value;
+        else {
+          console.error("unknown operator: " + operator);
+        }
+        
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        this.updateVariableValue(varName, newValue, this.getCurrentEnvironment());
+        this.gotoNextInstruction();
+    }
   }
 
   interpretBinaryExpression(node) {
@@ -794,10 +817,8 @@ export class Interpreter {
 
     this.gotoNextInstruction();
 
-    console.log(this.getCurrentEnvironment());
-
     if (node.prefix) this.getCurrentEnvironment().returnValues.push(value);
-    return this.getCurrentEnvironment().returnValues.push(oldValue);
+    else this.getCurrentEnvironment().returnValues.push(oldValue);
   }
 
   interpretCallExpression(node) {
