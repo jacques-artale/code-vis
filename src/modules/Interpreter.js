@@ -1272,7 +1272,6 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     let environment = this.getCurrentEnvironment();
-
     if (environment.executionState.node !== node) {
       // Create a new environment for the do while loop's scope
       const instructions = [];
@@ -1281,20 +1280,24 @@ export class Interpreter {
 
       newEnvironment.executionState.type = 'doWhile';
       newEnvironment.executionState.phase = 'body';
+      newEnvironment.returnValues.push(true); // this is used to make sure the body is executed at least once
       environment = newEnvironment;
     }
 
     switch (environment.executionState.phase) {
       case 'test':
-        if (this.interpretExpression(node.test)) environment.executionState.phase = 'body';
-        else environment.executionState.phase = 'end';
+        environment.executionState.phase = 'body';
+        this.interpretExpression(node.test)
         break;
       case 'body':
-        environment.executionState.phase = 'test';
-        this.executeNodeType(node.body); // interpret the body of the do while loop
-        break;
-      case 'end':
-        this.removeCurrentEnvironment(); // removes the do while-loop environment
+        const testResult = environment.returnValues.pop();
+        if (testResult) {
+          environment.executionState.phase = 'test';
+          this.executeNodeType(node.body); // interpret the body of the do while loop
+        } else {
+          this.removeCurrentEnvironment(); // removes the do while-loop environment
+          this.gotoNextInstruction();
+        }
     }
   }
 
