@@ -1182,14 +1182,37 @@ export class Interpreter {
     if (this.debugging) console.log("if statement");
     if (this.debugging) console.log(node);
 
-    const test = this.interpretExpression(node.test);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    if (test) return this.executeNodeType(node.consequent);
+      newEnvironment.executionState.type = 'if';
+      newEnvironment.executionState.phase = 'test';
+      environment = newEnvironment;
+    }
 
-    if (node.alternate === null) return;
-    if (node.alternate.type === 'IfStatement') return this.interpretIfStatement(node.alternate);
-
-    return this.executeNodeType(node.alternate);
+    switch (environment.executionState.phase) {
+      case 'test':
+        environment.executionState.phase = 'consequent';
+        this.interpretExpression(node.test);
+        break;
+      case 'consequent':
+        environment.executionState.phase = 'end';
+        const testResult = environment.returnValues.pop();
+        if (testResult) {
+          this.executeNodeType(node.consequent);
+        } else {
+          if (node.alternate !== null) {
+            this.executeNodeType(node.alternate);
+          }
+        }
+        break;
+      case 'end':
+        this.removeCurrentEnvironment();
+        this.gotoNextInstruction();
+    }
   }
 
   interpretForStatement(node) {
