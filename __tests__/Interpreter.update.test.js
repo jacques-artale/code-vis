@@ -190,7 +190,7 @@ describe('Update', () => {
     });
   });
 
-  test('Update array member in arithmetic expression', () => {
+  test('Update array member in arithmetic expression', () => { // ISSUE WITH GOTONEXT
     const operations = [
       { code: 'var a = [1,2,3]; var b = a[0]++;', expArr: [['a', [2,2,3]]], expVar: [['b', 1]] },
       { code: 'var a = [1,2,3]; var b = a[0]--;', expArr: [['a', [0,2,3]]], expVar: [['b', 1]] },
@@ -207,7 +207,7 @@ describe('Update', () => {
     });
   });
 
-  test('Update object property in arithmetic expression', () => {
+  test('Update object property in arithmetic expression', () => { // ISSUE WITH GOTONEXT
     const operations = [
       { code: 'var a = {b: 1}; var c = a.b++;', expected: [['a', {b: 2}],['c', 1]] },
       { code: 'var a = {b: 1}; var c = a.b--;', expected: [['a', {b: 0}],['c', 1]] },

@@ -359,7 +359,8 @@ export class Interpreter {
         this.interpretBinaryExpression(node);
         break;
       case 'LogicalExpression':
-        return this.interpretLogicalExpression(node); // TODO: make this work with single instructions
+        this.interpretLogicalExpression(node);
+        break;
       case 'UnaryExpression':
         this.interpretUnaryExpression(node);
         break;
@@ -673,11 +674,36 @@ export class Interpreter {
     if (this.debugging) console.log("logical expression");
     if (this.debugging) console.log(node);
 
-    const leftValue = this.interpretExpression(node.left);
-    const rightValue = this.interpretExpression(node.right);
-    const operator = node.operator;
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    return this.evaluateBinaryExpression(leftValue, rightValue, operator);
+      newEnvironment.executionState.type = 'logical';
+      newEnvironment.executionState.phase = 'left';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'left':
+        environment.executionState.phase = 'right';
+        this.interpretExpression(node.left);
+        break;
+      case 'right':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.right);
+        break;
+      case 'end':
+        const rightResult = environment.returnValues.pop();
+        const leftResult = environment.returnValues.pop();
+        const operator = node.operator;
+        const result = this.evaluateBinaryExpression(leftResult, rightResult, operator);
+
+        this.removeCurrentEnvironment();
+
+        this.getCurrentEnvironment().returnValues.push(result);
+    }
   }
 
   interpretUnaryExpression(node) {
@@ -1213,7 +1239,6 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     let environment = this.getCurrentEnvironment();
-
     if (environment.executionState.node !== node) {
       // Create a new environment for the while loop's scope
       const instructions = [];
@@ -1227,15 +1252,18 @@ export class Interpreter {
 
     switch (environment.executionState.phase) {
       case 'test':
-        if (this.interpretExpression(node.test)) environment.executionState.phase = 'body';
-        else environment.executionState.phase = 'end';
+        environment.executionState.phase = 'body';
+        this.interpretExpression(node.test)
         break;
       case 'body':
-        environment.executionState.phase = 'test';
-        this.executeNodeType(node.body); // interpret the body of the while loop
-        break;
-      case 'end':
-        this.removeCurrentEnvironment(); // removes the while-loop environment
+        const testResult = environment.returnValues.pop();
+        if (testResult) {
+          environment.executionState.phase = 'test';
+          this.executeNodeType(node.body); // interpret the body of the while loop
+        } else {
+          this.removeCurrentEnvironment(); // removes the while-loop environment
+          this.gotoNextInstruction();
+        }
     }
   }
 
