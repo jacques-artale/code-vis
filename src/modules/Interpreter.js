@@ -1197,7 +1197,6 @@ export class Interpreter {
     if (this.debugging) console.log(node);
 
     let environment = this.getCurrentEnvironment();
-
     if (environment.executionState.node !== node) {
       // Create a new environment for the for loop's scope
       const instructions = [node.init];
@@ -1218,19 +1217,23 @@ export class Interpreter {
         }
         break;
       case 'test':
-        if (node.test !== null && this.interpretExpression(node.test)) environment.executionState.phase = 'body';
-        else environment.executionState.phase = 'end';
+        environment.executionState.phase = 'body';
+        if (node.test !== null) this.interpretExpression(node.test);
+        else environment.returnValues.push(true); // if there is no test, we assume it is true
         break;
       case 'body':
-        environment.executionState.phase = 'update';
-        this.executeNodeType(node.body); // interpret the body of the for loop
+        const testResult = environment.returnValues.pop();
+        if (testResult) {
+          environment.executionState.phase = 'update';
+          this.executeNodeType(node.body); // interpret the body of the for loop
+        } else {
+          this.removeCurrentEnvironment(); // removes the for-loop environment
+          this.gotoNextInstruction();
+        }
         break;
       case 'update':
         environment.executionState.phase = 'test';
         this.interpretExpression(node.update);
-        break;
-      case 'end':
-        this.removeCurrentEnvironment(); // removes the for-loop environment (containing the init variables)
     }
   }
 
