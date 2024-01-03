@@ -869,7 +869,7 @@ export class Interpreter {
     if (environment.executionState.node !== node) {
       // Create a new environment for the function call's scope
       const instructions = node.arguments;
-      const newEnvironment = this.createEnvironment(this.globalEnvironment, node, instructions);
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
       this.addNewEnvironment(newEnvironment);
 
       newEnvironment.executionState.type = 'call';
@@ -898,6 +898,9 @@ export class Interpreter {
         this.gotoNextInstruction();
         break;
       case 'call':
+        // We set the parent environment of the function to the global environment to avoid giving it access to any variables other than the global ones
+        // The reason we do it here is because we need to wait until we have declared all parameter values, which may rely on variables in the current environment
+        environment.parentEnvironment = this.globalEnvironment;
         environment.executionState.phase = 'end';
         this.interpretBlockStatement(functionDeclaration.body);  // interpret the body of the function
         break;
@@ -1124,7 +1127,7 @@ export class Interpreter {
         break;
       case 'Identifier':
         if (identifier === null) console.error("identifier was not provided");
-        const varVal = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
+        const varVal = this.lookupVariableValue(identifier, environment);
         this.createVariable(varName, varVal, environment);
         break;
       default:
@@ -1401,8 +1404,15 @@ export class Interpreter {
         break;
       case 'end':
         const value = environment.returnValues.pop();
-        this.removeCurrentEnvironment(); // remove the return environment
-        this.removeCurrentEnvironment(); // remove the block environment (as we return)
+
+        // purge all environments until we reach a call environment which can handle a return
+        let type = environment.executionState.type;
+        while (type != 'call') {
+          this.removeCurrentEnvironment();
+          environment = this.getCurrentEnvironment();
+          type = environment.executionState.type;
+        }
+
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(value); // pass the return value to the parent environment
     }

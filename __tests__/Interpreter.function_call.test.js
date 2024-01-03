@@ -140,7 +140,7 @@ describe('Function call', () => {
     expect(variables).toEqual([['c', {d: 1}]]);
   });
 
-  test('Recursive function call', () => {
+  test('Nested function call', () => {
     const code = 'function fac(n) { if (n === 0) { return 1; } return n * fac(n - 1); } var a = fac(4);';
     interpret(code);
     expect(variables).toEqual([['a', 24]]);
