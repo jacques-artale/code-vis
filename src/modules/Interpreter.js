@@ -1421,8 +1421,6 @@ export class Interpreter {
         const foundMatch = environment.returnValues.pop();
         
         this.gotoNextInstruction();
-
-        console.log("executing switch case:", test, discriminant, foundMatch);
         
         if (foundMatch || discriminant === test) {
           this.interpretSwitchCase(caseNode);             // interpret the body of the case
@@ -1481,6 +1479,7 @@ export class Interpreter {
 
     this.removeCurrentEnvironment();
     environment = this.getCurrentEnvironment();
+    this.gotoNextInstruction();
 
     return 'break';
   }
