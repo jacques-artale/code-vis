@@ -317,7 +317,7 @@ export class Interpreter {
       case 'BreakStatement':
         return this.interpretBreakStatement(node);
       case 'ContinueStatement':
-        return 'continue'; // do nothing
+        return this.interpretContinueStatement(node);
       case 'EmptyStatement':
         return; // do nothing
       default:
@@ -1196,15 +1196,10 @@ export class Interpreter {
 
     if (instruction === null) {
       this.removeCurrentEnvironment();
-      return null;
+    } else {
+      this.executeNodeType(instruction);
     }
     
-    const result = this.executeNodeType(instruction);
-    if (result === 'continue') { // TODO: move this to its own interpret function
-      this.removeCurrentEnvironment();
-      return result;
-    }
-
     return null;
   }
 
@@ -1471,6 +1466,7 @@ export class Interpreter {
     let environment = this.getCurrentEnvironment();
     let type = environment.executionState.type;
     // purge all environments until we reach a statement that can handle a break
+    // when a break occurs we should remove all environments including the first statement that can handle a break
     while (type !== 'global' && type !== 'for' && type !== 'while' && type !== 'doWhile' && type !== 'switch') {
       this.removeCurrentEnvironment();
       environment = this.getCurrentEnvironment();
@@ -1480,8 +1476,21 @@ export class Interpreter {
     this.removeCurrentEnvironment();
     environment = this.getCurrentEnvironment();
     this.gotoNextInstruction();
+  }
 
-    return 'break';
+  interpretContinueStatement(node) {
+    if (this.debugging) console.log("continue statement");
+    if (this.debugging) console.log(node);
+
+    let environment = this.getCurrentEnvironment();
+    let type = environment.executionState.type;
+    // purge all environments until we reach a statement that can handle a continue
+    // when continue occurs we should remove all environment until we reach a loop but not remove the loop itself
+    while (type !== 'global' && type !== 'for' && type !== 'while' && type !== 'doWhile') {
+      this.removeCurrentEnvironment();
+      environment = this.getCurrentEnvironment();
+      type = environment.executionState.type;
+    }
   }
 
   interpretReturnStatement(node) {
