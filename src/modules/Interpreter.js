@@ -534,7 +534,10 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[properties[0]][properties[1]][...] = value;
         this.gotoNextInstruction();
+        break;
       }
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -627,6 +630,9 @@ export class Interpreter {
         environment = this.getCurrentEnvironment();
         this.updateVariableValue(varName, newValue, this.getCurrentEnvironment());
         this.gotoNextInstruction();
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -664,6 +670,9 @@ export class Interpreter {
 
         const result = this.evaluateBinaryExpression(leftResult, rightResult, operator);
         this.getCurrentEnvironment().returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -700,6 +709,9 @@ export class Interpreter {
         this.removeCurrentEnvironment();
 
         this.getCurrentEnvironment().returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -741,6 +753,9 @@ export class Interpreter {
         }
 
         this.getCurrentEnvironment().returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -822,7 +837,10 @@ export class Interpreter {
         else environment.returnValues.push(objectValue);
         
         this.gotoNextInstruction();
+        break;
       }
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -906,6 +924,9 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(value); // pass the return value to the previous environment
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -964,6 +985,9 @@ export class Interpreter {
 
         if (property === 'length') environment.returnValues.push(object.length);
         else environment.returnValues.push(object[property]);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1004,6 +1028,9 @@ export class Interpreter {
         environment.returnValues.push(argument); // TODO: check all functions which should both update a value and then return a value, such as a++/++a etc
 
         this.gotoNextInstruction();
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1093,6 +1120,9 @@ export class Interpreter {
       case 'end':
         this.removeCurrentEnvironment();
         this.gotoNextInstruction();
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1212,6 +1242,9 @@ export class Interpreter {
       case 'end':
         this.removeCurrentEnvironment();
         this.gotoNextInstruction();
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1257,6 +1290,9 @@ export class Interpreter {
       case 'update':
         environment.executionState.phase = 'test';
         this.interpretExpression(node.update);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1290,6 +1326,9 @@ export class Interpreter {
           this.removeCurrentEnvironment(); // removes the while-loop environment
           this.gotoNextInstruction();
         }
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1324,6 +1363,9 @@ export class Interpreter {
           this.removeCurrentEnvironment(); // removes the do while-loop environment
           this.gotoNextInstruction();
         }
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1395,7 +1437,10 @@ export class Interpreter {
       case 'end': {
         this.removeCurrentEnvironment();
         this.gotoNextInstruction();
+        break;
       }
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1428,7 +1473,7 @@ export class Interpreter {
     let environment = this.getCurrentEnvironment();
     let type = environment.executionState.type;
     // purge all environments until we reach a statement that can handle a break
-    while (type != 'global' && type != 'for' && type != 'while' && type != 'doWhile' && type != 'switch') {
+    while (type !== 'global' && type !== 'for' && type !== 'while' && type !== 'doWhile' && type !== 'switch') {
       this.removeCurrentEnvironment();
       environment = this.getCurrentEnvironment();
       type = environment.executionState.type;
@@ -1465,7 +1510,7 @@ export class Interpreter {
 
         // purge all environments until we reach a call environment which can handle a return
         let type = environment.executionState.type;
-        while (type != 'call') {
+        while (type !== 'call') {
           this.removeCurrentEnvironment();
           environment = this.getCurrentEnvironment();
           type = environment.executionState.type;
@@ -1473,6 +1518,9 @@ export class Interpreter {
 
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(value); // pass the return value to the parent environment
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1503,6 +1551,9 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         this.updateCallback({ command: 'consoleLog', argument: argument });
         this.gotoNextInstruction();
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1537,6 +1588,9 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1571,6 +1625,9 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
@@ -1600,6 +1657,9 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
     }
   }
 
