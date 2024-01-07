@@ -242,11 +242,6 @@ export class Interpreter {
   interpretNextInstruction() {
     const node = this.getExecutingNode();
     if (node === null) return;
-
-    // IF WE ARE IN A BLOCK WE MIGHT GET A 'break' OR 'continue' HERE
-    // IF WE GET A 'break' WE SHOULD EXIT THE BLOCK, THAT IS, REMOVE THE BLOCK ENVIRONMENT AND THE WHILE OR FOR ENVIRONMENT CONTAINING IT
-    // IF WE GET A 'continue' WE SHOULD EXIT THE BLOCK, BUT NOT THE WHILE OR FOR ENVIRONMENT CONTAINING IT
-    // WE ALSO NEED TO CHECK HOW THIS MIGHT AFFECT SWITCH STATEMENTS AND SUCH
     this.executeNodeType(node);
   }
 
@@ -317,6 +312,8 @@ export class Interpreter {
         return this.interpretConditionalExpression(node);
       case 'SwitchStatement':
         return this.interpretSwitchStatement(node);
+      case 'SwitchCase':
+        return this.interpretSwitchCase(node);
       case 'BreakStatement':
         return this.interpretBreakStatement(node);
       case 'ContinueStatement':
@@ -1334,32 +1331,93 @@ export class Interpreter {
     if (this.debugging) console.log("switch statement");
     if (this.debugging) console.log(node);
 
-    const value = this.interpretExpression(node.discriminant);
-
-    let foundMatch = false;
-
-    for (let i = 0; i < node.cases.length; i++) {
-      const caseNode = node.cases[i];
-      const test = this.interpretExpression(caseNode.test);
-
-      if (test === null || test === value) foundMatch = true;
-
-      if (foundMatch) {  // if the test is null, it is the default case
-        // enter a new environment
-        const newEnvironment = this.createEnvironment(this.getCurrentEnvironment(), caseNode.consequent);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+        const instructions = node.cases;
+        const newEnvironment = this.createEnvironment(environment, node, instructions);
         this.addNewEnvironment(newEnvironment);
+  
+        newEnvironment.executionState.type = 'switch';
+        newEnvironment.executionState.phase = 'discriminant';
+        environment = newEnvironment;
 
-        // interpret the body of the case
-        let result = null;
-        for (let i = 0; i < caseNode.consequent.length; i++) {
-          result = this.executeNodeType(caseNode.consequent[i]);
-          if (result === 'break') break;
+        environment.returnValues.push(false); // found match or not
+    }
+
+    const caseNode = this.getNextInstruction();
+    switch (environment.executionState.phase) {
+      case 'discriminant': {
+        environment.executionState.phase = 'cases';
+        this.interpretExpression(node.discriminant);
+        break;
+      }
+      case 'cases': {
+        environment.executionState.phase = 'execute';
+        if (caseNode === null) { // do we have any more cases?
+          environment.executionState.phase = 'end';
+          break;
         }
 
-        // exit the environment
-        this.removeCurrentEnvironment();
-        if (result === 'break') break;
+        const discriminant = environment.returnValues.pop();
+        const foundMatch = environment.returnValues.pop();
+
+        if (caseNode.test === null) { // is this default case?
+          environment.returnValues.push(true);          // found match is true
+          environment.returnValues.push(discriminant);  // push discriminant back onto the stack
+          environment.returnValues.push(discriminant);  // test will be discriminant (test === discriminant) to run consequent
+        } else {
+          environment.returnValues.push(foundMatch);
+          environment.returnValues.push(discriminant);  // push discriminant back onto the stack
+          this.interpretExpression(caseNode.test);
+        }
+        break;
       }
+      case 'execute': {
+        environment.executionState.phase = 'cases';
+        const test = environment.returnValues.pop();
+        const discriminant = environment.returnValues.pop();
+        const foundMatch = environment.returnValues.pop();
+        
+        this.gotoNextInstruction();
+
+        console.log("executing switch case:", test, discriminant, foundMatch);
+        
+        if (foundMatch || discriminant === test) {
+          this.interpretSwitchCase(caseNode);             // interpret the body of the case
+          environment.returnValues.push(true);            // found match is now true
+          environment.returnValues.push(discriminant);    // push discriminant back onto the stack
+        } else {
+          environment.returnValues.push(foundMatch);
+          environment.returnValues.push(discriminant);    // push discriminant back onto the stack
+        }
+        break;
+      }
+      case 'end': {
+        this.removeCurrentEnvironment();
+        this.gotoNextInstruction();
+      }
+    }
+  }
+
+  interpretSwitchCase(node) {
+    if (this.debugging) console.log("switch case");
+    if (this.debugging) console.log(node);
+
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = node.consequent;
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'switchCase';
+      environment = newEnvironment;
+    }
+
+    const instruction = this.getNextInstruction();
+    if (instruction !== null) {
+      this.executeNodeType(instruction);
+    } else {
+      this.removeCurrentEnvironment();
     }
   }
 
