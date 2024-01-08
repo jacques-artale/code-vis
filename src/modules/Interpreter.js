@@ -298,6 +298,8 @@ export class Interpreter {
         return this.interpretArrayExpression(node);
       case 'ObjectExpression':
         return this.interpretObjectExpression(node);
+      case 'SequenceExpression':
+        return this.interpretSequenceExpression(node);
       case 'IfStatement':
         return this.interpretIfStatement(node);
       case 'ForStatement':
@@ -381,7 +383,8 @@ export class Interpreter {
         this.interpretUpdateExpression(node);
         break;
       case 'SequenceExpression':
-        return this.interpretSequenceExpression(node);
+        this.interpretSequenceExpression(node);
+        break;
       // Add other expression types as needed
       default:
         console.error(`Unrecognized node type: ${node.type}`);
@@ -1138,8 +1141,23 @@ export class Interpreter {
     if (this.debugging) console.log("sequence expression");
     if (this.debugging) console.log(node);
 
-    for (let i = 0; i < node.expressions.length; i++) {
-      this.interpretExpression(node.expressions[i]);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = node.expressions;
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'sequence';
+      environment = newEnvironment;
+    }
+
+    const instruction = this.getNextInstruction();
+    
+    if (instruction === null) {
+      this.removeCurrentEnvironment();
+    } else {
+      this.gotoNextInstruction();
+      this.interpretExpression(instruction);
     }
 
     return null;
