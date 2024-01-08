@@ -294,6 +294,10 @@ export class Interpreter {
         return this.interpretUnaryExpression(node);
       case 'UpdateExpression':
         return this.interpretUpdateExpression(node);
+      case 'ArrayExpression':
+        return this.interpretArrayExpression(node);
+      case 'ObjectExpression':
+        return this.interpretObjectExpression(node);
       case 'IfStatement':
         return this.interpretIfStatement(node);
       case 'ForStatement':
@@ -1038,35 +1042,96 @@ export class Interpreter {
     if (this.debugging) console.log("object expression");
     if (this.debugging) console.log(node);
 
-    const properties = node.properties;
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = node.properties;
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-    // create the new object
-    const object = {};
-    for (let i = 0; i < properties.length; i++) {
-      const property = properties[i];
-      const key = property.key.name;
-      this.interpretExpression(property.value);
-      const value = this.getCurrentEnvironment().returnValues.pop();
-      object[key] = value;
+      newEnvironment.executionState.type = 'object';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+
+      environment.returnValues.push({}); // new object
     }
 
-    const environment = this.getCurrentEnvironment();
-    environment.returnValues.push(object);
+    const property = this.getNextInstruction();
+    switch (environment.executionState.phase) {
+      case 'init': {
+        if (property === null) {
+          environment.executionState.phase = 'end';
+        } else {
+          environment.executionState.phase = 'evaluate';
+          this.interpretExpression(property.value);
+        }
+        break;
+      }
+      case 'evaluate': {
+        environment.executionState.phase = 'init';
+        const value = environment.returnValues.pop();
+        const key = property.key.name;
+        const object = environment.returnValues.pop();
+        object[key] = value;
+        environment.returnValues.push(object);
+        this.gotoNextInstruction();
+        break;
+      }
+      case 'end': {
+        const object = environment.returnValues.pop();
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(object);
+        break;
+      }
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
+    }
   }
 
   interpretArrayExpression(node) {
     if (this.debugging) console.log("array expression");
     if (this.debugging) console.log(node);
 
-    const values = [];
-    for (let i = 0; i < node.elements.length; i++) {
-      this.interpretExpression(node.elements[i]);
-      const value = this.getCurrentEnvironment().returnValues.pop();
-      values.push(value);
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = node.elements;
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'array';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+
+      environment.returnValues.push([]); // array of values
     }
 
-    const environment = this.getCurrentEnvironment();
-    environment.returnValues.push(values);
+    const instruction = this.getNextInstruction();
+
+    switch (environment.executionState.phase) {
+      case 'init':
+        if (instruction === null) {
+          environment.executionState.phase = 'end';
+        } else {
+          environment.executionState.phase = 'evaluate';
+          this.interpretExpression(instruction);
+        }
+        break;
+      case 'evaluate':
+        environment.executionState.phase = 'init';
+        const value = environment.returnValues.pop();
+        const array = [...environment.returnValues.pop(), value];
+        environment.returnValues.push(array);
+        this.gotoNextInstruction();
+        break;
+      case 'end':
+        const values = environment.returnValues.pop();
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(values);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
+    }
   }
 
   interpretSequenceExpression(node) {
