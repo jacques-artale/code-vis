@@ -219,21 +219,24 @@ export class Interpreter {
   interpretAllInstructions() {
     if (this.debugging) console.log(this.parsedCode);
 
-    /*
-    for (let i = 0; i < this.parsedCode.body.length; i++) {
-      this.executeNodeType(this.parsedCode.body[i]);
-    }
-    */
-
     let iterations = 0;
 
-    const executionState = this.getCurrentEnvironment().executionState;
-    while (executionState.instructionPointer < executionState.instructions.length) {
-      this.interpretNextInstruction();
-      iterations++;
+    let environment = this.getCurrentEnvironment();
+    let type = environment.executionState.type;
+    let instructionLength = environment.executionState.instructions.length;
+    let instructionPointer = environment.executionState.instructionPointer;
 
+    while (type !== 'global' || instructionPointer < instructionLength) {
+      environment = this.getCurrentEnvironment();
+      type = environment.executionState.type;
+      instructionLength = environment.executionState.instructions.length;
+      instructionPointer = environment.executionState.instructionPointer;
+
+      this.interpretNextInstruction();
+
+      iterations++;
       if (iterations > 1000) {
-        //console.error("infinite loop detected");
+        console.error("infinite loop detected");
         break;
       }
     }
@@ -338,6 +341,7 @@ export class Interpreter {
     const instruction = this.getNextInstruction();
     if (instruction === null) return;
 
+    this.gotoNextInstruction();
     this.executeNodeType(instruction);
   }
 
@@ -540,7 +544,6 @@ export class Interpreter {
 
         this.removeCurrentEnvironment();
         this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[properties[0]][properties[1]][...] = value;
-        this.gotoNextInstruction();
         break;
       }
       default:
@@ -636,7 +639,6 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         this.updateVariableValue(varName, newValue, this.getCurrentEnvironment());
-        this.gotoNextInstruction();
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -842,8 +844,6 @@ export class Interpreter {
         
         if (node.prefix) environment.returnValues.push(value);
         else environment.returnValues.push(objectValue);
-        
-        this.gotoNextInstruction();
         break;
       }
       default:
@@ -862,8 +862,6 @@ export class Interpreter {
     else console.error("weird error, operator not found");
 
     this.updateVariableValue(varName, value, this.getCurrentEnvironment());
-
-    this.gotoNextInstruction();
 
     if (node.prefix) this.getCurrentEnvironment().returnValues.push(value);
     else this.getCurrentEnvironment().returnValues.push(oldValue);
@@ -1032,9 +1030,7 @@ export class Interpreter {
         this.removeCurrentEnvironment();
 
         this.updateVariableValue(identifier, result, this.getCurrentEnvironment());
-        environment.returnValues.push(argument); // TODO: check all functions which should both update a value and then return a value, such as a++/++a etc
-
-        this.gotoNextInstruction();
+        environment.returnValues.push(argument);
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1202,7 +1198,6 @@ export class Interpreter {
         break;
       case 'end':
         this.removeCurrentEnvironment();
-        this.gotoNextInstruction();
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1256,8 +1251,6 @@ export class Interpreter {
     const functionDeclaration = this.createFunction(name, parameters, body);
 
     this.functionDeclarations.push(functionDeclaration);
-
-    this.gotoNextInstruction();
   }
 
   interpretBlockStatement(node) {
@@ -1280,6 +1273,7 @@ export class Interpreter {
     if (instruction === null) {
       this.removeCurrentEnvironment();
     } else {
+      this.gotoNextInstruction();
       this.executeNodeType(instruction);
     }
     
@@ -1319,7 +1313,6 @@ export class Interpreter {
         break;
       case 'end':
         this.removeCurrentEnvironment();
-        this.gotoNextInstruction();
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1362,7 +1355,6 @@ export class Interpreter {
           this.executeNodeType(node.body); // interpret the body of the for loop
         } else {
           this.removeCurrentEnvironment(); // removes the for-loop environment
-          this.gotoNextInstruction();
         }
         break;
       case 'update':
@@ -1402,7 +1394,6 @@ export class Interpreter {
           this.executeNodeType(node.body); // interpret the body of the while loop
         } else {
           this.removeCurrentEnvironment(); // removes the while-loop environment
-          this.gotoNextInstruction();
         }
         break;
       default:
@@ -1439,7 +1430,6 @@ export class Interpreter {
           this.executeNodeType(node.body); // interpret the body of the do while loop
         } else {
           this.removeCurrentEnvironment(); // removes the do while-loop environment
-          this.gotoNextInstruction();
         }
         break;
       default:
@@ -1512,7 +1502,6 @@ export class Interpreter {
       }
       case 'end': {
         this.removeCurrentEnvironment();
-        this.gotoNextInstruction();
         break;
       }
       default:
@@ -1536,6 +1525,7 @@ export class Interpreter {
 
     const instruction = this.getNextInstruction();
     if (instruction !== null) {
+      this.gotoNextInstruction();
       this.executeNodeType(instruction);
     } else {
       this.removeCurrentEnvironment();
@@ -1557,8 +1547,6 @@ export class Interpreter {
     }
 
     this.removeCurrentEnvironment();
-    environment = this.getCurrentEnvironment();
-    this.gotoNextInstruction();
   }
 
   interpretContinueStatement(node) {
@@ -1641,7 +1629,6 @@ export class Interpreter {
         const argument = environment.returnValues.pop();
         this.removeCurrentEnvironment();
         this.updateCallback({ command: 'consoleLog', argument: argument });
-        this.gotoNextInstruction();
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
