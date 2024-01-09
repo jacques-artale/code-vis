@@ -10,7 +10,8 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 
 function App() {
-  const [code, setCode] = useState('var a = [1,2,3,4];\n\nfor (var i = 0; i < 4; i++) {\n  a[i]++;\n}\n');
+  const [code, setCode] = useState(`var hello = 10;\nswitch (101) {\n  case 100:\n    hello = 23;\n    break;\n  case 2:\n    hello = 0;\n    break;\n  default:\n    hello = 32;\n}`);
+
   const [viewAST, setViewAST] = useState(false);
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
