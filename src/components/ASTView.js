@@ -1,6 +1,6 @@
 import React from 'react';
 
-import buildAst from '../modules/ASTBuilder';
+import { buildAst } from '../modules/ASTBuilder';
 
 const ASTView = ({ code }) => {
 

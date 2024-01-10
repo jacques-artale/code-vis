@@ -3,7 +3,7 @@ import './App.css';
 
 import InterpretWorker from './workers/Interpreter.worker.js';
 
-import buildAst from './modules/ASTBuilder';
+import { buildAst, getNodesToHighlight } from './modules/ASTBuilder';
 import CodeInput from './components/CodeInput';
 import Console from './components/Console';
 import ASTView from './components/ASTView';
@@ -11,12 +11,15 @@ import VisualView from './components/VisualView';
 
 function App() {
   const [code, setCode] = useState(`var hello = 10;\nswitch (101) {\n  case 100:\n    hello = 23;\n    break;\n  case 2:\n    hello = 0;\n    break;\n  default:\n    hello = 32;\n}`);
+  const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
 
   const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
   const [arrayVariables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
   const [log, setLog] = useState([]); // [line, line, ...]
+  const [highlights, setHighlights] = useState([]); // [[startLine, startColumn, endLine, endColumn], ...]
+  const [activeNode, setActiveNode] = useState(null); // [startLine, startColumn, endLine, endColumn]
 
   const [worker, setWorker] = useState(null);
   
@@ -38,25 +41,35 @@ function App() {
     return () => newWorker.terminate();
   }, []);
 
-  function simulateCode() {
+  useEffect(() => {
+    if (activeNode !== null) {
+      const nodesToHighlight = getNodesToHighlight(parsedCode, [activeNode]);
+      setHighlights(nodesToHighlight);
+    }
+  }, [activeNode, parsedCode]);
+
+  function parseCode() {
     const parsedCode = buildAst(code);
     if (parsedCode.type === 'error') {
       alert(`Error parsing code: ${parsedCode.description} at line ${parsedCode.line}, column ${parsedCode.column}`);
       return;
     }
     
-    if (parsedCode !== '') {
+    setParsedCode(parsedCode.code);
+  }
+
+  function simulateCode() {    
+    if (parsedCode !== null) {
       setLog([]); // Clear the console
-      worker.postMessage({ command: 'resetInterpreter', code: parsedCode.code });
-      worker.postMessage({ command: 'interpretAll', code: parsedCode.code });
+      worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
+      worker.postMessage({ command: 'interpretAll', code: parsedCode });
     }
+    setHighlights([[1,0,1,10]]);
   }
 
   function simulateNext() {
-    const parsedCode = buildAst(code);
-
-    if (parsedCode !== '') {
-      worker.postMessage({ command: 'interpretNext', code: parsedCode.code });
+    if (parsedCode !== null) {
+      worker.postMessage({ command: 'interpretNext', code: parsedCode });
     }
   }
 
@@ -78,6 +91,7 @@ function App() {
       }
 
       <div style={{display: 'flex', flexDirection: 'column'}}>
+        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => parseCode() }>Parse</button>
         <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
         <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateNext() }>Next</button>
         <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
@@ -87,7 +101,7 @@ function App() {
         </button>
       </div>
 
-      <CodeInput code={code} setCode={setCode} />
+      <CodeInput code={code} setCode={setCode} highlights={highlights}/>
     </div>
   );
 }
