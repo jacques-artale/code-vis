@@ -10,7 +10,23 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 
 function App() {
-  const [code, setCode] = useState(`var hello = 10;\nswitch (101) {\n  case 100:\n    hello = 23;\n    break;\n  case 2:\n    hello = 0;\n    break;\n  default:\n    hello = 32;\n}`);
+  const [code, setCode] = useState(
+`function hello() {
+  for (let i = 0; i < 5; i++) {
+    console.log(i);
+  }
+}
+  
+var a = 10;
+var b = 5;
+  
+if (a === b * 2) {
+  hello();
+  console.log("equal!");
+} else {
+  console.log("not equal!");
+}
+`);
   const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
@@ -19,7 +35,7 @@ function App() {
   const [arrayVariables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
   const [log, setLog] = useState([]); // [line, line, ...]
   const [highlights, setHighlights] = useState([]); // [[startLine, startColumn, endLine, endColumn], ...]
-  const [activeNode, setActiveNode] = useState(null); // [startLine, startColumn, endLine, endColumn]
+  const [activeNode, setActiveNode] = useState(null); // nodeId
 
   const [worker, setWorker] = useState(null);
   
@@ -35,6 +51,8 @@ function App() {
         setArrayVariables(e.data.arrayVariables);
       } else if (e.data.command === 'consoleLog') {
         setLog(old_log => [...old_log, e.data.argument]);
+      } else if (e.data.command === 'updateActiveNode') {
+        setActiveNode(e.data.nodeId);
       }
     };
 
@@ -64,7 +82,6 @@ function App() {
       worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
       worker.postMessage({ command: 'interpretAll', code: parsedCode });
     }
-    setHighlights([[1,0,1,10]]);
   }
 
   function simulateNext() {

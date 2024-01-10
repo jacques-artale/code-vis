@@ -7,7 +7,8 @@ class CodeEditor extends React.Component {
     super(props);
     this.state = {
       code: props.code,
-      editor: null
+      editor: null,
+      currentDecorations: [],
     };
   }
 
@@ -22,13 +23,17 @@ class CodeEditor extends React.Component {
   }
 
   setHighlights(highlights) {
-    const { editor } = this.state;
+    const { editor, currentDecorations } = this.state;
     if (editor) {
+      const clearedDecorations = editor.deltaDecorations(currentDecorations, []);
+
       const decorations = highlights.map(highlight => ({
-        range: new this.state.monaco.Range(highlights[0], highlight[1], highlight[2], highlight[3]),
+        range: new this.state.monaco.Range(highlight[0], highlight[1], highlight[2], highlight[3] + 1),
         options: { inlineClassName: 'highlight' }
       }));
-      editor.deltaDecorations([], decorations);
+
+      const newDecorations = editor.deltaDecorations(clearedDecorations, decorations);
+      this.setState({ currentDecorations: newDecorations });
     }
   }
 

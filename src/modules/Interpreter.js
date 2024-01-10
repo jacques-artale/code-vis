@@ -39,6 +39,10 @@ export class Interpreter {
     this.environmentStack.push(this.globalEnvironment);
   }
 
+  updateCurrentExecutingNode(nodeId) {
+    this.updateCallback({ command: 'updateActiveNode', nodeId: nodeId });
+  }
+
   /*
     HANDLE SCOPE AND ENVIRONMENT VARIABLES
   */
@@ -350,6 +354,8 @@ export class Interpreter {
     if (this.debugging) console.log(node);
     if (node === null) return null;
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     const environment = this.getCurrentEnvironment();
 
     switch (node.type) {
@@ -428,6 +434,8 @@ export class Interpreter {
     if (this.debugging) console.log("expression statement");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     switch (node.type) {
       case 'AssignmentExpression':
         this.interpretAssignmentExpression(node);
@@ -452,6 +460,8 @@ export class Interpreter {
     if (this.debugging) console.log("assignment expression");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     // check if the assignment is to an object property
     if (node.left.type === 'MemberExpression') {
       // we update the property
@@ -463,6 +473,8 @@ export class Interpreter {
   }
 
   handleMemberExpressionAssignment(node) {
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -572,6 +584,8 @@ export class Interpreter {
   }
 
   handleMemberProperty(node) {
+    this.updateCurrentExecutingNode(node.nodeId);
+
     if (node.type === 'Identifier') {
       if (node.name === 'length') return node.name;
 
@@ -595,6 +609,8 @@ export class Interpreter {
   }
 
   handleVariableAssignment(node) {
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -649,6 +665,8 @@ export class Interpreter {
     if (this.debugging) console.log("binary expression");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       // Create a new environment for the binary expression's scope
@@ -689,6 +707,8 @@ export class Interpreter {
     if (this.debugging) console.log("logical expression");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -727,6 +747,8 @@ export class Interpreter {
   interpretUnaryExpression(node) {
     if (this.debugging) console.log("unary expression");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -772,6 +794,8 @@ export class Interpreter {
     if (this.debugging) console.log("update expression");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     if (node.argument.type === 'MemberExpression') {
       // update the array or object property
       this.handleUpdateMemberExpression(node);
@@ -782,6 +806,8 @@ export class Interpreter {
   }
 
   handleUpdateMemberExpression(node) {
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -852,6 +878,8 @@ export class Interpreter {
   }
 
   handleUpdateVariableExpression(node) {
+    this.updateCurrentExecutingNode(node.nodeId);
+
     const varName = node.argument.name;
     const operator = node.operator;
     const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
@@ -870,6 +898,8 @@ export class Interpreter {
   interpretCallExpression(node) {
     if (this.debugging) console.log("call expression");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     // TODO: merge this with the switch case
     const callee = node.callee;
@@ -936,6 +966,8 @@ export class Interpreter {
   }
 
   handleStandardFunctions(node) {
+    this.updateCurrentExecutingNode(node.nodeId);
+
     if (node.callee.type === 'MemberExpression') {
       if (node.callee.object.name === 'Math') {
         if (node.callee.property.name === 'max') {
@@ -959,6 +991,8 @@ export class Interpreter {
   interpretMemberExpression(node) {
     if (this.debugging) console.log("member expression");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1002,6 +1036,8 @@ export class Interpreter {
     if (this.debugging) console.log("array push");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -1040,6 +1076,8 @@ export class Interpreter {
   interpretObjectExpression(node) {
     if (this.debugging) console.log("object expression");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1091,6 +1129,8 @@ export class Interpreter {
     if (this.debugging) console.log("array expression");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = node.elements;
@@ -1137,6 +1177,8 @@ export class Interpreter {
     if (this.debugging) console.log("sequence expression");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = node.expressions;
@@ -1162,6 +1204,8 @@ export class Interpreter {
   interpretVariableDeclaration(node) {
     if (this.debugging) console.log("variable declaration");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1244,6 +1288,8 @@ export class Interpreter {
     if (this.debugging) console.log("function declaration");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     const name = node.id.name;
     const parameters = node.params;
     const body = node.body;
@@ -1284,6 +1330,8 @@ export class Interpreter {
     if (this.debugging) console.log("if statement");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -1322,6 +1370,8 @@ export class Interpreter {
   interpretForStatement(node) {
     if (this.debugging) console.log("for statement");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1370,6 +1420,8 @@ export class Interpreter {
     if (this.debugging) console.log("while statement");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       // Create a new environment for the while loop's scope
@@ -1404,6 +1456,8 @@ export class Interpreter {
   interpretDoWhileStatement(node) {
     if (this.debugging) console.log("do while statement");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1440,6 +1494,8 @@ export class Interpreter {
   interpretSwitchStatement(node) {
     if (this.debugging) console.log("switch statement");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1513,6 +1569,8 @@ export class Interpreter {
     if (this.debugging) console.log("switch case");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = node.consequent;
@@ -1536,6 +1594,8 @@ export class Interpreter {
     if (this.debugging) console.log("break statement");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     let type = environment.executionState.type;
     // purge all environments until we reach a statement that can handle a break
@@ -1553,6 +1613,8 @@ export class Interpreter {
     if (this.debugging) console.log("continue statement");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     let type = environment.executionState.type;
     // purge all environments until we reach a statement that can handle a continue
@@ -1567,6 +1629,8 @@ export class Interpreter {
   interpretReturnStatement(node) {
     if (this.debugging) console.log("return statement");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1609,6 +1673,8 @@ export class Interpreter {
     if (this.debugging) console.log("console log");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -1638,6 +1704,8 @@ export class Interpreter {
   interpretMathMax(node) {
     if (this.debugging) console.log("math max");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
@@ -1676,6 +1744,8 @@ export class Interpreter {
     if (this.debugging) console.log("math min");
     if (this.debugging) console.log(node);
 
+    this.updateCurrentExecutingNode(node.nodeId);
+
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
       const instructions = [];
@@ -1712,6 +1782,8 @@ export class Interpreter {
   interpretMathAbs(node) {
     if (this.debugging) console.log("math abs");
     if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
