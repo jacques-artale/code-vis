@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
 
 import InterpretWorker from './workers/Interpreter.worker.js';
@@ -31,13 +31,16 @@ if (a === b * 2) {
 
   const [viewAST, setViewAST] = useState(false);
 
-  const [variables, setVariables] = useState([]); // [[name, value], [name, value], ...]
-  const [arrayVariables, setArrayVariables] = useState([]); // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
-  const [log, setLog] = useState([]); // [line, line, ...]
-  const [highlights, setHighlights] = useState([]); // [[startLine, startColumn, endLine, endColumn], ...]
-  const [activeNode, setActiveNode] = useState(null); // nodeId
+  const [variables, setVariables] = useState([]);             // [[name, value], [name, value], ...]
+  const [arrayVariables, setArrayVariables] = useState([]);   // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
+  const [log, setLog] = useState([]);                         // [line, line, ...]
 
-  const [worker, setWorker] = useState(null);
+  const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
+  const [activeNode, setActiveNode] = useState(null);         // nodeId
+  const [interpretSpeed, setInterpretSpeed] = useState(500);  // ms timer between interpreter calls
+  
+  const interpreterRef = useRef();                            // interval which calls the interpreter
+  const [worker, setWorker] = useState(null);                 // worker where the interpreter runs
   
   // setup worker for interpreting code
   useEffect(() => {
@@ -53,6 +56,8 @@ if (a === b * 2) {
         setLog(old_log => [...old_log, e.data.argument]);
       } else if (e.data.command === 'updateActiveNode') {
         setActiveNode(e.data.nodeId);
+      } else if (e.data.command === 'end') {
+        clearInterval(interpreterRef.current);
       }
     };
 
@@ -80,7 +85,13 @@ if (a === b * 2) {
     if (parsedCode !== null) {
       setLog([]); // Clear the console
       worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
-      worker.postMessage({ command: 'interpretAll', code: parsedCode });
+
+      const interval = setInterval(() => {
+        if (worker === null) clearInterval(interval);
+        else worker.postMessage({ command: 'interpretNext', code: parsedCode });
+      }, interpretSpeed);
+
+      interpreterRef.current = interval;
     }
   }
 

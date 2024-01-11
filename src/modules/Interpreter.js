@@ -249,6 +249,15 @@ export class Interpreter {
   interpretNextInstruction() {
     const node = this.getExecutingNode();
     if (node === null) return;
+
+    const environment = this.getCurrentEnvironment();
+    const instructionLength = environment.executionState.instructions.length;
+    const instructionPointer = environment.executionState.instructionPointer;
+    if (environment.executionState.type === 'global' && instructionPointer >= instructionLength) {
+      this.updateCallback({ command: 'end' });
+      return;
+    }
+
     this.executeNodeType(node);
   }
 
