@@ -1,4 +1,4 @@
-import buildAst from '../src/modules/ASTBuilder';
+import { buildAst } from '../src/modules/ASTBuilder';
 import { Interpreter } from '../src/modules/Interpreter';
 
 let variables = [];
@@ -11,8 +11,6 @@ function updateVariables(data) {
     arrayVariables = data.arrayVariables;
   } else if (data.command === 'consoleLog') {
     log = [...log, data.argument];
-  } else {
-    console.error('Unknown command: ' + data.command);
   }
 }
 
