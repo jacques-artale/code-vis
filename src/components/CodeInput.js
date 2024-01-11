@@ -67,7 +67,7 @@ function CodeInput({ code, setCode, highlights }) {
   }, [highlights]);
 
   return (
-    <div style={{ float: 'right', width: '50%', height: '100%', border: '1px solid black' }}>
+    <div style={{ float: 'right', width: '100%', height: '100%' }}>
       <CodeEditor code={code} setCode={setCode} ref={codeEditorRef}/>
     </div>
   );

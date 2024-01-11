@@ -96,29 +96,32 @@ if (a === b * 2) {
 
   return (
     <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'row'}}>
-      {
-        <div style={{width: '50%', display: 'flex', flexDirection: 'column'}}>
+
+      <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{display: 'flex'}}>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => parseCode() }>Parse</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateNext() }>Next</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
+            {
+              viewAST ? 'View Visual' : 'View AST'
+            }
+          </button>
+        </div>
+        <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {
             viewAST ?
               <ASTView code={code} /> :
               <VisualView variables={variables} arrayVariables={arrayVariables} />
           }
-          <Console log={log} />
         </div>
-      }
-
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => parseCode() }>Parse</button>
-        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
-        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateNext() }>Next</button>
-        <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
-          {
-            viewAST ? 'View Visual' : 'View AST'
-          }
-        </button>
+        <Console log={log} />
       </div>
 
-      <CodeInput code={code} setCode={setCode} highlights={highlights}/>
+      <div style={{ width: '50%', height: '100%', display: 'flex' }}>
+        <CodeInput code={code} setCode={setCode} highlights={highlights}/>
+      </div>
+      
     </div>
   );
 }

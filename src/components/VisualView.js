@@ -5,7 +5,7 @@ import ArrayGrid from './Array';
 
 const VisualView = ({ variables, arrayVariables }) => {
   return (
-    <div>
+    <div style={{ width: '100%', height: '100%' }}>
       {
         variables.map(([name, value]) => {
           return (
@@ -19,6 +19,12 @@ const VisualView = ({ variables, arrayVariables }) => {
             <ArrayGrid key={name} name={name} values={values} />
           );
         })
+      }
+      {
+        (variables.length === 0 && arrayVariables.length === 0) &&
+        <div>
+          <p>To start, 'parse' and 'run' code</p>
+        </div>
       }
     </div>
   );
