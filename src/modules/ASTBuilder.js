@@ -10,9 +10,9 @@ function assignASTIds(ast) {
   });
 }
 
-export function buildAst(code) {
+export function buildAst(code, useLoc = true) {
   try {
-    const ast = parseScript(code, { loc: true });
+    const ast = parseScript(code, { loc: useLoc });
     assignASTIds(ast);
     return { type: 'parsed', code: ast};
   } catch (e) {

@@ -8,7 +8,7 @@ function Console({ log }) {
         display: "flex",
         flexDirection: "column",
         marginTop: "auto",
-        height: "20%",
+        height: "25%",
         overflow: "scroll",
         padding: "1%"
       }

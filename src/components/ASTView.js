@@ -6,7 +6,7 @@ const ASTView = ({ code }) => {
 
   function getAST() {
     try {
-      const parsedCode = buildAst(code);
+      const parsedCode = buildAst(code, false);
       if (parsedCode.type === 'error') {
         return JSON.stringify(parsedCode, null, 4);
       }
