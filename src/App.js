@@ -10,6 +10,9 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 
 function App() {
+  const slowInterpretationSpeed = 500; // ms
+  const fastInterpretationSpeed = 100; // ms
+
   const [code, setCode] = useState(
 `function hello() {
   for (let i = 0; i < 5; i++) {
@@ -71,20 +74,32 @@ if (a === b * 2) {
     }
   }, [activeNode, parsedCode]);
 
+  useEffect(() => {
+    if (interpreterRef.current !== null) {
+      clearInterval(interpreterRef.current);
+      simulateCode();
+    }
+  }, [interpretSpeed]);
+
+
+
   function parseCode() {
     const parsedCode = buildAst(code);
     if (parsedCode.type === 'error') {
       alert(`Error parsing code: ${parsedCode.description} at line ${parsedCode.line}, column ${parsedCode.column}`);
       return;
     }
-    
     setParsedCode(parsedCode.code);
+  }
+
+  function resetInterpreter() {
+    setLog([]);
+    worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
   }
 
   function simulateCode() {    
     if (parsedCode !== null) {
-      setLog([]); // Clear the console
-      worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
+      if (interpreterRef.current !== null) clearInterval(interpreterRef.current);
 
       const interval = setInterval(() => {
         if (worker === null) clearInterval(interval);
@@ -111,13 +126,15 @@ if (a === b * 2) {
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{display: 'flex'}}>
           <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => parseCode() }>Parse</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateCode() }>Run</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => { resetInterpreter(); simulateCode(); }}>Run</button>
           <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateNext() }>Next</button>
           <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
             {
               viewAST ? 'View Visual' : 'View AST'
             }
           </button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => setInterpretSpeed(slowInterpretationSpeed)}>Slow</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => setInterpretSpeed(fastInterpretationSpeed)}>Fast</button>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {
