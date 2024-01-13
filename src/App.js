@@ -10,8 +10,7 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 
 function App() {
-  const slowInterpretationSpeed = 500; // ms
-  const fastInterpretationSpeed = 100; // ms
+  const interpreterSpeeds = [2147483647, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
 
   const [code, setCode] = useState(
 `function hello() {
@@ -40,7 +39,7 @@ if (a === b * 2) {
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
   const [activeNode, setActiveNode] = useState(null);         // nodeId
-  const [interpretSpeed, setInterpretSpeed] = useState(500);  // ms timer between interpreter calls
+  const [interpretSpeed, setInterpretSpeed] = useState(5);    // index for `interpreterSpeeds` between interpreter calls
   
   const interpreterRef = useRef();                            // interval which calls the interpreter
   const [worker, setWorker] = useState(null);                 // worker where the interpreter runs
@@ -104,7 +103,7 @@ if (a === b * 2) {
       const interval = setInterval(() => {
         if (worker === null) clearInterval(interval);
         else worker.postMessage({ command: 'interpretNext', code: parsedCode });
-      }, interpretSpeed);
+      }, interpreterSpeeds[interpretSpeed]);
 
       interpreterRef.current = interval;
     }
@@ -133,8 +132,7 @@ if (a === b * 2) {
               viewAST ? 'View Visual' : 'View AST'
             }
           </button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => setInterpretSpeed(slowInterpretationSpeed)}>Slow</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => setInterpretSpeed(fastInterpretationSpeed)}>Fast</button>
+          <input type='range' min='0' max='10' step='1' value={interpretSpeed} onInput={(value) => setInterpretSpeed(value.target.value) }></input>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {
