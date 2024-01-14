@@ -450,7 +450,8 @@ export class Interpreter {
         this.interpretAssignmentExpression(node);
         break;
       case 'BinaryExpression':
-        return this.interpretBinaryExpression(node);
+        this.interpretBinaryExpression(node);
+        break;
       case 'UpdateExpression':
         this.interpretUpdateExpression(node);
         break;
@@ -458,7 +459,8 @@ export class Interpreter {
         this.interpretCallExpression(node);
         break;
       case 'MemberExpression':
-        return this.interpretMemberExpression(node);
+        this.interpretMemberExpression(node);
+        break;
       // Add other expression types as needed
       default:
         console.log('expression type not implemented yet');
@@ -596,7 +598,10 @@ export class Interpreter {
     this.updateCurrentExecutingNode(node.nodeId);
 
     if (node.type === 'Identifier') {
-      if (node.name === 'length') return node.name;
+      if (node.name === 'length') {
+        this.getCurrentEnvironment().returnValues.push('length');
+        return;
+      }
 
       const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
       if (value !== null) {
