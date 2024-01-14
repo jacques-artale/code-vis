@@ -33,3 +33,25 @@ p {
 .highlight {
   background-color: yellow;
 }
+
+.script-select-button {
+  padding: 0.5%;
+  height: 25px;
+  border: none;
+  border-bottom: 1px solid black;
+  background-color: #fff;
+}
+
+.script-select-button-active {
+  padding: 0.5%;
+  height: 25px;
+  border-bottom: none;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  background-color: #fff;
+}
+
+.script-select-button:hover {
+  background-color: #eee;
+}

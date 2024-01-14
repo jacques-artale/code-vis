@@ -45,6 +45,7 @@ function App() {
         setActiveNode(e.data.nodeId);
       } else if (e.data.command === 'end') {
         clearInterval(interpreterRef.current);
+        setHighlights([]);
       }
     };
 
