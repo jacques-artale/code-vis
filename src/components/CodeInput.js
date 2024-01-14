@@ -40,7 +40,8 @@ class CodeEditor extends React.Component {
   render() {
     const code = this.state.code;
     const options = {
-      selectOnLineNumbers: true
+      selectOnLineNumbers: true,
+      tabSize: 2,
     };
     return (
       <MonacoEditor
@@ -59,6 +60,12 @@ class CodeEditor extends React.Component {
 
 function CodeInput({ code, setCode, highlights }) {
   const codeEditorRef = React.useRef(null);
+
+  useEffect(() => {
+    if (codeEditorRef.current) {
+      codeEditorRef.current.setState({ code }); // update the code in the editor
+    }
+  }, [code]);
 
   useEffect(() => {
     if (codeEditorRef.current) {

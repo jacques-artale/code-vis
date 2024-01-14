@@ -8,27 +8,12 @@ import CodeInput from './components/CodeInput';
 import Console from './components/Console';
 import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
+import ScriptSelect from './components/ScriptSelect.js';
 
 function App() {
   const interpreterSpeeds = [2147483647, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
 
-  const [code, setCode] = useState(
-`function hello() {
-  for (let i = 0; i < 5; i++) {
-    console.log(i);
-  }
-}
-  
-var a = 10;
-var b = 5;
-  
-if (a === b * 2) {
-  hello();
-  console.log("equal!");
-} else {
-  console.log("not equal!");
-}
-`);
+  const [code, setCode] = useState('');
   const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
@@ -144,7 +129,8 @@ if (a === b * 2) {
         <Console log={log} />
       </div>
 
-      <div style={{ width: '50%', height: '100%', display: 'flex' }}>
+      <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <ScriptSelect setCode={setCode}/>
         <CodeInput code={code} setCode={setCode} highlights={highlights}/>
       </div>
       
