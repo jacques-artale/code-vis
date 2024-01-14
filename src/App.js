@@ -132,7 +132,7 @@ if (a === b * 2) {
               viewAST ? 'View Visual' : 'View AST'
             }
           </button>
-          <input type='range' min='0' max='10' step='1' value={interpretSpeed} onInput={(value) => setInterpretSpeed(value.target.value) }></input>
+          <p>Speed</p><input type='range' min='0' max='10' step='1' value={interpretSpeed} onInput={(value) => setInterpretSpeed(value.target.value) }></input>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {

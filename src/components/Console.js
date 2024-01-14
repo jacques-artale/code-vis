@@ -2,24 +2,31 @@ import React from 'react';
 
 function Console({ log }) {
   return (
-    <div style={
-      {
-        border: "1px solid black",
-        display: "flex",
-        flexDirection: "column",
-        marginTop: "auto",
-        height: "25%",
-        overflow: "scroll",
-        padding: "1%"
-      }
-    }>
-      {
-        log.map((line, index) => {
-          return (
-            <p key={index} style={{margin: "0px"}}>: {line}</p>
-          );
-        })
-      }
+    <div style={{ display: 'flex', flexDirection: 'column', marginTop: "auto", height: "30%", border: '1px solid black' }}>
+      <div style={
+        {
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          width: "100%",
+          overflow: "scroll"
+        }
+      }>
+        {/* Console header */}
+        <div style={{ display: 'flex', position: 'fixed', backgroundColor: 'gray', width: '4%', borderBottomRightRadius: '7px' }}>
+          <p style={{ margin: "0px", paddingLeft: '5px', color: 'white' }}>Console</p>
+        </div>
+        {/* Console content */}
+        <div style={{ marginTop: '25px' }}>
+          {
+            log.map((line, index) => {
+              return (
+                <p key={index} style={{margin: "0px", marginLeft: '10px'}}>{line}</p>
+              );
+            })
+          }
+        </div>
+      </div>
     </div>
   );
 }
