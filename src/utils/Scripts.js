@@ -35,5 +35,31 @@ for (var i = 0; i < arr.length / 2; i++) {
   arr[arr.length - i - 1] = temp;
 }
 `
+  },
+  {
+    name: 'Binary Search',
+    code:
+`function binarySearch(target, arr) {
+  var low = 0;
+  var high = arr.length - 1;
+
+  while (low <= high) {
+    var mid = Math.floor((low + high) / 2);
+    if (arr[mid] === target) {
+      return mid;
+    } else if (arr[mid] < target) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+}
+
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+var target = 6;
+var result = binarySearch(target, arr);
+
+console.log("Target found at index: " + result);
+`
   }
 ];

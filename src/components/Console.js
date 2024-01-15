@@ -13,8 +13,8 @@ function Console({ log }) {
         }
       }>
         {/* Console header */}
-        <div style={{ display: 'flex', position: 'fixed', backgroundColor: 'gray', width: '4%', borderBottomRightRadius: '7px' }}>
-          <p style={{ margin: "0px", paddingLeft: '5px', color: 'white' }}>Console</p>
+        <div style={{ display: 'flex', position: 'fixed', backgroundColor: '#bbb', width: '4%', borderBottomRightRadius: '7px', border: '1px solid black' }}>
+          <p style={{ margin: "0px", paddingLeft: '5px' }}>Console</p>
         </div>
         {/* Console content */}
         <div style={{ marginTop: '25px' }}>

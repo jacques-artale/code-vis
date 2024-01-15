@@ -7,16 +7,16 @@ const VisualView = ({ variables, arrayVariables }) => {
   return (
     <div style={{ width: '100%', height: '100%' }}>
       {
-        variables.map(([name, value]) => {
+        variables.map(([name, value], index) => {
           return (
-            <Variable key={name} name={name} value={value} />
+            <Variable key={index} name={name} value={value} />
           );
         })
       }
       {
-        arrayVariables.map(([name, values]) => {
+        arrayVariables.map(([name, values], index) => {
           return (
-            <ArrayGrid key={name} name={name} values={values} />
+            <ArrayGrid key={index} name={name} values={values} />
           );
         })
       }
