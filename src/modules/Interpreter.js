@@ -993,6 +993,9 @@ export class Interpreter {
         } else if (node.callee.property.name === 'abs') {
           this.interpretMathAbs(node);
           return true;
+        } else if (node.callee.property.name === 'floor') {
+          this.interpretMathFloor(node);
+          return true;
         }
       } else if (node.callee.property.name === 'push') {
         this.interpretArrayPush(node);
@@ -1291,7 +1294,15 @@ export class Interpreter {
       case 'Identifier':
         if (identifier === null) console.error("identifier was not provided");
         const varVal = this.lookupVariableValue(identifier, environment);
-        this.createVariable(varName, varVal, environment);
+        if (varVal === null) {
+          console.error("variable value not found");
+        } else if (Array.isArray(varVal)) {
+          this.createArrayVariable(varName, varVal, environment);
+        } else if (typeof varVal === 'object') {
+          this.createObjectVariable(varName, varVal, environment);
+        } else {
+          this.createVariable(varName, varVal, environment);
+        }
         break;
       default:
         console.error(`Unrecognized variable type: ${varType}`);
@@ -1818,6 +1829,40 @@ export class Interpreter {
       case 'end':
         const argument = environment.returnValues.pop();
         const result = Math.abs(argument);
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(result);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
+    }
+  }
+
+  interpretMathFloor(node) {
+    if (this.debugging) console.log("math floor");
+    if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
+
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'mathFloor';
+      newEnvironment.executionState.phase = 'init';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'init':
+        environment.executionState.phase = 'end';
+        this.interpretExpression(node.arguments[0]);
+        break;
+      case 'end':
+        const argument = environment.returnValues.pop();
+        const result = Math.floor(argument);
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(result);

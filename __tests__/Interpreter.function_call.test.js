@@ -120,6 +120,28 @@ describe('Function call', () => {
     });
   });
 
+  test('Function call to Math floor function', () => {
+    const operations = [
+      { code: 'var a = Math.floor(1);', expected: [['a', 1]] },
+      { code: 'var a = Math.floor(-1);', expected: [['a', -1]] },
+      { code: 'var a = Math.floor(-100);', expected: [['a', -100]] },
+      { code: 'var a = Math.floor(100);', expected: [['a', 100]] },
+      { code: 'var a = Math.floor(0);', expected: [['a', 0]] },
+      { code: 'var a = Math.floor(23 * 124 / 32);', expected: [['a', 89]] },
+      { code: 'var a = Math.floor(10.5);', expected: [['a', 10]] },
+      { code: 'var a = Math.floor(10.9);', expected: [['a', 10]] },
+      { code: 'var a = Math.floor(10.1);', expected: [['a', 10]] },
+      { code: 'var a = Math.floor(10.000000)', expected: [['a', 10]] },
+    ];
+
+    operations.forEach(({ code, expected }) => {
+      variables = [];
+
+      interpret(code);
+      expect(variables).toEqual(expected);
+    });
+  });
+
   test('Function call with arithmetic expression argument', () => {
     const code = 'function a(b) { return b; } var c = a(1 + 2);';
     interpret(code);    
