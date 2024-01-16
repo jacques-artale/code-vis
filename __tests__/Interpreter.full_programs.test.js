@@ -6,9 +6,9 @@ let arrayVariables = [];
 let log = [];
 
 function updateVariables(data) {
-  if (data.command === 'updateVariables') {
-    variables = data.variables;
-    arrayVariables = data.arrayVariables;
+  if (data.command === 'updateScopes') {
+    variables = data.scopes[0].variables;
+    arrayVariables = data.scopes[0].arrayVariables;
   } else if (data.command === 'consoleLog') {
     log = [...log, data.argument];
   }

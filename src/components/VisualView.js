@@ -25,7 +25,7 @@ const VisualView = ({ scopes }) => {
                       })
                     }
                     {
-                      scope.arrayVariables.map(({ name, arr }, index) => {
+                      scope.arrayVariables.map(([name, arr], index) => {
                         return (
                           <div style={{ margin: '20px' }}>
                             <ArrayGrid key={index} name={name} values={arr} />

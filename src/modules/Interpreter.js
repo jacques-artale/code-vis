@@ -214,7 +214,7 @@ export class Interpreter {
         variables.push([name, properties]);
       }
       for (const [name, values] of Object.entries(currentEnvironment.arrayVariables)) {
-        arrayVariables.push({ name: name, arr: values });
+        arrayVariables.push([name, values]);
       }
 
       const scope = {
