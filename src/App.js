@@ -18,8 +18,7 @@ function App() {
 
   const [viewAST, setViewAST] = useState(false);
 
-  const [variables, setVariables] = useState([]);             // [[name, value], [name, value], ...]
-  const [arrayVariables, setArrayVariables] = useState([]);   // [[name, [value, value, ...]], [name, [value, value, ...]], ...]
+  const [scopes, setScopes] = useState([]);                   // TODO: add documentation here
   const [log, setLog] = useState([]);                         // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
@@ -36,9 +35,8 @@ function App() {
 
     newWorker.onmessage = (e) => {
       // handle messages from worker
-      if (e.data.command === 'updateVariables') {
-        setVariables(e.data.variables);
-        setArrayVariables(e.data.arrayVariables);
+      if (e.data.command === 'updateScopes') {
+        setScopes(e.data.scopes);
       } else if (e.data.command === 'consoleLog') {
         setLog(old_log => [...old_log, e.data.argument]);
       } else if (e.data.command === 'updateActiveNode') {
@@ -124,7 +122,7 @@ function App() {
           {
             viewAST ?
               <ASTView code={code} /> :
-              <VisualView variables={variables} arrayVariables={arrayVariables} />
+              <VisualView scopes={scopes} />
           }
         </div>
         <Console log={log} />

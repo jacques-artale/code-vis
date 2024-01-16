@@ -22,16 +22,15 @@ const ArrayGrid = ({ name, values }) => {
     const cells = isOneDimensional ? values : (Array.isArray(row) ? row : [row]);
 
     return (
-      <div key={rowIndex} style={{ display: 'flex' }}>
+      <div key={rowIndex} style={{ display: 'flex', marginLeft: '5px' }}>
         {cells.map(renderCell)}
       </div>
     );
   };
 
   return (
-    <div>
-      {name} :
-      {isOneDimensional ? renderRow(values, 0) : values.map(renderRow)}
+    <div style={{ display: 'flex', flexDirection: 'row' }}>
+      {name} = {isOneDimensional ? renderRow(values, 0) : values.map(renderRow)}
     </div>
   );
 };

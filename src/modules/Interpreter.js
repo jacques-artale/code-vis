@@ -194,27 +194,40 @@ export class Interpreter {
   updateStateVariables(environment) {
     // add all variables from the environment to the state variables
     // do so for all parent environments as well
-    const newVariables = [];
-    const newArrayVariables = [];
-
+    let scopes = [];
     let currentEnvironment = environment;
+
     while (currentEnvironment !== null) {
-      // add all variables from the environment to the state variables
+      const type = currentEnvironment.executionState.type;
+      if (type !== 'global' && type !== 'call' && type !== 'block' && type !== 'for' && type !== 'switchCase') {
+        currentEnvironment = currentEnvironment.parentEnvironment;
+        continue;
+      }
+
+      let variables = [];
+      let arrayVariables = [];
+
       for (const [name, value] of Object.entries(currentEnvironment.variables)) {
-        newVariables.push([name, value]);
+        variables.push([name, value]);
       }
-      // add all array variables from the environment to the state variables
-      for (const [name, values] of Object.entries(currentEnvironment.arrayVariables)) {
-        newArrayVariables.push([name, values]);
-      }
-      // add all object variables from the environment to the state variables
       for (const [name, properties] of Object.entries(currentEnvironment.objectVariables)) {
-        newVariables.push([name, properties]);
+        variables.push([name, properties]);
       }
+      for (const [name, values] of Object.entries(currentEnvironment.arrayVariables)) {
+        arrayVariables.push({ name: name, arr: values });
+      }
+
+      const scope = {
+        name: currentEnvironment.executionState.type,
+        variables: variables,
+        arrayVariables: arrayVariables
+      };
+
+      scopes.push(scope);
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
-    this.updateCallback({ command: 'updateVariables', variables: newVariables, arrayVariables: newArrayVariables });
+    this.updateCallback({ command: 'updateScopes', scopes: scopes });
   }
 
   /*
