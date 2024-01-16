@@ -75,7 +75,7 @@ export class Interpreter {
   removeCurrentEnvironment() {
     if (this.environmentStack.length === 1) return; // do not remove the global environment
     this.environmentStack.pop();
-    this.updateStateVariables(this.getCurrentEnvironment());
+    this.updateStateVariables();
   }
 
   createFunction(name, parameters, body) {
@@ -103,7 +103,7 @@ export class Interpreter {
     }
     environment.variables[name] = value;
 
-    this.updateStateVariables(environment);
+    this.updateStateVariables();
   }
 
   createArrayVariable(name, values, environment) {
@@ -113,7 +113,7 @@ export class Interpreter {
     }
     environment.arrayVariables[name] = values;
 
-    this.updateStateVariables(environment);
+    this.updateStateVariables();
   }
 
   createObjectVariable(name, value, environment) {
@@ -123,7 +123,7 @@ export class Interpreter {
     }
     environment.objectVariables[name] = value;
 
-    this.updateStateVariables(environment);
+    this.updateStateVariables();
   }
 
   lookupVariableValue(name, environment) {
@@ -162,7 +162,7 @@ export class Interpreter {
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
-    this.updateStateVariables(environment);
+    this.updateStateVariables();
   }
 
   updateVariableProperty(name, properties, value, environment) {
@@ -188,19 +188,18 @@ export class Interpreter {
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
   
-    this.updateStateVariables(environment);
+    this.updateStateVariables();
   }
 
-  updateStateVariables(environment) {
+  updateStateVariables() {
     // add all variables from the environment to the state variables
-    // do so for all parent environments as well
+    // do so for all environments
     let scopes = [];
-    let currentEnvironment = environment;
 
-    while (currentEnvironment !== null) {
+    for (let i = 0; i < this.environmentStack.length; i++) {
+      const currentEnvironment = this.environmentStack[i];
       const type = currentEnvironment.executionState.type;
       if (type !== 'global' && type !== 'call' && type !== 'block' && type !== 'for' && type !== 'switchCase') {
-        currentEnvironment = currentEnvironment.parentEnvironment;
         continue;
       }
 
@@ -224,7 +223,6 @@ export class Interpreter {
       };
 
       scopes.push(scope);
-      currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
     this.updateCallback({ command: 'updateScopes', scopes: scopes });

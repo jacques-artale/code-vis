@@ -11,8 +11,8 @@ const Scope = ({ scope }) => {
         {
           scope.variables.map(([name, value], index) => {
             return (
-              <div style={{ margin: '10px' }}>
-                <Variable key={index} name={name} value={value} />
+              <div key={`var-${index}`} style={{ margin: '10px' }}>
+                <Variable name={name} value={value} />
               </div>
             );
           })
@@ -20,8 +20,8 @@ const Scope = ({ scope }) => {
         {
           scope.arrayVariables.map(([name, arr], index) => {
             return (
-              <div style={{ margin: '20px' }}>
-                <ArrayGrid key={index} name={name} values={arr} />
+              <div key={`array-${index}`} style={{ margin: '10px' }}>
+                <ArrayGrid name={name} values={arr} />
               </div>
             );
           })
