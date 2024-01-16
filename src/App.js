@@ -76,6 +76,7 @@ function App() {
   }
 
   function resetInterpreter() {
+    setScopes([]);
     setLog([]);
     worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
   }
