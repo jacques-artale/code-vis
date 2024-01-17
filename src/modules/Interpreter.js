@@ -197,8 +197,10 @@ export class Interpreter {
     let scopes = [];
 
     for (let i = 0; i < this.environmentStack.length; i++) {
-      const currentEnvironment = this.environmentStack[i];
-      const type = currentEnvironment.executionState.type;
+      const environment = this.environmentStack[i];
+      const type = environment.executionState.type;
+
+      // only add scopes for the following types
       if (type !== 'global' && type !== 'call' && type !== 'block' && type !== 'for' && type !== 'switchCase') {
         continue;
       }
@@ -206,20 +208,35 @@ export class Interpreter {
       let variables = [];
       let arrayVariables = [];
 
-      for (const [name, value] of Object.entries(currentEnvironment.variables)) {
+      for (const [name, value] of Object.entries(environment.variables)) {
         variables.push([name, value]);
       }
-      for (const [name, properties] of Object.entries(currentEnvironment.objectVariables)) {
+      for (const [name, properties] of Object.entries(environment.objectVariables)) {
         variables.push([name, properties]);
       }
-      for (const [name, values] of Object.entries(currentEnvironment.arrayVariables)) {
+      for (const [name, values] of Object.entries(environment.arrayVariables)) {
         arrayVariables.push([name, values]);
       }
 
+      // find the first parent environment which we can use as the parent scope
+      let currentEnvironment = environment.parentEnvironment;
+      if (currentEnvironment !== null) {
+        let currentType = currentEnvironment.executionState.type;
+        while (currentType !== 'global' && currentType !== 'call' && currentType !== 'block' && currentType !== 'for' && currentType !== 'switchCase') {
+          currentEnvironment = currentEnvironment.parentEnvironment;
+          currentType = currentEnvironment.executionState.type;
+        }
+      }
+      
+      const parentId = (currentEnvironment !== null) ? currentEnvironment.executionState.node.nodeId : null;
+      const currentId = environment.executionState.node.nodeId;
+
       const scope = {
-        name: currentEnvironment.executionState.type,
+        name: environment.executionState.type,
         variables: variables,
-        arrayVariables: arrayVariables
+        arrayVariables: arrayVariables,
+        parentId: parentId,
+        id: currentId,
       };
 
       scopes.push(scope);
