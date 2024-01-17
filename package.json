@@ -16,7 +16,8 @@
     "react-monaco-editor": "^0.54.0",
     "react-scripts": "5.0.1",
     "react-xarrows": "^2.0.2",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "webpack-cli": "^5.1.4"
   },
   "scripts": {
     "start": "webpack serve --mode development --open --hot",
@@ -54,7 +55,6 @@
     "jest": "^27.5.1",
     "style-loader": "^3.3.3",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",
     "worker-loader": "^3.0.8"
   },
