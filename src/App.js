@@ -11,22 +11,29 @@ import VisualView from './components/VisualView';
 import ScriptSelect from './components/ScriptSelect.js';
 
 function App() {
-  const interpreterSpeeds = [2147483647, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
+  const interpreterSpeeds = [3000, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
 
   const [code, setCode] = useState('');
   const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
+  const [showStart, setShowStart] = useState(true);
+  const [showStop, setShowStop] = useState(false);
+  const [showPause, setShowPause] = useState(false);
+  const [showResume, setShowResume] = useState(false);
+  const [showNext, setShowNext] = useState(false);
 
-  const [scopes, setScopes] = useState([]);                   // TODO: add documentation here
+  const [scopes, setScopes] = useState([]);                   // [{}, ...]
   const [log, setLog] = useState([]);                         // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
   const [activeNode, setActiveNode] = useState(null);         // nodeId
   const [interpretSpeed, setInterpretSpeed] = useState(5);    // index for `interpreterSpeeds` between interpreter calls
+  const [desiredSpeed, setDesiredSpeed] = useState(5);        // index for `interpreterSpeeds` between interpreter calls
   
   const interpreterRef = useRef();                            // interval which calls the interpreter
   const [worker, setWorker] = useState(null);                 // worker where the interpreter runs
+  const [isExecuting, setIsExecuting] = useState(false);      // boolean for whether the interpreter is running
   
   // setup worker for interpreting code
   useEffect(() => {
@@ -42,8 +49,7 @@ function App() {
       } else if (e.data.command === 'updateActiveNode') {
         setActiveNode(e.data.nodeId);
       } else if (e.data.command === 'end') {
-        clearInterval(interpreterRef.current);
-        setHighlights([]);
+        handleStop();
       }
     };
 
@@ -58,46 +64,88 @@ function App() {
   }, [activeNode, parsedCode]);
 
   useEffect(() => {
-    if (interpreterRef.current !== null) {
-      clearInterval(interpreterRef.current);
-      simulateCode();
+    if (isExecuting) {
+      manageExecutionInterval(parsedCode, desiredSpeed, true);
     }
-  }, [interpretSpeed]);
+  }, [desiredSpeed, isExecuting, parsedCode]);
 
 
 
-  function parseCode() {
-    const parsedCode = buildAst(code);
-    if (parsedCode.type === 'error') {
-      alert(`Error parsing code: ${parsedCode.description} at line ${parsedCode.line}, column ${parsedCode.column}`);
-      return;
-    }
-    setParsedCode(parsedCode.code);
-  }
+  function manageExecutionInterval(newCode, speed, shouldStart) {
+    clearInterval(interpreterRef.current);
 
-  function resetInterpreter() {
-    setScopes([]);
-    setLog([]);
-    worker.postMessage({ command: 'resetInterpreter', code: parsedCode });
-  }
-
-  function simulateCode() {    
-    if (parsedCode !== null) {
-      if (interpreterRef.current !== null) clearInterval(interpreterRef.current);
-
+    if (shouldStart && newCode !== null) {
       const interval = setInterval(() => {
-        if (worker === null) clearInterval(interval);
-        else worker.postMessage({ command: 'interpretNext', code: parsedCode });
-      }, interpreterSpeeds[interpretSpeed]);
+        if (worker) {
+          worker.postMessage({ command: 'interpretNext', code: newCode });
+        }
+      }, interpreterSpeeds[speed]);
 
       interpreterRef.current = interval;
+      setInterpretSpeed(speed);
     }
+  }
+
+  function resetInterpreter(newParsedCode) {
+    setScopes([]);
+    setLog([]);
+    worker.postMessage({ command: 'resetInterpreter', code: newParsedCode });
   }
 
   function simulateNext() {
     if (parsedCode !== null) {
       worker.postMessage({ command: 'interpretNext', code: parsedCode });
     }
+  }
+
+  function handleStart() {
+    const parsed = buildAst(code);
+    if (parsed.type === 'error') {
+      alert(`Error parsing code: ${parsed.description} at line ${parsed.line}, column ${parsed.column}`);
+      return;
+    }
+    setParsedCode(parsed.code);
+    resetInterpreter(parsed.code);
+    manageExecutionInterval(parsed.code, desiredSpeed, true);
+    
+    setShowStart(false);
+    setShowStop(true);
+    setShowPause(true);
+    setShowResume(false);
+    setShowNext(true);
+    setIsExecuting(true);
+  }
+
+  function handleStop() {
+    manageExecutionInterval(null, 0, false);
+    setHighlights([]);
+
+    setShowStart(true);
+    setShowStop(false);
+    setShowPause(false);
+    setShowResume(false);
+    setShowNext(false);
+    setIsExecuting(false);
+  }
+
+  function handlePause() {
+    manageExecutionInterval(null, interpretSpeed, false);
+
+    setShowPause(false);
+    setShowResume(true);
+    setIsExecuting(false);
+  }
+
+  function handleResume() {
+    manageExecutionInterval(parsedCode, desiredSpeed, true);
+
+    setShowPause(true);
+    setShowResume(false);
+    setIsExecuting(true);
+  }
+
+  function handleNext() {
+    simulateNext();
   }
 
   function toggleASTView() {
@@ -109,15 +157,17 @@ function App() {
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{display: 'flex'}}>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => parseCode() }>Parse</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => { resetInterpreter(); simulateCode(); }}>Run</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => simulateNext() }>Next</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>Start</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>Stop</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>Pause</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>Resume</button>
+          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>Next</button>
           <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
             {
               viewAST ? 'View Visual' : 'View AST'
             }
           </button>
-          <p>Speed</p><input type='range' min='0' max='10' step='1' value={interpretSpeed} onInput={(value) => setInterpretSpeed(value.target.value) }></input>
+          <p>Speed</p><input type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {

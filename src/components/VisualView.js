@@ -28,7 +28,6 @@ const VisualView = ({ scopes }) => {
                 endAnchor={'bottom'}
                 color={'black'}
                 strokeWidth={2}
-                animateDrawing={0.2}
               />
             );
           }
