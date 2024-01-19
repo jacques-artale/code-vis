@@ -21,7 +21,7 @@ function Console({ log }) {
           {
             log.map((line, index) => {
               return (
-                <p key={index} style={{margin: "0px", marginLeft: '10px'}}>{line}</p>
+                <p key={index} style={{margin: "0px", marginLeft: '10px'}}>{JSON.stringify(line)}</p>
               );
             })
           }
