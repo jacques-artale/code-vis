@@ -66,6 +66,13 @@ describe('Array access', () => {
     interpret(code);   
     expect(variables).toEqual([['b', 1], ['c', 2]]);
   });
+
+  test('Array access with function call as index', () => {
+    const code = 'function a() { return 1; } var b = [1, 2, 3]; var c = b[a()];';
+    interpret(code);    
+    expect(variables).toEqual([['c', 2]]);
+    expect(arrayVariables).toEqual([['b', [1, 2, 3]]]);
+  });
 });
 
 describe('Object access', () => {

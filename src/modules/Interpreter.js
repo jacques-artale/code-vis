@@ -520,7 +520,7 @@ export class Interpreter {
       let object = node.left;
       // example: object.property1.property2.property3 or object[0][1][2]
       while (object.type === 'MemberExpression') {
-        instructions.unshift(object.property);
+        instructions.unshift({ property: object.property, computed: object.computed });
         object = object.object;
       }
       const newEnvironment = this.createEnvironment(environment, node, instructions);
@@ -542,7 +542,7 @@ export class Interpreter {
           break;
         }
         environment.executionState.phase = 'property';
-        this.handleMemberProperty(instruction);
+        this.handleMemberProperty(instruction.property, instruction.computed);
         break;
       }
       case 'property': { // adds the property value to the properties array
@@ -587,14 +587,14 @@ export class Interpreter {
         const object = environment.returnValues.pop();
 
         const newValue = this.updateMemberAssignmentValue(oldValue, operator, value);
-
-        // TODO: handle this better as it could be something other than an identifier
-        let identifier = null;
-        if (object.type === 'Identifier') identifier = object.name;
-        else console.error("object does not have an identifier");
-
+        
         this.removeCurrentEnvironment();
-        this.updateVariableProperty(identifier, properties, newValue, this.getCurrentEnvironment()); // identifier[properties[0]][properties[1]][...] = value;
+        if (object.type === 'Identifier') {
+          this.updateVariableProperty(object.name, properties, newValue, this.getCurrentEnvironment()); // identifier[properties[0]][properties[1]][...] = value;
+        } else {
+          console.error("object does not have an identifier");
+          // TODO: handle this case, update the object property anyway (but it won't be saved)
+        }
         break;
       }
       default:
@@ -622,31 +622,14 @@ export class Interpreter {
     }
   }
 
-  handleMemberProperty(node) {
-    this.updateCurrentExecutingNode(node.nodeId);
+  handleMemberProperty(property, computed) {
+    this.updateCurrentExecutingNode(property.nodeId);
 
-    if (node.type === 'Identifier') {
-      if (node.name === 'length') {
-        this.getCurrentEnvironment().returnValues.push('length');
-        return;
-      }
-
-      const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
-      if (value !== null) {
-        this.getCurrentEnvironment().returnValues.push(value);
-        return;
-      }
-
-      const functionDeclaration = this.lookupFunction(node.name);
-      if (functionDeclaration !== null) {
-        this.getCurrentEnvironment().returnValues.push(functionDeclaration);
-        return;
-      }
-
-      // if we get here then the identifier must be a property
-      this.getCurrentEnvironment().returnValues.push(node.name);
+    if (computed) {
+      this.interpretExpression(property);
     } else {
-      this.interpretExpression(node);
+      if (property.type === 'Identifier') this.getCurrentEnvironment().returnValues.push(property.name);
+      else console.error("property is not an identifier");
     }
   }
 
@@ -856,7 +839,7 @@ export class Interpreter {
       let object = node.argument;
       // example: object.property1.property2.property3 or object[0][1][2]
       while (object.type === 'MemberExpression') {
-        instructions.unshift(object.property);
+        instructions.unshift({ property: object.property, computed: object.computed });
         object = object.object;
       }
       const newEnvironment = this.createEnvironment(environment, node, instructions);
@@ -872,13 +855,13 @@ export class Interpreter {
 
     switch (environment.executionState.phase) {
       case 'init': { // interprets the property into a value
-        const property = this.getNextInstruction();
-        if (property === null) {
+        const instruction = this.getNextInstruction();
+        if (instruction === null) {
           environment.executionState.phase = 'end';
           break;
         }
         environment.executionState.phase = 'property';
-        this.handleMemberProperty(property);
+        this.handleMemberProperty(instruction.property, instruction.computed);
         break;
       }
       case 'property': { // adds the property value to the properties array
@@ -946,15 +929,9 @@ export class Interpreter {
     // TODO: merge this with the switch case
     const callee = node.callee;
     if (callee.type === 'MemberExpression') {
-      // check if the function is a built-in function with return type
+      // check if the function is a built-in function
       const standard = this.handleStandardFunctions(node);
       if (standard) return;
-
-      // check if the function is a built-in function without return type
-      if (callee.object.name === 'console' && callee.property.name === 'log') {
-        this.interpretConsoleLog(node);
-        return;
-      }
     }
 
     let environment = this.getCurrentEnvironment();
@@ -1025,6 +1002,11 @@ export class Interpreter {
           this.interpretMathFloor(node);
           return true;
         }
+      } else if (node.callee.object.name === 'console') {
+        if (node.callee.property.name === 'log') {
+          this.interpretConsoleLog(node);
+          return true;
+        }
       } else if (node.callee.property.name === 'push') {
         this.interpretArrayPush(node);
         return true;
@@ -1058,7 +1040,7 @@ export class Interpreter {
         break;
       case 'property':
         environment.executionState.phase = 'end';
-        this.handleMemberProperty(node.property);
+        this.handleMemberProperty(node.property, node.computed);
         break;
       case 'end':
         const property = environment.returnValues.pop();
