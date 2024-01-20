@@ -232,7 +232,7 @@ export class Interpreter {
       const currentId = environment.executionState.node.nodeId;
 
       const scope = {
-        name: environment.executionState.type,
+        name: this.translateTypeToName(environment.executionState.node.type),
         variables: variables,
         arrayVariables: arrayVariables,
         parentId: parentId,
@@ -243,6 +243,38 @@ export class Interpreter {
     }
 
     this.updateCallback({ command: 'updateScopes', scopes: scopes });
+  }
+
+  translateTypeToName(type) {
+    switch (type) {
+      case 'Program': return 'Global Scope';
+      case 'VariableDeclaration': return 'Variable Declaration';
+      case 'FunctionDeclaration': return 'Function Declaration';
+      case 'BlockStatement': return 'Block Statement';
+      case 'ExpressionStatement': return 'Expression Statement';
+      case 'AssignmentExpression': return 'Assignment Expression';
+      case 'BinaryExpression': return 'Binary Expression';
+      case 'LogicalExpression': return 'Logical Expression';
+      case 'UnaryExpression': return 'Unary Expression';
+      case 'UpdateExpression': return 'Update Expression';
+      case 'ArrayExpression': return 'Array Expression';
+      case 'ObjectExpression': return 'Object Expression';
+      case 'SequenceExpression': return 'Sequence Expression';
+      case 'IfStatement': return 'If Statement';
+      case 'ForStatement': return 'For Statement';
+      case 'WhileStatement': return 'While Statement';
+      case 'DoWhileStatement': return 'Do While Statement';
+      case 'ReturnStatement': return 'Return Statement';
+      case 'CallExpression': return 'Call Expression';
+      case 'MemberExpression': return 'Member Expression';
+      case 'ConditionalExpression': return 'Conditional Expression';
+      case 'SwitchStatement': return 'Switch Statement';
+      case 'SwitchCase': return 'Switch Case';
+      case 'BreakStatement': return 'Break Statement';
+      case 'ContinueStatement': return 'Continue Statement';
+      case 'EmptyStatement': return 'Empty Statement';
+      default: return 'unknown type';
+    }
   }
 
   /*

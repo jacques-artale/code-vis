@@ -23,7 +23,7 @@ function App() {
   const [showResume, setShowResume] = useState(false);
   const [showNext, setShowNext] = useState(false);
 
-  const [scopes, setScopes] = useState([]);                   // [{}, ...]
+  const [scopes, setScopes] = useState([{name: 'hello', variables: [['a', 190]], arrayVariables: [['b', [1,2,3,4,5]]], parentId: null, id: 1}]);                   // [{}, ...]
   const [log, setLog] = useState([]);                         // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
@@ -167,7 +167,7 @@ function App() {
               viewAST ? 'View Visual' : 'View AST'
             }
           </button>
-          <p>Speed</p><input type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
+          <p>Speed</p><input style={{ color: '#586f7c' }} type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {

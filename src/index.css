@@ -9,7 +9,7 @@ body, html, #root {
   line-height: 1.5;
   color: #212529;
   text-align: left;
-  background-color: #fff;
+  background-color: #fffafa;
 }
 
 body {
@@ -31,7 +31,7 @@ p {
 }
 
 .highlight {
-  background-color: yellow;
+  background-color: #b8dbd9;
 }
 
 .script-select-button {
@@ -39,7 +39,7 @@ p {
   height: 25px;
   border: none;
   border-bottom: 1px solid black;
-  background-color: #fff;
+  background-color: #fffafa;
 }
 
 .script-select-button-active {
@@ -49,7 +49,7 @@ p {
   border-top: 1px solid black;
   border-left: 1px solid black;
   border-right: 1px solid black;
-  background-color: #fff;
+  background-color: #fffafa;
 }
 
 .script-select-button:hover {

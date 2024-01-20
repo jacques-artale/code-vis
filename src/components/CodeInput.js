@@ -15,6 +15,17 @@ class CodeEditor extends React.Component {
   editorDidMount(editor, monaco) {
     this.setState({ editor, monaco });
     editor.focus();
+
+    monaco.editor.defineTheme('vs-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'highlight', foreground: '000000', background: 'ffff00' },
+      ],
+      colors: {
+        'editor.background': '#fffafa',
+      }
+    });
   }
 
   onChange(newValue, e) {

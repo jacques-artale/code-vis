@@ -26,7 +26,7 @@ const VisualView = ({ scopes }) => {
                 end={scope.parentId.toString()}
                 startAnchor={'top'}
                 endAnchor={'bottom'}
-                color={'black'}
+                color={'#586f7c'}
                 strokeWidth={2}
               />
             );

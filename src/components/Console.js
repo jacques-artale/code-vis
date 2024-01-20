@@ -13,7 +13,7 @@ function Console({ log }) {
         }
       }>
         {/* Console header */}
-        <div style={{ display: 'flex', position: 'fixed', backgroundColor: '#bbb', width: '4%', borderBottomRightRadius: '7px', border: '1px solid black' }}>
+        <div style={{ display: 'flex', position: 'fixed', backgroundColor: '#586f7c', color: '#f4f4f9', width: '4%', borderBottomRightRadius: '7px', border: '1px solid #586f7c' }}>
           <p style={{ margin: "0px", paddingLeft: '5px' }}>Console</p>
         </div>
         {/* Console content */}
