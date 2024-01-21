@@ -23,7 +23,7 @@ function App() {
   const [showResume, setShowResume] = useState(false);
   const [showNext, setShowNext] = useState(false);
 
-  const [scopes, setScopes] = useState([{name: 'hello', variables: [['a', 190]], arrayVariables: [['b', [1,2,3,4,5]]], parentId: null, id: 1}]);                   // [{}, ...]
+  const [scopes, setScopes] = useState([]);                   // [{}, ...]
   const [log, setLog] = useState([]);                         // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
