@@ -3,9 +3,17 @@ import React from 'react';
 import Variable from './Variable';
 import ArrayGrid from './Array';
 
-const Scope = ({ scope, x, y }) => {
+const Scope = ({ scope }) => {
   return (
-    <div style={{ display: 'flex', flex: '0 1 auto', flexDirection: 'column', border: '2px solid #586f7c', borderRadius: '5px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flex: '0 1 auto',
+        flexDirection: 'column',
+        border: `${scope.active ? '2px solid #ff9900' : '2px solid #586f7c'}`,
+        borderRadius: '5px'
+      }}
+    >
       <div style={{ display: 'flex', backgroundColor: '#586f7c', color: '#f4f4f9', borderBottom: '2px solid #586f7c' }}>
         <p>{scope.name}</p>
       </div>
