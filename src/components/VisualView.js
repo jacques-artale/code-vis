@@ -5,6 +5,8 @@ import Scope from './Scope';
 
 const VisualView = ({ scopes }) => {
 
+  const [scale, setScale] = useState(1);
+
   const [scopeComponents, setScopeComponents] = useState([]); // [scopeComponent, ...]
   const [positions, setPositions] = useState([]); // [{ x: 0, y: 0 }, ...]
   const scopeRefs = useRef({});
@@ -92,6 +94,21 @@ const VisualView = ({ scopes }) => {
     return distances;
   }
 
+  function handleZoom(zoomIn) {
+    if (zoomIn && scale >= 2) return;
+    if (!zoomIn && scale <= 0.5) return;
+
+    setScale(scale + (zoomIn ? 0.1 : -0.1));
+  }
+
+  function handleWheel(e) {
+    if (e.deltaY < 0) {
+      handleZoom(true);
+    } else {
+      handleZoom(false);
+    }
+  }
+
   function createScopeComponent(scope) {
     return (
       <div
@@ -114,17 +131,21 @@ const VisualView = ({ scopes }) => {
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', border: '1px solid black', overflow: 'scroll' }}>
-      {
-        /* Scopes */
-        scopeComponents.map((scopeComponent) => scopeComponent)
-      }
-      {
-        /* Connecting arrows */
-        scopes.map((scope) => {
-          if (scope.parentId !== null) {
-            return (
-              <Xarrow
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }} onWheel={handleWheel}>
+      <button onClick={() => handleZoom(true)}>+</button>
+      <button onClick={() => handleZoom(false)}>-</button>
+
+      <div style={{ transform: `scale(${scale})`, position: 'absolute', border: '1px solid black' }}>
+        {
+          /* Scopes */
+          scopeComponents.map((scopeComponent) => scopeComponent)
+        }
+        {
+          /* Connecting arrows */
+          scopes.map((scope) => {
+            if (scope.parentId !== null) {
+              return (
+                <Xarrow
                 key={`arrow-${scope.id}`}
                 start={scope.id.toString()}
                 end={scope.parentId.toString()}
@@ -132,12 +153,13 @@ const VisualView = ({ scopes }) => {
                 endAnchor={'bottom'}
                 color={'#586f7c'}
                 strokeWidth={2}
-              />
-            );
+                />
+                );
+              }
+              return null;
+            })
           }
-          return null;
-        })
-      }
+      </div>
     </div>
   );
 }
