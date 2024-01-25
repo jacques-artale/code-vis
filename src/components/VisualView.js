@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Xarrow from "react-xarrows";
 
 import Scope from './Scope';
 
@@ -8,6 +7,7 @@ const VisualView = ({ scopes }) => {
   const [scale, setScale] = useState(1);
 
   const [scopeComponents, setScopeComponents] = useState([]); // [scopeComponent, ...]
+  const [arrowComponents, setArrowComponents] = useState([]); // [arrowComponent, ...]
   const [positions, setPositions] = useState([]); // [{ x: 0, y: 0 }, ...]
   const scopeRefs = useRef({});
 
@@ -18,7 +18,6 @@ const VisualView = ({ scopes }) => {
     for (const scope of scopes) {
       scopeRefs.current[scope.id] = React.createRef();
       newScopeComponents[scope.id] = createScopeComponent(scope);
-      newPositions[scope.id] = { x: 0, y: 0 };
     }
 
     setScopeComponents(newScopeComponents);
@@ -28,6 +27,15 @@ const VisualView = ({ scopes }) => {
   useEffect(() => {
     const newPositions = calculatePositions(scopes, scopeRefs);
     setPositions(newPositions);
+
+    const newArrowComponents = [];
+    for (const scope of scopes) {
+      if (scope.parentId !== null && newPositions[scope.id] && newPositions[scope.parentId]) {
+        newArrowComponents[scope.id] = createArrowComponent(scope, newPositions[scope.id], newPositions[scope.parentId]);
+      }
+    }
+
+    setArrowComponents(newArrowComponents);
   }, [scopeComponents, scopes]);
 
   
@@ -94,8 +102,7 @@ const VisualView = ({ scopes }) => {
     return (
       <div
         ref={scopeRefs.current[scope.id]}
-        id={scope.id}
-        key={scope.id}
+        key={`scope-${scope.id}`}
         style={{
           position: 'absolute',
           left: `${positions[scope.id] ? positions[scope.id].x : 0}px`,
@@ -111,6 +118,41 @@ const VisualView = ({ scopes }) => {
     );
   }
 
+  function createArrowComponent(scope, position, parentPosition) {
+    const bottomX = parentPosition.x + 50;
+    const bottomY = position.y + 20;
+    const topX = parentPosition.x + 50;
+    const topY = parentPosition.y + scopeRefs.current[scope.parentId].current.getBoundingClientRect().height;
+
+    return (
+      <div key={`arrow-${scope.id}`}>
+        { /* Bottom line */ }
+        <div
+          style={{
+            position: 'absolute',
+            left: `${bottomX}px`,
+            top: `${bottomY}px`,
+            width: `${position.x - bottomX}px`,
+            height: '2px',
+            backgroundColor: '#586f7c'
+          }}
+        ></div>
+
+        { /* Top line */ }
+        <div
+          style={{
+            position: 'absolute',
+            left: `${topX}px`,
+            top: `${topY}px`,
+            width: '2px',
+            height: `${bottomY - topY}px`,
+            backgroundColor: '#586f7c'
+          }}
+        ></div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }} onWheel={handleWheel}>
       <button onClick={() => handleZoom(true)}>+</button>
@@ -118,28 +160,11 @@ const VisualView = ({ scopes }) => {
 
       <div style={{ transform: `scale(${scale})`, position: 'absolute', border: '1px solid black' }}>
         {
-          /* Scopes */
           scopeComponents.map((scopeComponent) => scopeComponent)
         }
         {
-          /* Connecting arrows */
-          scopes.map((scope) => {
-            if (scope.parentId !== null) {
-              return (
-                <Xarrow
-                key={`arrow-${scope.id}`}
-                start={scope.id.toString()}
-                end={scope.parentId.toString()}
-                startAnchor={'top'}
-                endAnchor={'bottom'}
-                color={'#586f7c'}
-                strokeWidth={2}
-                />
-                );
-              }
-              return null;
-            })
-          }
+          arrowComponents.map((arrowComponent) => arrowComponent)
+        }
       </div>
     </div>
   );
