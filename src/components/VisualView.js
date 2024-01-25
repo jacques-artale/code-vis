@@ -33,39 +33,20 @@ const VisualView = ({ scopes }) => {
   
   function calculatePositions(scopes, scopeRefs) {
     // count number of children with same distance to global (center)
-    const scopeDistances = findDistancesBFS(0, scopes); // distances[scopeId] = distance to global
-
-    // this will be the number of children in the same ring (placed with same distance to global in a circle)
-    const scopeDistancesCount = scopeDistances.reduce((acc, curr) => {
-      if (curr in acc) {
-        acc[curr]++;
-      } else {
-        acc[curr] = 1;
-      }
-      return acc;
-    }, {});
-    
+    const scopeDistances = findDistancesBFS(0, scopes); // distances[scopeId] = distance to global    
     
     const positions = [];
-    
+    let currentTreeHeight = 0;
+
     for (const scope of scopes) {
       if (scopeRefs.current[scope.id].current) {
-        const rect = scopeRefs.current[scope.id].current.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        
-        // the middle of each scope is the x,y position so we need to take into account the width and height
-
-        // calculate the angle of the scope
-        const childIndex = 0;
-        const radius = 400 * scopeDistances[scope.id];
-        const angle = 2 * Math.PI * childIndex / scopeDistancesCount[scopeDistances[scope.id]];
-
-        // calculate the x,y position of the scope
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
+        const x = scopeDistances[scope.id] * 100;
+        const y = currentTreeHeight;
 
         positions[scope.id] = { x: x, y: y };
+        
+        const rect = scopeRefs.current[scope.id].current.getBoundingClientRect();
+        currentTreeHeight += rect.height + 20;
       }
     }
 
