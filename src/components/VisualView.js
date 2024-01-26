@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import Scope from './Scope';
+import Arrow from './Arrow';
 
 const VisualView = ({ scopes }) => {
 
@@ -119,36 +120,10 @@ const VisualView = ({ scopes }) => {
   }
 
   function createArrowComponent(scope, position, parentPosition) {
-    const bottomX = parentPosition.x + 50;
-    const bottomY = position.y + 20;
-    const topX = parentPosition.x + 50;
-    const topY = parentPosition.y + scopeRefs.current[scope.parentId].current.getBoundingClientRect().height;
-
+    const parentHeight = scopeRefs.current[scope.parentId].current.getBoundingClientRect().height;
     return (
       <div key={`arrow-${scope.id}`}>
-        { /* Bottom line */ }
-        <div
-          style={{
-            position: 'absolute',
-            left: `${bottomX}px`,
-            top: `${bottomY}px`,
-            width: `${position.x - bottomX}px`,
-            height: '2px',
-            backgroundColor: '#586f7c'
-          }}
-        ></div>
-
-        { /* Top line */ }
-        <div
-          style={{
-            position: 'absolute',
-            left: `${topX}px`,
-            top: `${topY}px`,
-            width: '2px',
-            height: `${bottomY - topY}px`,
-            backgroundColor: '#586f7c'
-          }}
-        ></div>
+        <Arrow position={position} parentPosition={parentPosition} parentHeight={parentHeight}/>
       </div>
     )
   }
