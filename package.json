@@ -14,7 +14,6 @@
     "react-dom": "^18.2.0",
     "react-monaco-editor": "^0.54.0",
     "react-scripts": "5.0.1",
-    "react-xarrows": "^2.0.2",
     "web-vitals": "^2.1.4",
     "webpack-cli": "^5.1.4",
     "worker-loader": "^3.0.8"

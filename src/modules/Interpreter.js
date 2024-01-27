@@ -237,6 +237,7 @@ export class Interpreter {
         arrayVariables: arrayVariables,
         parentId: parentId,
         id: currentId,
+        active: environment === this.getCurrentEnvironment(),
       };
 
       scopes.push(scope);
