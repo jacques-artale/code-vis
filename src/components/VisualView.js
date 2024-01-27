@@ -7,59 +7,34 @@ const VisualView = ({ scopes }) => {
 
   const [scale, setScale] = useState(1);
 
-  const [scopeComponents, setScopeComponents] = useState([]); // [scopeComponent, ...]
-  const [arrowComponents, setArrowComponents] = useState([]); // [arrowComponent, ...]
-  const [positions, setPositions] = useState([]); // [{ x: 0, y: 0 }, ...]
+  const [bounds, setBounds] = useState([]); // [{ x: Number, y: Number, width: Number, height: Number }, ...]
   const scopeRefs = useRef({});
 
   useEffect(() => {
-    const newScopeComponents = [];
-    const newPositions = [];
-
-    for (const scope of scopes) {
-      scopeRefs.current[scope.id] = React.createRef();
-      newScopeComponents[scope.id] = createScopeComponent(scope);
-    }
-
-    setScopeComponents(newScopeComponents);
-    setPositions(newPositions);
+    const newBounds = calculateBounds(scopes, scopeRefs);
+    setBounds(newBounds);
   }, [scopes]);
 
-  useEffect(() => {
-    const newPositions = calculatePositions(scopes, scopeRefs);
-    setPositions(newPositions);
-
-    const newArrowComponents = [];
-    for (const scope of scopes) {
-      if (scope.parentId !== null && newPositions[scope.id] && newPositions[scope.parentId]) {
-        newArrowComponents[scope.id] = createArrowComponent(scope, newPositions[scope.id], newPositions[scope.parentId]);
-      }
-    }
-
-    setArrowComponents(newArrowComponents);
-  }, [scopeComponents, scopes]);
-
   
-  function calculatePositions(scopes, scopeRefs) {
-    // count number of children with same distance to global (center)
+  function calculateBounds(scopes, scopeRefs) {
     const scopeDistances = findDistancesBFS(0, scopes); // distances[scopeId] = distance to global    
     
-    const positions = [];
+    const bounds = [];
     let currentTreeHeight = 0;
 
     for (const scope of scopes) {
       if (scopeRefs.current[scope.id].current) {
+        const rect = scopeRefs.current[scope.id].current.getBoundingClientRect();
         const x = scopeDistances[scope.id] * 100;
         const y = currentTreeHeight;
 
-        positions[scope.id] = { x: x, y: y };
+        bounds[scope.id] = { x: x, y: y, width: rect.width, height: rect.height};
         
-        const rect = scopeRefs.current[scope.id].current.getBoundingClientRect();
         currentTreeHeight += rect.height + 20;
       }
     }
 
-    return positions;
+    return bounds;
   }
 
   function findDistancesBFS(globalScopeId, scopes) {
@@ -100,14 +75,15 @@ const VisualView = ({ scopes }) => {
   }
 
   function createScopeComponent(scope) {
+    scopeRefs.current[scope.id] = React.createRef();
     return (
       <div
         ref={scopeRefs.current[scope.id]}
         key={`scope-${scope.id}`}
         style={{
           position: 'absolute',
-          left: `${positions[scope.id] ? positions[scope.id].x : 0}px`,
-          top: `${positions[scope.id] ? positions[scope.id].y : 0}px`,
+          left: `${bounds[scope.id] ? bounds[scope.id].x : 0}px`,
+          top: `${bounds[scope.id] ? bounds[scope.id].y : 0}px`,
           display: 'inline-flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -119,11 +95,10 @@ const VisualView = ({ scopes }) => {
     );
   }
 
-  function createArrowComponent(scope, position, parentPosition) {
-    const parentHeight = scopeRefs.current[scope.parentId].current.getBoundingClientRect().height;
+  function createArrowComponent(scope, scopeBounds, parentBounds) {
     return (
       <div key={`arrow-${scope.id}`}>
-        <Arrow position={position} parentPosition={parentPosition} parentHeight={parentHeight}/>
+        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds}/>
       </div>
     )
   }
@@ -135,10 +110,16 @@ const VisualView = ({ scopes }) => {
 
       <div style={{ transform: `scale(${scale})`, position: 'absolute', border: '1px solid black' }}>
         {
-          scopeComponents.map((scopeComponent) => scopeComponent)
+          scopes.map((scope) => {
+            return createScopeComponent(scope);
+          })
         }
         {
-          arrowComponents.map((arrowComponent) => arrowComponent)
+          scopes.map((scope) => {
+            if (scope.parentId !== null && bounds[scope.id] && bounds[scope.parentId]) {
+              return createArrowComponent(scope, bounds[scope.id], bounds[scope.parentId]);
+            }
+          })
         }
       </div>
     </div>

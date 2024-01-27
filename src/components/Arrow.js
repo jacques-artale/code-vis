@@ -1,10 +1,10 @@
 import React from 'react';
 
-const Arrow = ({ position, parentPosition, parentHeight }) => {
-  const bottomX = parentPosition.x + 50;
-  const bottomY = position.y + 20;
-  const topX = parentPosition.x + 50;
-  const topY = parentPosition.y + parentHeight;
+const Arrow = ({ scopeBounds, parentBounds }) => {
+  const bottomX = parentBounds.x + 50;
+  const bottomY = scopeBounds.y + 20;
+  const topX = parentBounds.x + 50;
+  const topY = parentBounds.y + parentBounds.height;
 
   return (
     <div>
@@ -14,7 +14,7 @@ const Arrow = ({ position, parentPosition, parentHeight }) => {
           position: 'absolute',
           left: `${bottomX}px`,
           top: `${bottomY}px`,
-          width: `${position.x - bottomX}px`,
+          width: `${scopeBounds.x - bottomX}px`,
           height: '2px',
           backgroundColor: '#586f7c'
         }}
