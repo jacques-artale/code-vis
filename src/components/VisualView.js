@@ -6,6 +6,11 @@ import Arrow from './Arrow';
 const VisualView = ({ scopes }) => {
 
   const [scale, setScale] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [translateX, setTranslateX] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
 
   const [bounds, setBounds] = useState([]); // [{ x: Number, y: Number, width: Number, height: Number }, ...]
   const scopeRefs = useRef({});
@@ -13,7 +18,7 @@ const VisualView = ({ scopes }) => {
   useEffect(() => {
     const newBounds = calculateBounds(scopes, scopeRefs);
     setBounds(newBounds);
-  }, [scopes]);
+  }, [scopes, scale]);
 
   
   function calculateBounds(scopes, scopeRefs) {
@@ -30,7 +35,7 @@ const VisualView = ({ scopes }) => {
 
         bounds[scope.id] = { x: x, y: y, width: rect.width, height: rect.height};
         
-        currentTreeHeight += rect.height + 20;
+        currentTreeHeight += rect.height + 40;
       }
     }
 
@@ -59,56 +64,84 @@ const VisualView = ({ scopes }) => {
     return distances;
   }
 
-  function handleZoom(zoomIn) {
-    if (zoomIn && scale >= 2) return;
-    if (!zoomIn && scale <= 0.5) return;
-
-    setScale(scale + (zoomIn ? 0.1 : -0.1));
-  }
-
-  function handleWheel(e) {
-    if (e.deltaY < 0) {
-      handleZoom(true);
-    } else {
-      handleZoom(false);
-    }
-  }
-
   function createScopeComponent(scope) {
     scopeRefs.current[scope.id] = React.createRef();
+    const bound = bounds[scope.id] || { x: 0, y: 0 };
     return (
       <div
-        ref={scopeRefs.current[scope.id]}
-        key={`scope-${scope.id}`}
-        style={{
-          position: 'absolute',
-          left: `${bounds[scope.id] ? bounds[scope.id].x : 0}px`,
-          top: `${bounds[scope.id] ? bounds[scope.id].y : 0}px`,
-          display: 'inline-flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          margin: '2%'
-        }}
+      ref={scopeRefs.current[scope.id]}
+      key={`scope-${scope.id}`}
+      id={scope.id}
+      style={{
+        position: 'absolute',
+        transform: `scale(${scale}) translate(${bound.x + translateX}px, ${bound.y + translateY}px)`,
+        transformOrigin: 'top left',
+        display: 'inline-flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}
       >
         <Scope scope={scope} />
       </div>
     );
   }
-
+  
   function createArrowComponent(scope, scopeBounds, parentBounds) {
     return (
-      <div key={`arrow-${scope.id}`}>
+      <div
+        key={`arrow-${scope.id}`}
+        style={{
+          position: 'absolute',
+          transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
+          transformOrigin: 'top left'
+        }}
+      >
         <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds}/>
       </div>
     )
   }
+  
+  function handleZoom(zoomIn) {
+    if (zoomIn && scale >= 2) return;
+    if (!zoomIn && scale <= 0.5) return;
+    setScale(scale + (zoomIn ? 0.1 : -0.1));
+  }
+  
+  function handleWheel(e) {
+    if (e.deltaY < 0) handleZoom(true);
+    else handleZoom(false);
+  }
 
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setStartX(e.clientX - translateX);
+    setStartY(e.clientY - translateY);
+  }
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setTranslateX(e.clientX - startX);
+    setTranslateY(e.clientY - startY);
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  }
+  
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }} onWheel={handleWheel}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <button onClick={() => handleZoom(true)}>+</button>
       <button onClick={() => handleZoom(false)}>-</button>
 
-      <div style={{ transform: `scale(${scale})`, position: 'absolute', border: '1px solid black' }}>
+      <div
+        style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         {
           scopes.map((scope) => {
             return createScopeComponent(scope);
