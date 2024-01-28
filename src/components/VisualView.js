@@ -115,14 +115,14 @@ const VisualView = ({ scopes }) => {
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
-    setStartX(e.clientX - translateX);
-    setStartY(e.clientY - translateY);
+    setStartX(e.clientX / scale - translateX);
+    setStartY(e.clientY / scale - translateY);
   }
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    setTranslateX(e.clientX - startX);
-    setTranslateY(e.clientY - startY);
+    setTranslateX(e.clientX / scale - startX);
+    setTranslateY(e.clientY / scale - startY);
   }
 
   const handleMouseUp = () => {
