@@ -33,9 +33,9 @@ const VisualView = ({ scopes }) => {
         const x = scopeDistances[scope.id] * 100;
         const y = currentTreeHeight;
 
-        bounds[scope.id] = { x: x, y: y, width: rect.width, height: rect.height};
+        bounds[scope.id] = { x: x, y: y, width: rect.width, height: rect.height / scale};
         
-        currentTreeHeight += rect.height + 40;
+        currentTreeHeight += (rect.height / scale) + 40;
       }
     }
 
