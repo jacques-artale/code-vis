@@ -31,6 +31,30 @@ const Arrow = ({ scopeBounds, parentBounds }) => {
           backgroundColor: '#586f7c'
         }}
       ></div>
+
+      { /* Arrow head */ }
+      <div
+        style={{
+          position: 'absolute',
+          left: `${topX}px`,
+          top: `${topY + 3}px`,
+          width: '10px',
+          height: '2px',
+          backgroundColor: '#586f7c',
+          transform: 'rotate(45deg)',
+        }}
+      ></div>
+      <div
+        style={{
+          position: 'absolute',
+          left: `${topX - 8}px`,
+          top: `${topY + 3}px`,
+          width: '10px',
+          height: '2px',
+          backgroundColor: '#586f7c',
+          transform: 'rotate(-45deg)',
+        }}
+      ></div>
     </div>
   );
 }

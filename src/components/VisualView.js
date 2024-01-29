@@ -103,7 +103,7 @@ const VisualView = ({ scopes }) => {
   
   function handleZoom(zoomIn) {
     if (zoomIn && scale >= 2) return;
-    if (!zoomIn && scale <= 0.5) return;
+    if (!zoomIn && scale <= 0.2) return;
     setScale(scale + (zoomIn ? 0.1 : -0.1));
   }
   
@@ -131,9 +131,6 @@ const VisualView = ({ scopes }) => {
   
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <button onClick={() => handleZoom(true)}>+</button>
-      <button onClick={() => handleZoom(false)}>-</button>
-
       <div
         style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}
         onWheel={handleWheel}
