@@ -30,10 +30,6 @@ p {
   margin: 5px;
 }
 
-.highlight {
-  background-color: #b8dbd9;
-}
-
 .script-select-button {
   padding: 0.5%;
   height: 25px;
@@ -54,4 +50,14 @@ p {
 
 .script-select-button:hover {
   background-color: #eee;
+}
+
+.highlight {
+  background-color: #b8dbd9;
+}
+
+.control-button {
+  width: 100px;
+  height: 25px;
+  margin: 0.5%;
 }

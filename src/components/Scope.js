@@ -11,7 +11,8 @@ const Scope = ({ scope }) => {
         flex: '0 1 auto',
         flexDirection: 'column',
         border: `${scope.active ? '2px solid #ff9900' : '2px solid #586f7c'}`,
-        borderRadius: '5px'
+        borderRadius: '5px',
+        backgroundColor: '#f8f8f8',
       }}
     >
       <div style={{ display: 'flex', backgroundColor: '#586f7c', color: '#f4f4f9', borderBottom: '2px solid #586f7c' }}>

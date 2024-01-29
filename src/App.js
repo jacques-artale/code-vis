@@ -23,7 +23,48 @@ function App() {
   const [showResume, setShowResume] = useState(false);
   const [showNext, setShowNext] = useState(false);
 
-  const [scopes, setScopes] = useState([]);                   // [{}, ...]
+  const [scopes, setScopes] = useState([
+    {
+      name: 'Global Scope',
+      variables: [['target', 6]],
+      arrayVariables: [['b', [[1,2,3,4,5,6],[7,8,9,10,11,12],[13,14,15,16,17,18]]]],
+      parentId: null,
+      id: 0,
+      active: false
+    },
+    {
+      name: 'Call Expression Scope',
+      variables: [['target', 6]],
+      arrayVariables: [['b', [1, 2, 3, 4, 5, 6, 7, 8, 9]]],
+      parentId: 0,
+      id: 1,
+      active: false
+    },
+    {
+      name: 'Block Statement Scope',
+      variables: [['low', 0], ['high', 8]],
+      arrayVariables: [],
+      parentId: 1,
+      id: 2,
+      active: false
+    },
+    {
+      name: 'Block Statement Scope',
+      variables: [['mid', 4]],
+      arrayVariables: [],
+      parentId: 2,
+      id: 3,
+      active: false
+    },
+    {
+      name: 'Hello World Scope',
+      variables: [['target', 6]],
+      arrayVariables: [['b', [1, 2, 3, 4, 5, 6, 7, 8, 9]]],
+      parentId: 0,
+      id: 4,
+      active: false
+    }
+  ]);                   // [{}, ...]
   const [log, setLog] = useState([]);                         // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
@@ -157,12 +198,12 @@ function App() {
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{display: 'flex'}}>
-          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>Start</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>Stop</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>Pause</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>Resume</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%', display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>Next</button>
-          <button style={{width: '100px', height: '25px', margin: '0.5%'}} onClick={() => toggleASTView() }>
+          <button className='control-button' style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>Start</button>
+          <button className='control-button' style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>Stop</button>
+          <button className='control-button' style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>Pause</button>
+          <button className='control-button' style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>Resume</button>
+          <button className='control-button' style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>Next</button>
+          <button className='control-button' onClick={() => toggleASTView() }>
             {
               viewAST ? 'View Visual' : 'View AST'
             }
