@@ -49,10 +49,12 @@ describe('Function call', () => {
   test('Function call to console log function', () => {
     const code = [
       { code: 'console.log("Hello world");', expected: ['Hello world'] },
-      { code: 'console.log(1);', expected: [1] },
-      { code: 'var a = [1,2,3,4]; var i = 1; console.log(a[i]);', expected: [2] },
-      { code: 'var a = [1,2,3,4]; var i = 1; console.log(a[i]++);', expected: [2] },
-      { code: 'var a = [1,2,3,4]; var i = 1; console.log(++a[i]);', expected: [3] },
+      { code: 'console.log(1);', expected: ['1'] },
+      { code: 'var a = [1,2,3,4]; var i = 1; console.log(a[i]);', expected: ['2'] },
+      { code: 'var a = [1,2,3,4]; var i = 1; console.log(a[i]++);', expected: ['2'] },
+      { code: 'var a = [1,2,3,4]; var i = 1; console.log(++a[i]);', expected: ['3'] },
+      { code: 'console.log("hello", "world");', expected: ['hello world'] },
+      { code: 'console.log([1,2,3], [4,5,6]);', expected: ['[1,2,3] [4,5,6]'] },
     ];
     code.forEach(({ code, expected }) => {
       log = [];

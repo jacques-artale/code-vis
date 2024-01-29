@@ -1745,25 +1745,54 @@ export class Interpreter {
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
-      const instructions = [];
+      const instructions = node.arguments;
       const newEnvironment = this.createEnvironment(environment, node, instructions);
       this.addNewEnvironment(newEnvironment);
 
       newEnvironment.executionState.type = 'consoleLog';
       newEnvironment.executionState.phase = 'init';
       environment = newEnvironment;
+      
+      environment.returnValues.push([]); // array of arguments
     }
 
+    const instruction = this.getNextInstruction();
+
     switch (environment.executionState.phase) {
-      case 'init':
-        environment.executionState.phase = 'end';
-        this.interpretExpression(node.arguments[0]);
+      case 'init': {
+        if (instruction !== null) {
+          environment.executionState.phase = 'log';
+          this.interpretExpression(instruction);
+        } else {
+          environment.executionState.phase = 'end';
+        }
         break;
-      case 'end':
-        const argument = environment.returnValues.pop();
+      }
+      case 'log': {
+        environment.executionState.phase = 'init';
+        const newArgument = environment.returnValues.pop();
+        const allArguments = environment.returnValues.pop();
+        environment.returnValues.push([...allArguments, newArgument]);
+        this.gotoNextInstruction();
+        break;
+      }
+      case 'end': {
         this.removeCurrentEnvironment();
-        this.updateCallback({ command: 'consoleLog', argument: argument });
+        const allArguments = environment.returnValues.pop();
+
+        // Combine all arguments into a single string to be printed
+        let resultPrintout = "";
+        for (let i = 0; i < allArguments.length; i++) {
+          const argument = allArguments[i];
+          if (typeof argument === 'object') resultPrintout += JSON.stringify(argument);
+          else resultPrintout += argument;
+          
+          if (i < allArguments.length - 1) resultPrintout += " ";
+        }
+
+        this.updateCallback({ command: 'consoleLog', argument: resultPrintout });
         break;
+      }
       default:
         console.error("unknown phase: " + environment.executionState.phase);
     }
