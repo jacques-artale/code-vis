@@ -11,8 +11,15 @@ const ArrayGrid = ({ name, values }) => {
   const isOneDimensional = values.every((item) => !Array.isArray(item));
 
   // Function to render a single cell
-  const renderCell = (value, index) => {
-    return <ArrayCell key={index} value={value} />;
+  const renderCell = ({value, index, row}) => {
+    return (
+      <div key={`cell-${row}-${index}`}>
+        {
+          row === 0 && <p style={{ color: '#003366', margin: 0, width: '25px', height: '25px', textAlign: 'center' }}>{index}</p>
+        }
+        <ArrayCell value={value} />
+      </div>
+    );
   };
 
   // Function to render a single row
@@ -22,14 +29,17 @@ const ArrayGrid = ({ name, values }) => {
     const cells = isOneDimensional ? values : (Array.isArray(row) ? row : [row]);
 
     return (
-      <div key={rowIndex} style={{ display: 'flex', marginLeft: '5px' }}>
-        {cells.map(renderCell)}
+      <div key={`row-${rowIndex}`} style={{ display: 'flex' }}>
+        <div style={{width: '25px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
+          <p style={{ margin: 0, color: '#003366' }}>{rowIndex}</p>
+        </div>
+        {cells.map((cell, index) => renderCell({ value: cell, index, row: rowIndex }))}
       </div>
     );
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       {name} = {isOneDimensional ? renderRow(values, 0) : values.map(renderRow)}
     </div>
   );
