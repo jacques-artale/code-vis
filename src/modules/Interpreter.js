@@ -1004,6 +1004,14 @@ export class Interpreter {
         // The reason we do it here is because we need to wait until we have declared all parameter values, which may rely on variables in the current environment
         environment.parentEnvironment = this.globalEnvironment;
         environment.executionState.phase = 'end';
+
+        // check if any parameters are missing, if so we set them to undefined
+        const parameters = functionDeclaration.parameters;
+        for (let i = instructionPointer; i < parameters.length; i++) {
+          const parameter = parameters[i];
+          this.handleVariableCreation('Literal', parameter.name, undefined, environment);
+        }
+
         this.interpretBlockStatement(functionDeclaration.body);  // interpret the body of the function
         break;
       case 'end':

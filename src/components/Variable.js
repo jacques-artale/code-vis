@@ -4,7 +4,7 @@ function Variable({ name, value }) {
   return (
     <div style={{ display: 'flex' }}>
       <p style={{ margin: '0px' }}>
-        {name} = {JSON.stringify(value)}
+        {name} = {value === undefined ? "undefined" : JSON.stringify(value)}
       </p>
     </div>
   );

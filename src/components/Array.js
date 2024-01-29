@@ -40,7 +40,7 @@ const ArrayGrid = ({ name, values }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {name} = {isOneDimensional ? renderRow(values, 0) : values.map(renderRow)}
+      {name} = {values === undefined ? "undefined" : isOneDimensional ? renderRow(values, 0) : values.map(renderRow)}
     </div>
   );
 };

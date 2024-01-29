@@ -167,4 +167,10 @@ describe('Function call', () => {
     interpret(code);
     expect(variables).toEqual([['a', 24]]);
   });
+
+  test('Function call with less arguments than parameters', () => {
+    const code = 'function a(b, c) { return b + c; } var d = a(1);';
+    interpret(code);
+    expect(variables).toEqual([['d', NaN]]);
+  });
 });
