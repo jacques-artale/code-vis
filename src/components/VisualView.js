@@ -64,13 +64,13 @@ const VisualView = ({ scopes }) => {
     return distances;
   }
 
-  function createScopeComponent(scope) {
+  function createScopeComponent(scope, index) {
     scopeRefs.current[scope.id] = React.createRef();
     const bound = bounds[scope.id] || { x: 0, y: 0 };
     return (
       <div
       ref={scopeRefs.current[scope.id]}
-      key={`scope-${scope.id}`}
+      key={`scope-${scope.id}-${index}`}
       id={scope.id}
       style={{
         position: 'absolute',
@@ -86,10 +86,10 @@ const VisualView = ({ scopes }) => {
     );
   }
   
-  function createArrowComponent(scope, scopeBounds, parentBounds) {
+  function createArrowComponent(scope, scopeBounds, parentBounds, index) {
     return (
       <div
-        key={`arrow-${scope.id}`}
+        key={`arrow-${scope.id}-${index}`}
         style={{
           position: 'absolute',
           transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
@@ -140,14 +140,14 @@ const VisualView = ({ scopes }) => {
         onMouseLeave={handleMouseUp}
       >
         {
-          scopes.map((scope) => {
-            return createScopeComponent(scope);
+          scopes.map((scope, index) => {
+            return createScopeComponent(scope, index);
           })
         }
         {
-          scopes.map((scope) => {
+          scopes.map((scope, index) => {
             if (scope.parentId !== null && bounds[scope.id] && bounds[scope.parentId]) {
-              return createArrowComponent(scope, bounds[scope.id], bounds[scope.parentId]);
+              return createArrowComponent(scope, bounds[scope.id], bounds[scope.parentId], index);
             }
           })
         }

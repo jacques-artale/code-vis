@@ -23,48 +23,7 @@ function App() {
   const [showResume, setShowResume] = useState(false);
   const [showNext, setShowNext] = useState(false);
 
-  const [scopes, setScopes] = useState([
-    {
-      name: 'Global Scope',
-      variables: [['target', 6]],
-      arrayVariables: [['b', [[1,2,3,4,5,6],[7,8,9,10,11,12],[13,14,15,16,17,18]]]],
-      parentId: null,
-      id: 0,
-      active: false
-    },
-    {
-      name: 'Call Expression Scope',
-      variables: [['target', 6]],
-      arrayVariables: [['b', [1, 2, 3, 4, 5, 6, 7, 8, 9]]],
-      parentId: 0,
-      id: 1,
-      active: false
-    },
-    {
-      name: 'Block Statement Scope',
-      variables: [['low', 0], ['high', 8]],
-      arrayVariables: [],
-      parentId: 1,
-      id: 2,
-      active: false
-    },
-    {
-      name: 'Block Statement Scope',
-      variables: [['mid', 4]],
-      arrayVariables: [],
-      parentId: 2,
-      id: 3,
-      active: false
-    },
-    {
-      name: 'Hello World Scope',
-      variables: [['target', 6]],
-      arrayVariables: [['b', [1, 2, 3, 4, 5, 6, 7, 8, 9]]],
-      parentId: 0,
-      id: 4,
-      active: false
-    }
-  ]);                   // [{}, ...]
+  const [scopes, setScopes] = useState([]);                   // [{}, ...]
   const [log, setLog] = useState([]);                         // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
