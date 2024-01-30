@@ -1347,16 +1347,20 @@ export class Interpreter {
         break;
       case 'evaluate':
         environment.executionState.phase = 'declare';
-        this.interpretExpression(declaration.init);
+        if (declaration.init !== null) this.interpretExpression(declaration.init);
+        else environment.returnValues.push(undefined);
         break;
       case 'declare':
         environment.executionState.phase = 'init';
+        
         const varName = declaration.id.name;
-        const varType = declaration.init.type;
-        const value = environment.returnValues.pop();
         const parent = environment.parentEnvironment;
+        const value = environment.returnValues.pop();
+        const varType = declaration.init !== null ? declaration.init.type : 'Literal';
+        const identifier = declaration.init !== null ? declaration.init.name : null;
 
-        this.handleVariableCreation(varType, varName, value, parent, declaration.init.name);
+        this.handleVariableCreation(varType, varName, value, parent, identifier);
+
         this.gotoNextInstruction();
         break;
       case 'end':

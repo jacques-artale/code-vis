@@ -9,7 +9,7 @@ As of now, the project is in its initial development phase and includes:
 - Integrated code editor using the Monaco editor: https://microsoft.github.io/monaco-editor/
 - Parser and AST builder using Esprima: https://esprima.org/
 - An interpreter for basic JavaScript capable of executing scripts
-- A foundational system for creating simple React components to represent variables
+- A visual view of simple React components to represent variables
 
 ## Live-demo
 Give it a few seconds to wake up: https://code-vis-1671f11beee1.herokuapp.com/
@@ -34,7 +34,7 @@ The following features are currently supported/unsupported:
 - ✅ Variable assignment
 - ✅ Function declarations
 - ✅ Function calls
-- ✅ Built-in functions (console.log, Math.max, Math.min, Math.abs)
+- ✅ Built-in functions (console.log, Math.max, Math.min, Math.abs, Math.floor)
 - ❌ Arrow functions
 - ❌ Promises & Async/Await
 - ✅ Return
@@ -48,7 +48,7 @@ The following features are currently supported/unsupported:
 - ✅ Do-while statements
 - ✅ Switch case
 - ❌ Try-catch
-- ❌ Ternary operation
+- ✅ Ternary operation
 - ✅ Break & continue
 - ❌ Classes
 
