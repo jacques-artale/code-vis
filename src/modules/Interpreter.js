@@ -9,6 +9,10 @@ export class Interpreter {
   functionDeclarations = [];
   environmentStack = [];
 
+  builtInVariables = {
+    'undefined': undefined,
+  }
+
   parsedCode = null;
 
   constructor(parsedCode, updateCallback) {
@@ -127,6 +131,9 @@ export class Interpreter {
   }
 
   lookupVariableValue(name, environment) {
+    if (name in this.builtInVariables) {
+      return this.builtInVariables[name];
+    }
     if (name in environment.variables) {
       return environment.variables[name];
     }
@@ -465,7 +472,9 @@ export class Interpreter {
       case 'SequenceExpression':
         this.interpretSequenceExpression(node);
         break;
-      // Add other expression types as needed
+      case 'ConditionalExpression':
+        this.interpretConditionalExpression(node);
+        break;
       default:
         console.error(`Unrecognized node type: ${node.type}`);
     }
@@ -522,7 +531,9 @@ export class Interpreter {
       case 'MemberExpression':
         this.interpretMemberExpression(node);
         break;
-      // Add other expression types as needed
+      case 'ConditionalExpression':
+        this.interpretConditionalExpression(node);
+        break;
       default:
         console.log('expression type not implemented yet');
     }
@@ -1098,7 +1109,47 @@ export class Interpreter {
     }
   }
 
-  interpretConditionalExpression() {}
+  interpretConditionalExpression(node) {
+    if (this.debugging) console.log("conditional expression");
+    if (this.debugging) console.log(node);
+
+    this.updateCurrentExecutingNode(node.nodeId);
+
+    let environment = this.getCurrentEnvironment();
+    if (environment.executionState.node !== node) {
+      const instructions = [];
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
+
+      newEnvironment.executionState.type = 'conditional';
+      newEnvironment.executionState.phase = 'test';
+      environment = newEnvironment;
+    }
+
+    switch (environment.executionState.phase) {
+      case 'test':
+        environment.executionState.phase = 'consequent';
+        this.interpretExpression(node.test);
+        break;
+      case 'consequent':
+        environment.executionState.phase = 'end';
+        const testResult = environment.returnValues.pop();
+        if (testResult) {
+          this.interpretExpression(node.consequent);
+        } else {
+          this.interpretExpression(node.alternate);
+        }
+        break;
+      case 'end':
+        const value = environment.returnValues.pop();
+        this.removeCurrentEnvironment();
+        environment = this.getCurrentEnvironment();
+        environment.returnValues.push(value);
+        break;
+      default:
+        console.error("unknown phase: " + environment.executionState.phase);
+    }
+  }
 
   interpretArrayPush(node) {
     if (this.debugging) console.log("array push");
@@ -1331,6 +1382,7 @@ export class Interpreter {
       case 'ObjectExpression':
         this.createObjectVariable(varName, value, environment);
         break;
+      case 'ConditionalExpression':
       case 'CallExpression':
       case 'MemberExpression':
         // check type of value and create the variable accordingly
