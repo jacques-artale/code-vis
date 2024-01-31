@@ -9,6 +9,7 @@ import Console from './components/Console';
 import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 import ScriptSelect from './components/ScriptSelect.js';
+import Slider from './components/Slider.js';
 
 function App() {
   const interpreterSpeeds = [3000, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
@@ -167,7 +168,10 @@ function App() {
               viewAST ? 'VIEW VISUAL' : 'VIEW AST'
             }
           </button>
-          <p>SPEED</p><input style={{ color: '#586f7c' }} type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
+          <p>SPEED</p><input type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
+          <div style={{ width: '20%', height: '100%' }}>
+            <Slider min={0} max={10} step={1} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)}/>
+          </div>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {

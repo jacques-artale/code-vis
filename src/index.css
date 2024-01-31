@@ -34,7 +34,7 @@ body {
 ::-webkit-scrollbar-thumb {
   border: 2px solid #062746;
   border-radius: 15px;
-  background-image: linear-gradient(45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
+  background-image: linear-gradient(-45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
   background-size: 10px 10px;
 }
 
@@ -276,4 +276,45 @@ p {
 .sketch-zoom-button:hover {
   background-color: #062746;
   color: #f5e8df;
+}
+
+.sketch-slider-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.sketch-slider-track-left {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  border-radius: 5px;
+  border: 2px solid #062746;
+  transform: translateY(-50%);
+  background-image: linear-gradient(-45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
+  background-size: 10px 10px;
+}
+
+.sketch-slider-track-right {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  border-radius: 5px;
+  border: 2px solid #062746;
+  transform: translateY(-50%);
+}
+
+.sketch-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #062746;
+  border-radius: 50%;
+  background-color: #f5e8df;
+  transform: translate(-50%, -50%);
+}
+
+.sketch-slider-thumb:hover {
+  background-color: #062746;
 }
