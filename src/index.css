@@ -1,11 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Hubballi&display=swap");
+
 body, html, #root {
   height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Hubballi';
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.5;
   color: #212529;
   text-align: left;
@@ -27,7 +29,7 @@ code {
 }
 
 p {
-  margin: 5px;
+  margin: 8px;
 }
 
 .script-select-button {
@@ -91,4 +93,172 @@ p {
   flex-direction: column;
   z-index: 1;
   padding: 4px;
+}
+
+.scope-container {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  border: 2px solid #586f7c;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+}
+
+.scope-container-active {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  border: 2px solid #ff9900;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+}
+
+.scope-header {
+  display: flex;
+  background-color: #586f7c;
+  color: #f4f4f9;
+}
+
+.console-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  height: 30%;
+  border: 1px solid black;
+}
+
+.console-header {
+  display: flex;
+  position: fixed;
+  background-color: #586f7c;
+  color: #f4f4f9;
+  text-align: center;
+  padding-right: 5px;
+  border-bottom-right-radius: 7px;
+  border: 1px solid #586f7c;
+}
+
+
+
+
+
+
+.sketch-body {
+  background-color: #f5e8df;
+}
+
+.sketch-control-button {
+  width: 100px;
+  height: 30px;
+  margin: 0.5%;
+  background-color: #f5e8df;
+  border: 2px solid #062746;
+  border-radius: 20px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sketch-control-button:hover {
+  background-color: #062746;
+  color: #f5e8df;
+}
+
+.sketch-script-select-button {
+  padding: 0.5%;
+  height: 25px;
+  border: none;
+  border-bottom: 2px solid #062746;
+  background-color: #f5e8df;
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.sketch-script-select-button-active {
+  padding: 0.5%;
+  height: 25px;
+  border-bottom: none;
+  border-top: 2px solid #062746;
+  border-left: 2px solid #062746;
+  border-right: 2px solid #062746;
+  background-color: #f5e8df;
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.sketch-script-select-button:hover {
+  background-color: #062746;
+  color: #f5e8df;
+}
+
+.sketch-scope-container {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  border: 2px solid #062746;
+  border-radius: 5px;
+  background-color: #f5e8df;
+  box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.6);
+}
+
+.sketch-scope-container-active {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  border: 2px solid #ff9900;
+  border-radius: 5px;
+  background-color: #f5e8df;
+  box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.6);
+}
+
+.sketch-scope-header {
+  display: flex;
+  color: #062746;
+  border-bottom: 2px solid #062746;
+  background-image: linear-gradient(45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
+  background-size: 15px 15px;
+  justify-content: center;
+}
+
+.sketch-scope-name {
+  background-color: #f5e8df;
+  border-radius: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.sketch-console-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  height: 30%;
+  border: 2px solid #062746;
+}
+
+.sketch-console-header {
+  display: flex;
+  position: fixed;
+  background-color: #062746;
+  color: #f5e8df;
+  text-align: center;
+  padding-right: 5px;
+  border-bottom-right-radius: 7px;
+}
+
+.sketch-zoom-button {
+  background-color: #f5e8df;
+  border: 2px solid #062746;
+  font-size: 16px;
+  border-radius: 2px;
+  width: 25px;
+  height: 25px;
+  margin: 1px;
+}
+
+.sketch-zoom-button:hover {
+  background-color: #062746;
+  color: #f5e8df;
 }

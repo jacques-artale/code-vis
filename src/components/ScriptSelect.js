@@ -9,7 +9,7 @@ function ScriptSelect({ setCode }) {
       {
         scripts.map((script, index) => (
           <button
-            className={`script-select-button${selectedScript === script ? '-active' : ''}`}
+            className={`sketch-script-select-button${selectedScript === script ? '-active' : ''}`}
             key={index}
             onClick={() => { setSelectedScript(script); setCode(script.code) }}
           >

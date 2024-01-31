@@ -5,18 +5,9 @@ import ArrayGrid from './Array';
 
 const Scope = ({ scope }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flex: '0 1 auto',
-        flexDirection: 'column',
-        border: `${scope.active ? '2px solid #ff9900' : '2px solid #586f7c'}`,
-        borderRadius: '5px',
-        backgroundColor: '#f8f8f8',
-      }}
-    >
-      <div style={{ display: 'flex', backgroundColor: '#586f7c', color: '#f4f4f9', borderBottom: '2px solid #586f7c' }}>
-        <p>{scope.name}</p>
+    <div className={`sketch-scope-container${scope.active ? '-active' : ''}`}>
+      <div className='sketch-scope-header'>
+        <p className='sketch-scope-name'>{scope.name}</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         {

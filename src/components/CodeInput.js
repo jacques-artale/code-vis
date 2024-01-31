@@ -9,6 +9,7 @@ class CodeEditor extends React.Component {
       code: props.code,
       editor: null,
       currentDecorations: [],
+      theme: props.theme,
     };
   }
 
@@ -23,7 +24,8 @@ class CodeEditor extends React.Component {
         { token: 'highlight', foreground: '000000', background: 'ffff00' },
       ],
       colors: {
-        'editor.background': '#fffafa',
+        'editor.background': this.state.theme === 'sketch' ? '#f5e8df' : '#fffafa',
+        'editor.lineHighlightBackground': this.state.theme === 'sketch' ? '#eadbd1' : '#eeeeee',
       }
     });
   }
@@ -69,7 +71,7 @@ class CodeEditor extends React.Component {
   }
 }
 
-function CodeInput({ code, setCode, highlights }) {
+function CodeInput({ code, setCode, highlights, theme }) {
   const codeEditorRef = React.useRef(null);
 
   useEffect(() => {
@@ -86,7 +88,7 @@ function CodeInput({ code, setCode, highlights }) {
 
   return (
     <div style={{ float: 'right', width: '100%', height: '100%' }}>
-      <CodeEditor code={code} setCode={setCode} ref={codeEditorRef}/>
+      <CodeEditor code={code} setCode={setCode} ref={codeEditorRef} theme={theme}/>
     </div>
   );
 }

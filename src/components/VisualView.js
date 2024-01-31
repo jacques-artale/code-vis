@@ -96,7 +96,7 @@ const VisualView = ({ scopes }) => {
           transformOrigin: 'top left'
         }}
       >
-        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds}/>
+        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds} theme={'sketch'}/>
       </div>
     )
   }
@@ -131,9 +131,9 @@ const VisualView = ({ scopes }) => {
   
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <div class='zoom-button-container'>
-        <button class='zoom-button' onClick={() => handleZoom(true)}>+</button>
-        <button class='zoom-button' onClick={() => handleZoom(false)}>-</button>
+      <div className='zoom-button-container'>
+        <button className='sketch-zoom-button' onClick={() => handleZoom(true)}>+</button>
+        <button className='sketch-zoom-button' onClick={() => handleZoom(false)}>-</button>
       </div>
       <div
         style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}
@@ -153,6 +153,7 @@ const VisualView = ({ scopes }) => {
             if (scope.parentId !== null && bounds[scope.id] && bounds[scope.parentId]) {
               return createArrowComponent(scope, bounds[scope.id], bounds[scope.parentId], index);
             }
+            return null;
           })
         }
       </div>

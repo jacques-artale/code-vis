@@ -153,21 +153,21 @@ function App() {
   }
 
   return (
-    <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'row'}}>
+    <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'row'}} className='sketch-body'>
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{display: 'flex'}}>
-          <button className='control-button' style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>Start</button>
-          <button className='control-button' style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>Stop</button>
-          <button className='control-button' style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>Pause</button>
-          <button className='control-button' style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>Resume</button>
-          <button className='control-button' style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>Next</button>
-          <button className='control-button' onClick={() => toggleASTView() }>
+          <button className='sketch-control-button' style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
+          <button className='sketch-control-button' style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>STOP</button>
+          <button className='sketch-control-button' style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>PAUSE</button>
+          <button className='sketch-control-button' style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>RESUME</button>
+          <button className='sketch-control-button' style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>NEXT</button>
+          <button className='sketch-control-button' onClick={() => toggleASTView() }>
             {
-              viewAST ? 'View Visual' : 'View AST'
+              viewAST ? 'VIEW VISUAL' : 'VIEW AST'
             }
           </button>
-          <p>Speed</p><input style={{ color: '#586f7c' }} type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
+          <p>SPEED</p><input style={{ color: '#586f7c' }} type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
           {
@@ -181,7 +181,7 @@ function App() {
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <ScriptSelect setCode={setCode}/>
-        <CodeInput code={code} setCode={setCode} highlights={highlights}/>
+        <CodeInput code={code} setCode={setCode} highlights={highlights} theme={'sketch'}/>
       </div>
       
     </div>

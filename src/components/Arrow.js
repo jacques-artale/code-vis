@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Arrow = ({ scopeBounds, parentBounds }) => {
+const Arrow = ({ scopeBounds, parentBounds, theme }) => {
   const bottomX = parentBounds.x + 50;
   const bottomY = scopeBounds.y + 20;
   const topX = parentBounds.x + 50;
@@ -16,7 +16,7 @@ const Arrow = ({ scopeBounds, parentBounds }) => {
           top: `${bottomY}px`,
           width: `${scopeBounds.x - bottomX}px`,
           height: '2px',
-          backgroundColor: '#586f7c'
+          backgroundColor: theme === 'sketch' ? '#062746' : '#586f7c'
         }}
       ></div>
 
@@ -28,7 +28,7 @@ const Arrow = ({ scopeBounds, parentBounds }) => {
           top: `${topY}px`,
           width: '2px',
           height: `${bottomY - topY}px`,
-          backgroundColor: '#586f7c'
+          backgroundColor: theme === 'sketch' ? '#062746' : '#586f7c'
         }}
       ></div>
 
@@ -36,23 +36,11 @@ const Arrow = ({ scopeBounds, parentBounds }) => {
       <div
         style={{
           position: 'absolute',
-          left: `${topX}px`,
-          top: `${topY + 3}px`,
-          width: '10px',
-          height: '2px',
-          backgroundColor: '#586f7c',
-          transform: 'rotate(45deg)',
-        }}
-      ></div>
-      <div
-        style={{
-          position: 'absolute',
-          left: `${topX - 8}px`,
-          top: `${topY + 3}px`,
-          width: '10px',
-          height: '2px',
-          backgroundColor: '#586f7c',
-          transform: 'rotate(-45deg)',
+          left: `${topX - 5.5}px`,
+          top: `${topY}px`,
+          borderLeft: '7px solid transparent',
+          borderRight: '7px solid transparent',
+          borderBottom: `14px solid ${theme === 'sketch' ? '#062746' : '#586f7c'}`
         }}
       ></div>
     </div>
