@@ -9,7 +9,7 @@ function Console({ log }) {
           <p style={{ margin: "0px", paddingLeft: '5px', paddingRight: '5px' }}>CONSOLE</p>
         </div>
         {/* Console content */}
-        <div style={{ marginTop: '25px' }}>
+        <div>
           {
             log.map((line, index) => {
               return (
