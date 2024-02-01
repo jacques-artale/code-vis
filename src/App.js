@@ -10,9 +10,12 @@ import ASTView from './components/ASTView';
 import VisualView from './components/VisualView';
 import ScriptSelect from './components/ScriptSelect.js';
 import Slider from './components/Slider.js';
+import ThemeButton from './components/ThemeButton.js';
 
 function App() {
   const interpreterSpeeds = [3000, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
+
+  const [theme, setTheme] = useState('sketch');
 
   const [code, setCode] = useState('');
   const [parsedCode, setParsedCode] = useState(null);
@@ -154,23 +157,28 @@ function App() {
   }
 
   return (
-    <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'row'}} className='sketch-body'>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row' }} className='sketch-body'>
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{display: 'flex'}}>
-          <button className='sketch-control-button' style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
-          <button className='sketch-control-button' style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>STOP</button>
-          <button className='sketch-control-button' style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>PAUSE</button>
-          <button className='sketch-control-button' style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>RESUME</button>
-          <button className='sketch-control-button' style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>NEXT</button>
-          <button className='sketch-control-button' onClick={() => toggleASTView() }>
-            {
-              viewAST ? 'VIEW VISUAL' : 'VIEW AST'
-            }
-          </button>
-          <p>SPEED</p>
-          <div style={{ width: '20%', height: '100%', marginLeft: '1%' }}>
-            <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)}/>
+        <div style={{ display: 'flex', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <button className='sketch-control-button' style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
+            <button className='sketch-control-button' style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>STOP</button>
+            <button className='sketch-control-button' style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>PAUSE</button>
+            <button className='sketch-control-button' style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>RESUME</button>
+            <button className='sketch-control-button' style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>NEXT</button>
+            <button className='sketch-control-button' onClick={() => toggleASTView() }>
+              {
+                viewAST ? 'VIEW VISUAL' : 'VIEW AST'
+              }
+            </button>
+            <p>SPEED</p>
+            <div style={{ width: '15%', height: '100%', marginLeft: '1%' }}>
+              <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)}/>
+            </div>
+          </div>
+          <div style={{ position: 'relative' }}>
+            <ThemeButton theme={theme} setTheme={setTheme}/>
           </div>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
