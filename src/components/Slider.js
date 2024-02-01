@@ -1,32 +1,68 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
-const Slider = ({ min, max, step, value, onInputChange }) => {
+const Slider = ({ min, max, value, onInputChange }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const sliderRef = useRef();
 
-  const handleMouseMove = (event) => {
+  useEffect(() => {
     if (isDragging) {
-      const newValue = calculateNewValue(event);
-      onInputChange(newValue);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const calculateNewValue = (event) => {
+    const { left, width } = sliderRef.current.getBoundingClientRect();
+    const clickPositionInPixels = event.clientX - left;
+    const clickPositionAsPercentage = clickPositionInPixels / width;
+    const valueRange = max - min;
+    let newValue = min + (valueRange * clickPositionAsPercentage);
+  
+    // Ensure newValue doesn't go beyond the min and max range
+    newValue = Math.round(Math.max(min, Math.min(max, newValue)));
+    return newValue;
+  };
+  
+  const handleMouseDown = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+    if (onInputChange) {
+      onInputChange(calculateNewValue(event));
     }
   }
-
+  
   const handleMouseUp = () => {
     setIsDragging(false);
   }
 
-  const handleMouseDown = () => {
-    setIsDragging(true);
+  const handleClick = (event) => {
+    if (onInputChange) {
+      onInputChange(calculateNewValue(event));
+    }
   }
-
-  const calculateNewValue = (event) => {
-    const { left, width } = event.target.getBoundingClientRect();
-    const clickX = event.pageX - left;
-    const newValue = (clickX / width) * (max - min) + min;
-    return Math.round(newValue / step) * step;
+  
+  const handleMouseMove = (event) => {
+    if (isDragging && onInputChange) {
+      onInputChange(calculateNewValue(event));
+    }
   }
 
   return (
-    <div className='sketch-slider-container' onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
+    <div
+      ref={sliderRef}
+      className='sketch-slider-container'
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onClick={handleClick}
+    >
       { /** Left side track */}
       <div
         className='sketch-slider-track-left'

@@ -168,9 +168,9 @@ function App() {
               viewAST ? 'VIEW VISUAL' : 'VIEW AST'
             }
           </button>
-          <p>SPEED</p><input type='range' min='0' max='10' step='1' value={desiredSpeed} onInput={(value) => setDesiredSpeed(value.target.value) }></input>
-          <div style={{ width: '20%', height: '100%' }}>
-            <Slider min={0} max={10} step={1} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)}/>
+          <p>SPEED</p>
+          <div style={{ width: '20%', height: '100%', marginLeft: '1%' }}>
+            <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)}/>
           </div>
         </div>
         <div style={{width: '100%', height: '100%', display: 'flex'}}>
