@@ -157,24 +157,24 @@ function App() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row' }} className='sketch-body'>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row' }} className={`${theme}-body`}>
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <button className='sketch-control-button' style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
-            <button className='sketch-control-button' style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>STOP</button>
-            <button className='sketch-control-button' style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>PAUSE</button>
-            <button className='sketch-control-button' style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>RESUME</button>
-            <button className='sketch-control-button' style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>NEXT</button>
-            <button className='sketch-control-button' onClick={() => toggleASTView() }>
+            <button className={`${theme}-control-button`} style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
+            <button className={`${theme}-control-button`} style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>STOP</button>
+            <button className={`${theme}-control-button`} style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>PAUSE</button>
+            <button className={`${theme}-control-button`} style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>RESUME</button>
+            <button className={`${theme}-control-button`} style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>NEXT</button>
+            <button className={`${theme}-control-button`} onClick={() => toggleASTView() }>
               {
                 viewAST ? 'VIEW VISUAL' : 'VIEW AST'
               }
             </button>
             <p>SPEED</p>
             <div style={{ width: '15%', height: '100%', marginLeft: '1%' }}>
-              <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)}/>
+              <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)} theme={theme}/>
             </div>
           </div>
           <div style={{ position: 'relative' }}>
@@ -185,15 +185,15 @@ function App() {
           {
             viewAST ?
               <ASTView code={code} /> :
-              <VisualView scopes={scopes} />
+              <VisualView scopes={scopes} theme={theme} />
           }
         </div>
-        <Console log={log} />
+        <Console log={log} theme={theme}/>
       </div>
 
       <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <ScriptSelect setCode={setCode}/>
-        <CodeInput code={code} setCode={setCode} highlights={highlights} theme={'sketch'}/>
+        <ScriptSelect setCode={setCode} theme={theme}/>
+        <CodeInput code={code} setCode={setCode} highlights={highlights} theme={theme}/>
       </div>
       
     </div>

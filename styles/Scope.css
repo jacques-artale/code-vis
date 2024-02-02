@@ -1,10 +1,11 @@
-.scope-container {
+.dark-scope-container {
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
-  border: 2px solid #586f7c;
+  border: 2px solid #f5e8df;
   border-radius: 5px;
-  background-color: #f8f8f8;
+  background-color: #212529;
+  color: #f5e8df;
 }
 
 .sketch-scope-container {
@@ -17,13 +18,13 @@
   box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.3);
 }
 
-.scope-container-active {
+.dark-scope-container-active {
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
   border: 2px solid #ff9900;
   border-radius: 5px;
-  background-color: #f8f8f8;
+  background-color: #212529;
 }
 
 .sketch-scope-container-active {
@@ -36,10 +37,12 @@
   box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.3);
 }
 
-.scope-header {
+.dark-scope-header {
   display: flex;
-  background-color: #586f7c;
   color: #f4f4f9;
+  border-bottom: 2px solid #f5e8df;
+  background-image: linear-gradient(45deg, #f5e8df 10%, transparent 10%, transparent 50%, #f5e8df 50%, #f5e8df 60%, transparent 60%);
+  background-size: 15px 15px;
 }
 
 .sketch-scope-header {
@@ -48,7 +51,6 @@
   border-bottom: 2px solid #062746;
   background-image: linear-gradient(45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
   background-size: 15px 15px;
-  justify-content: center;
 }
 
 .sketch-scope-name {
@@ -56,4 +58,12 @@
   border-radius: 10px;
   padding-left: 5px;
   padding-right: 5px;
+}
+
+.dark-scope-name {
+  background-color: #212529;
+  border-radius: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #f5e8df;
 }

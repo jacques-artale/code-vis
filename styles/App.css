@@ -41,14 +41,23 @@
   background-color: #f5e8df;
 }
 
-.control-button {
+.dark-body {
+  background-color: #212529;
+  color: #f5e8df;
+}
+
+.dark-control-button {
   width: 100px;
-  height: 25px;
+  height: 30px;
   margin: 0.5%;
-  border: 1px solid #212529;
-  border-radius: 2px;
+  background-color: #212529;
+  border: 2px solid #f5e8df;
+  border-radius: 20px;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-family: "Hubballi";
+  font-weight: 600;
   font-size: 14px;
+  color: #f5e8df;
 }
 
 .sketch-control-button {
@@ -62,10 +71,12 @@
   font-family: "Hubballi";
   font-weight: 600;
   font-size: 14px;
+  color: #062746;
 }
 
-.control-button:hover {
-  background-color: #ddd;
+.dark-control-button:hover {
+  background-color: #f5e8df;
+  color: #212529;
 }
 
 .sketch-control-button:hover {

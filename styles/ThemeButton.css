@@ -7,26 +7,47 @@
   margin-right: 10px;
 }
 
-.sun, .moon {
+.dark-sun, .sketch-sun, .dark-moon, .sketch-moon {
   position: absolute;
   width: 100%;
   height: 100%;
   transition: transform 0.3s;
 }
 
-.sun {
-  background: url('../assets/images/sun.svg') no-repeat center;
+.dark-sun {
+  background: url('../assets/images/dark-sun.svg') no-repeat center;
   background-size: 35px 35px;
   transform: translateY(0);
 }
 
-.moon {
-  background: url('../assets/images/moon.svg') no-repeat center;
+.sketch-sun {
+  background: url('../assets/images/sketch-sun.svg') no-repeat center;
+  background-size: 35px 35px;
+  transform: translateY(100%);
+}
+
+.dark-moon {
+  background: url('../assets/images/dark-moon.svg') no-repeat center;
   background-size: 25px 25px;
   transform: translateY(100%);
 }
 
-.ground {
+.sketch-moon {
+  background: url('../assets/images/sketch-moon.svg') no-repeat center;
+  background-size: 25px 25px;
+  transform: translateY(0);
+}
+
+.dark-ground {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: 0;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+}
+
+.sketch-ground {
   position: absolute;
   width: 100%;
   height: 2px;
@@ -35,22 +56,22 @@
   border-radius: 20px;
 }
 
-.theme-button.dark .sun {
+.theme-button.dark .dark-sun {
   transform: translateY(100%);
   transition-delay: 0s; /* No delay when moving down */
 }
 
-.theme-button.dark .moon {
+.theme-button.sketch .sketch-sun {
   transform: translateY(0);
   transition-delay: 0.3s; /* Delay the transition */
 }
 
-.theme-button.sketch .sun {
+.theme-button.dark .dark-moon {
   transform: translateY(0);
   transition-delay: 0.3s; /* Delay the transition */
 }
 
-.theme-button.sketch .moon {
+.theme-button.sketch .sketch-moon {
   transform: translateY(100%);
   transition-delay: 0s; /* No delay when moving down */
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 import './../../styles/Console.css';
 
-function Console({ log }) {
+function Console({ log, theme }) {
   return (
-    <div className='sketch-console-container'>
+    <div className={`${theme}-console-container`}>
       <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", overflow: "scroll" }}>
         {/* Console header */}
-        <div className='sketch-console-header'>
+        <div className={`${theme}-console-header`}>
           <p style={{ margin: "0px", paddingLeft: '5px', paddingRight: '5px' }}>CONSOLE</p>
         </div>
         {/* Console content */}

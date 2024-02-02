@@ -9,9 +9,9 @@ const ThemeButton = ({ theme, setTheme }) => {
 
   return (
     <div className={`theme-button ${theme}`} onClick={handleThemeChange}>
-      <div className='sun'></div>
-      <div className='moon'></div>
-      <div className='ground'></div>
+      <div className={`${theme}-sun`}></div>
+      <div className={`${theme}-moon`}></div>
+      <div className={`${theme}-ground`}></div>
     </div>
   );
 };

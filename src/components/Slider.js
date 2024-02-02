@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 
 import './../../styles/Slider.css';
 
-const Slider = ({ min, max, value, onInputChange }) => {
+const Slider = ({ min, max, value, onInputChange, theme }) => {
   const [isDragging, setIsDragging] = useState(false);
   const sliderRef = useRef();
 
@@ -60,21 +60,21 @@ const Slider = ({ min, max, value, onInputChange }) => {
   return (
     <div
       ref={sliderRef}
-      className='sketch-slider-container'
+      className={'slider-container'}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onClick={handleClick}
     >
       { /** Left side track */}
       <div
-        className='sketch-slider-track-left'
+        className={`${theme}-slider-track-left`}
         style={{
           width: `${(value / max) * 100}%`,
         }}
       ></div>
       { /** Right side track */}
       <div
-        className='sketch-slider-track-right'
+        className={`${theme}-slider-track-right`}
         style={{
           left: `${(value / max) * 100}%`,
           width: `${((max - value) / max) * 100}%`,
@@ -82,7 +82,7 @@ const Slider = ({ min, max, value, onInputChange }) => {
       ></div>
       { /** Thumb */}
       <div
-        className='sketch-slider-thumb'
+        className={`${theme}-slider-thumb`}
         style={{
           left: `${(value / max) * 100}%`,
         }}
