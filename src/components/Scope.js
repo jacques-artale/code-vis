@@ -1,4 +1,5 @@
 import React from 'react';
+import './../../styles/Scope.css';
 
 import Variable from './Variable';
 import ArrayGrid from './Array';

@@ -1,0 +1,38 @@
+.zoom-button {
+  border: 1px solid #212529;
+  font-size: 16px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  width: 25px;
+  height: 25px;
+}
+
+.sketch-zoom-button {
+  background-color: #f5e8df;
+  border: 2px solid #062746;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  border-radius: 2px;
+  width: 25px;
+  height: 25px;
+  margin: 1px;
+}
+
+.zoom-button:hover {
+  background-color: #ddd;
+}
+
+.sketch-zoom-button:hover {
+  background-color: #062746;
+  color: #f5e8df;
+}
+
+.zoom-button-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  padding: 4px;
+}

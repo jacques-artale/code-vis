@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 
+import './../../styles/Slider.css';
+
 const Slider = ({ min, max, value, onInputChange }) => {
   const [isDragging, setIsDragging] = useState(false);
   const sliderRef = useRef();

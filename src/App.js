@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import './App.css';
+import '../styles/App.css';
 
 import InterpretWorker from './workers/Interpreter.worker.js';
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import './../../styles/ThemeButton.css';
 
 const ThemeButton = ({ theme, setTheme }) => {
 

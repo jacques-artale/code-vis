@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './../../styles/ScriptSelect.css';
 import scripts from '../utils/Scripts';
 
 function ScriptSelect({ setCode }) {

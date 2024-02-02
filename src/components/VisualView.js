@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './../../styles/VisualView.css';
 
 import Scope from './Scope';
 import Arrow from './Arrow';
