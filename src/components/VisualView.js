@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import './../../styles/VisualView.css';
 
 import Scope from './Scope';
@@ -23,7 +23,10 @@ const VisualView = ({ scopes, theme }) => {
 
   
   function calculateBounds(scopes, scopeRefs) {
-    const scopeDistances = findDistancesBFS(0, scopes); // distances[scopeId] = distance to global    
+    const globalScope = scopes.find(scope => scope.parentId === null);
+    if (!globalScope) return [];
+    
+    const scopeDistances = findDistancesBFS(globalScope.id, scopes); // distances[scopeId] = distance to global    
     
     const bounds = [];
     let currentTreeHeight = 0;
@@ -34,7 +37,7 @@ const VisualView = ({ scopes, theme }) => {
         const x = scopeDistances[scope.id] * 100;
         const y = currentTreeHeight;
 
-        bounds[scope.id] = { x: x, y: y, width: rect.width, height: rect.height / scale};
+        bounds[scope.id] = { id: scope.id, x: x, y: y, width: rect.width, height: rect.height / scale};
         
         currentTreeHeight += (rect.height / scale) + 40;
       }

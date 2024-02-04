@@ -8,6 +8,7 @@ export class Interpreter {
   globalEnvironment = null;
   functionDeclarations = [];
   environmentStack = [];
+  uniqueEnvironmentId = 0;
 
   builtInVariables = {
     'undefined': undefined,
@@ -52,6 +53,7 @@ export class Interpreter {
   */
   createEnvironment(parent, node, instructions) {
     return {
+      id: this.uniqueEnvironmentId++, // a unique id for the environment
       variables: [],                  // variables in our current scope
       arrayVariables: [],             // array variables in our current scope
       objectVariables: [],            // object variables in our current scope
@@ -235,8 +237,8 @@ export class Interpreter {
         }
       }
       
-      const parentId = (currentEnvironment !== null) ? currentEnvironment.executionState.node.nodeId : null;
-      const currentId = environment.executionState.node.nodeId;
+      const parentId = (currentEnvironment !== null) ? currentEnvironment.id : null;
+      const currentId = environment.id;
 
       const scope = {
         name: this.translateTypeToName(environment.executionState.node.type),
