@@ -28,7 +28,9 @@ const ASTView = ({ code }) => {
         overflow: "scroll",
         height: "100%",
         width: "100%",
-        padding: "1%",
+        marginLeft: "1%",
+        marginBottom: "1%",
+        marginTop: "1%",
         whiteSpace: "pre-wrap"
       }
     }>
