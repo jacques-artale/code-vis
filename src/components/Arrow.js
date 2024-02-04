@@ -16,7 +16,7 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           top: `${bottomY}px`,
           width: `${scopeBounds.x - bottomX}px`,
           height: '2px',
-          backgroundColor: theme === 'sketch' ? '#062746' : '#586f7c'
+          backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df'
         }}
       ></div>
 
@@ -28,7 +28,7 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           top: `${topY}px`,
           width: '2px',
           height: `${bottomY - topY}px`,
-          backgroundColor: theme === 'sketch' ? '#062746' : '#586f7c'
+          backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df'
         }}
       ></div>
 
@@ -40,7 +40,7 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           top: `${topY}px`,
           borderLeft: '7px solid transparent',
           borderRight: '7px solid transparent',
-          borderBottom: `14px solid ${theme === 'sketch' ? '#062746' : '#586f7c'}`
+          borderBottom: `14px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`
         }}
       ></div>
     </div>

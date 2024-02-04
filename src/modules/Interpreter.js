@@ -244,11 +244,13 @@ export class Interpreter {
         arrayVariables: arrayVariables,
         parentId: parentId,
         id: currentId,
-        active: environment === this.getCurrentEnvironment(),
+        active: false,
       };
 
       scopes.push(scope);
     }
+
+    scopes[scopes.length - 1].active = true;
 
     this.updateCallback({ command: 'updateScopes', scopes: scopes });
   }
