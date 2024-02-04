@@ -18,7 +18,7 @@ const ArrayGrid = ({ name, values, theme }) => {
         {
           row === 0 && <p style={{ color: color, margin: 0, width: '25px', height: '25px', textAlign: 'center' }}>{index}</p>
         }
-        <ArrayCell value={value} />
+        <ArrayCell value={value} theme={theme} />
       </div>
     );
   };

@@ -32,7 +32,8 @@
 }
 
 .dark-zoom-button:hover {
-  background-color: #ddd;
+  background-color: #f5e8df;
+  color: #212529;
 }
 
 .sketch-zoom-button:hover {

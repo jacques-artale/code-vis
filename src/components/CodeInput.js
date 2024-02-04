@@ -70,7 +70,7 @@ class CodeEditor extends React.Component {
 
       const decorations = highlights.map(highlight => ({
         range: new this.state.monaco.Range(highlight[0], highlight[1], highlight[2], highlight[3] + 1),
-        options: { inlineClassName: 'highlight' }
+        options: { inlineClassName: `${this.props.theme}-highlight` }
       }));
 
       const newDecorations = editor.deltaDecorations(clearedDecorations, decorations);
@@ -110,15 +110,10 @@ function CodeInput({ code, setCode, highlights, theme }) {
 
   useEffect(() => {
     if (codeEditorRef.current) {
+      codeEditorRef.current.setState({ theme });
       codeEditorRef.current.setHighlights(highlights);
     }
-  }, [highlights]);
-
-  useEffect(() => {
-    if (codeEditorRef.current) {
-      
-    }
-  }, [theme]);
+  }, [theme, highlights]);
 
   return (
     <div style={{ float: 'right', width: '100%', height: '100%' }}>
