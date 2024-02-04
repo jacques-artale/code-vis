@@ -1,15 +1,16 @@
 import React from 'react';
+import './../../styles/Console.css';
 
-function Console({ log }) {
+function Console({ log, theme }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', marginTop: "auto", height: "30%", border: '1px solid black' }}>
+    <div className={`${theme}-console-container`}>
       <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", overflow: "scroll" }}>
         {/* Console header */}
-        <div style={{ display: 'flex', position: 'fixed', backgroundColor: '#586f7c', color: '#f4f4f9', textAlign: 'center', paddingRight: '5px', borderBottomRightRadius: '7px', border: '1px solid #586f7c' }}>
-          <p style={{ margin: "0px", paddingLeft: '5px' }}>Console</p>
+        <div className={`${theme}-console-header`}>
+          <p style={{ margin: "0px", paddingLeft: '5px', paddingRight: '5px' }}>CONSOLE</p>
         </div>
         {/* Console content */}
-        <div style={{ marginTop: '25px' }}>
+        <div>
           {
             log.map((line, index) => {
               return (

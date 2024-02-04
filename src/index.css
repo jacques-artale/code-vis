@@ -1,11 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Hubballi&display=swap");
+
 body, html, #root {
   height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Hubballi';
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.5;
   color: #212529;
   text-align: left;
@@ -21,74 +23,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+::-webkit-scrollbar {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid #062746;
+  border-radius: 15px;
+  background-image: linear-gradient(-45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
+  background-size: 10px 10px;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
 p {
-  margin: 5px;
+  margin: 8px;
 }
 
-.script-select-button {
-  padding: 0.5%;
-  height: 25px;
-  border: none;
-  border-bottom: 1px solid black;
-  background-color: #fffafa;
+.dark-highlight {
+  background-color: red;
 }
 
-.script-select-button-active {
-  padding: 0.5%;
-  height: 25px;
-  border-bottom: none;
-  border-top: 1px solid black;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  background-color: #fffafa;
-}
-
-.script-select-button:hover {
-  background-color: #eee;
-}
-
-.highlight {
+.sketch-highlight {
   background-color: #b8dbd9;
-}
-
-.control-button {
-  width: 100px;
-  height: 25px;
-  margin: 0.5%;
-  border: 1px solid #212529;
-  border-radius: 2px;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
-  font-size: 14px;
-}
-
-.control-button:hover {
-  background-color: #ddd;
-}
-
-.zoom-button {
-  border: 1px solid #212529;
-  font-size: 16px;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
-  border-radius: 2px;
-  width: 25px;
-  height: 25px;
-}
-
-.zoom-button:hover {
-  background-color: #ddd;
-}
-
-.zoom-button-container {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 1;
-  padding: 4px;
 }

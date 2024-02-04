@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './../../styles/VisualView.css';
 
 import Scope from './Scope';
 import Arrow from './Arrow';
 
-const VisualView = ({ scopes }) => {
+const VisualView = ({ scopes, theme }) => {
 
   const [scale, setScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -81,7 +82,7 @@ const VisualView = ({ scopes }) => {
         alignItems: 'center'
       }}
       >
-        <Scope scope={scope} />
+        <Scope scope={scope} theme={theme} />
       </div>
     );
   }
@@ -96,7 +97,7 @@ const VisualView = ({ scopes }) => {
           transformOrigin: 'top left'
         }}
       >
-        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds}/>
+        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds} theme={theme}/>
       </div>
     )
   }
@@ -131,9 +132,9 @@ const VisualView = ({ scopes }) => {
   
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <div class='zoom-button-container'>
-        <button class='zoom-button' onClick={() => handleZoom(true)}>+</button>
-        <button class='zoom-button' onClick={() => handleZoom(false)}>-</button>
+      <div className='zoom-button-container'>
+        <button className={`${theme}-zoom-button`} onClick={() => handleZoom(true)}>+</button>
+        <button className={`${theme}-zoom-button`} onClick={() => handleZoom(false)}>-</button>
       </div>
       <div
         style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}
@@ -153,6 +154,7 @@ const VisualView = ({ scopes }) => {
             if (scope.parentId !== null && bounds[scope.id] && bounds[scope.parentId]) {
               return createArrowComponent(scope, bounds[scope.id], bounds[scope.parentId], index);
             }
+            return null;
           })
         }
       </div>

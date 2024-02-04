@@ -1,22 +1,14 @@
 import React from 'react';
+import './../../styles/Scope.css';
 
 import Variable from './Variable';
 import ArrayGrid from './Array';
 
-const Scope = ({ scope }) => {
+const Scope = ({ scope, theme }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flex: '0 1 auto',
-        flexDirection: 'column',
-        border: `${scope.active ? '2px solid #ff9900' : '2px solid #586f7c'}`,
-        borderRadius: '5px',
-        backgroundColor: '#f8f8f8',
-      }}
-    >
-      <div style={{ display: 'flex', backgroundColor: '#586f7c', color: '#f4f4f9', borderBottom: '2px solid #586f7c' }}>
-        <p>{scope.name}</p>
+    <div className={`${theme}-scope-container${scope.active ? '-active' : ''}`}>
+      <div className={`${theme}-scope-header`}>
+        <p className={`${theme}-scope-name`}>{scope.name}</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         {
@@ -32,7 +24,7 @@ const Scope = ({ scope }) => {
           scope.arrayVariables.map(([name, arr], index) => {
             return (
               <div key={`array-${index}`} style={{ margin: '10px' }}>
-                <ArrayGrid name={name} values={arr} />
+                <ArrayGrid name={name} values={arr} theme={theme}/>
               </div>
             );
           })

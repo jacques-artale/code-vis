@@ -1,0 +1,85 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sketch-body {
+  background-color: #f5e8df;
+}
+
+.dark-body {
+  background-color: #212529;
+  color: #f5e8df;
+}
+
+.dark-control-button {
+  width: 100px;
+  height: 30px;
+  margin: 0.5%;
+  background-color: #212529;
+  border: 2px solid #f5e8df;
+  border-radius: 20px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 14px;
+  color: #f5e8df;
+}
+
+.sketch-control-button {
+  width: 100px;
+  height: 30px;
+  margin: 0.5%;
+  background-color: #f5e8df;
+  border: 2px solid #062746;
+  border-radius: 20px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 14px;
+  color: #062746;
+}
+
+.dark-control-button:hover {
+  background-color: #f5e8df;
+  color: #212529;
+}
+
+.sketch-control-button:hover {
+  background-color: #062746;
+  color: #f5e8df;
+}

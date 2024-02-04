@@ -70,9 +70,9 @@ console.log("Target found at index: " + result);
   right = right !== undefined ? right : arr.length - 1;
 
   if (left < right) {
-      let pivotIndex = partition(arr, left, right);
-      quickSort(arr, left, pivotIndex - 1);
-      quickSort(arr, pivotIndex + 1, right);
+    let pivotIndex = partition(arr, left, right);
+    quickSort(arr, left, pivotIndex - 1);
+    quickSort(arr, pivotIndex + 1, right);
   }
   return arr;
 }
@@ -82,10 +82,10 @@ function partition(arr, left, right) {
   let i = left - 1;
 
   for (let j = left; j < right; j++) {
-      if (arr[j] < pivot) {
-          i++;
-          swap(arr, i, j);
-      }
+    if (arr[j] < pivot) {
+      i++;
+      swap(arr, i, j);
+    }
   }
   swap(arr, i + 1, right);
   return i + 1;

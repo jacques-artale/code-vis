@@ -1,0 +1,59 @@
+.dark-script-select-button {
+  padding: 0.5%;
+  height: 25px;
+  border: none;
+  border-bottom: 2px solid #f5e8df;
+  background-color: #212529;
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 16px;
+  color: #f5e8df;
+}
+
+.sketch-script-select-button {
+  padding: 0.5%;
+  height: 25px;
+  border: none;
+  border-bottom: 2px solid #212529;
+  background-color: #f5e8df;
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.dark-script-select-button-active {
+  padding: 0.5%;
+  height: 25px;
+  border-bottom: none;
+  border-top: 2px solid #f5e8df;
+  border-left: 2px solid #f5e8df;
+  border-right: 2px solid #f5e8df;
+  background-color: #212529;
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 16px;
+  color: #f5e8df;
+}
+
+.sketch-script-select-button-active {
+  padding: 0.5%;
+  height: 25px;
+  border-bottom: none;
+  border-top: 2px solid #212529;
+  border-left: 2px solid #212529;
+  border-right: 2px solid #212529;
+  background-color: #f5e8df;
+  font-family: "Hubballi";
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.dark-script-select-button:hover {
+  background-color: #f5e8df;
+  color: #212529
+}
+
+.sketch-script-select-button:hover {
+  background-color: #212529;
+  color: #f5e8df;
+}

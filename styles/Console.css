@@ -1,0 +1,35 @@
+.dark-console-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 25%;
+  max-height: 25%;
+  border: 2px solid #f5e8df;
+}
+
+.sketch-console-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 25%;
+  max-height: 25%;
+  border: 2px solid #212529;
+}
+
+.dark-console-header {
+  display: flex;
+  width: fit-content;
+  background-color: #f5e8df;
+  color: #062746;
+  text-align: center;
+  padding-right: 5px;
+  border-bottom-right-radius: 7px;
+}
+
+.sketch-console-header {
+  display: flex;
+  width: fit-content;
+  background-color: #212529;
+  color: #f5e8df;
+  text-align: center;
+  padding-right: 5px;
+  border-bottom-right-radius: 7px;
+}
