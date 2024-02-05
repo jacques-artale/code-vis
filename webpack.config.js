@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const path = require("path");
 
 module.exports = {
@@ -25,7 +26,8 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.worker\.js$/,
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src/workers'),
         use: { loader: 'worker-loader' },
       },
     ],
@@ -35,6 +37,9 @@ module.exports = {
       template: path.resolve(__dirname, 'public', 'index.html'),
       filename: './index.html',
       favicon: './public/favicon.ico'
+    }),
+    new MonacoWebpackPlugin({
+      languages: ['javascript', 'json']
     })
   ],
   mode: "production",

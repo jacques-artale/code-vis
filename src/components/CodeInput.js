@@ -84,12 +84,13 @@ class CodeEditor extends React.Component {
       selectOnLineNumbers: true,
       tabSize: 2,
     };
+    const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
     return (
       <MonacoEditor
         width="100%"
         height="100%"
         language="javascript"
-        theme="vs-light"
+        theme={vsTheme}
         value={code}
         options={options}
         onChange={this.onChange.bind(this)}
