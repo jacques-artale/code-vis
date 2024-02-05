@@ -18,8 +18,9 @@ class CodeEditor extends React.Component {
     editor.focus();
   
     const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
+    const themeBase = this.props.theme === 'sketch' ? 'vs' : 'vs-dark';
     monaco.editor.defineTheme(vsTheme, {
-      base: 'vs',
+      base: themeBase,
       inherit: true,
       rules: [
         { token: 'highlight', foreground: '000000', background: 'ffff00' },
@@ -39,8 +40,9 @@ class CodeEditor extends React.Component {
   componentDidUpdate(prevProps) {
     if (this.props.theme !== prevProps.theme) {
       const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
+      const themeBase = this.props.theme === 'sketch' ? 'vs' : 'vs-dark';
       this.state.monaco.editor.defineTheme(vsTheme, {
-        base: 'vs',
+        base: themeBase,
         inherit: true,
         rules: [
           { token: 'highlight', foreground: '000000', background: 'ffff00' },
