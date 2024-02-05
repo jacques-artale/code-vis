@@ -600,7 +600,7 @@ export class Interpreter {
         environment.returnValues.push(properties);
 
         this.gotoNextInstruction();
-        break;
+        if (this.getNextInstruction() !== null) break;
       }
       case 'object': { // finds the value of the object
         environment.executionState.phase = 'evaluate';
@@ -919,7 +919,7 @@ export class Interpreter {
         environment.returnValues.push(properties);
 
         this.gotoNextInstruction();
-        break;
+        if (this.getNextInstruction() !== null) break;
       }
       case 'end': { // finds the value of the final property and updates it
         const properties = environment.returnValues.pop();
@@ -995,26 +995,29 @@ export class Interpreter {
     }
 
     const argument = this.getNextInstruction();
-    const instructionPointer = environment.executionState.instructionPointer;
 
     const functionDeclaration = this.lookupFunction(node.callee.name);
     switch (environment.executionState.phase) {
-      case 'init':
+      case 'init': {
         if (argument === null) environment.executionState.phase = 'call';
         else environment.executionState.phase = 'argument';
         break;
-      case 'argument':
+      }
+      case 'argument': {
         environment.executionState.phase = 'declare';
         this.interpretExpression(argument);
         break;
-      case 'declare': // TODO: this will create a need for an extra unnecessary call to interpretNextInstruction()
+      }
+      case 'declare': {
         environment.executionState.phase = 'init';
+        const instructionPointer = environment.executionState.instructionPointer;
         const argumentValue = environment.returnValues.pop();
         const parameter = functionDeclaration.parameters[instructionPointer];
         this.handleVariableCreation(argument.type, parameter.name, argumentValue, environment, argument.name);
         this.gotoNextInstruction();
-        break;
-      case 'call':
+        if (this.getNextInstruction() !== null) break;
+      }
+      case 'call': {
         // We set the parent environment of the function to the global environment to avoid giving it access to any variables other than the global ones
         // The reason we do it here is because we need to wait until we have declared all parameter values, which may rely on variables in the current environment
         environment.parentEnvironment = this.globalEnvironment;
@@ -1022,6 +1025,7 @@ export class Interpreter {
 
         // check if any parameters are missing, if so we set them to undefined
         const parameters = functionDeclaration.parameters;
+        const instructionPointer = environment.executionState.instructionPointer;
         for (let i = instructionPointer; i < parameters.length; i++) {
           const parameter = parameters[i];
           this.handleVariableCreation('Literal', parameter.name, undefined, environment);
@@ -1029,12 +1033,14 @@ export class Interpreter {
 
         this.interpretBlockStatement(functionDeclaration.body);  // interpret the body of the function
         break;
-      case 'end':
+      }
+      case 'end': {
         const value = environment.returnValues.pop();
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         environment.returnValues.push(value); // pass the return value to the previous environment
         break;
+      }
       default:
         console.error("unknown phase: " + environment.executionState.phase);
     }
@@ -1234,7 +1240,7 @@ export class Interpreter {
         object[key] = value;
         environment.returnValues.push(object);
         this.gotoNextInstruction();
-        break;
+        if (this.getNextInstruction() !== null) break;
       }
       case 'end': {
         const object = environment.returnValues.pop();
@@ -1268,23 +1274,21 @@ export class Interpreter {
     }
 
     const instruction = this.getNextInstruction();
+    if (instruction === null) environment.executionState.phase = 'end';
 
     switch (environment.executionState.phase) {
       case 'init':
-        if (instruction === null) {
-          environment.executionState.phase = 'end';
-        } else {
-          environment.executionState.phase = 'evaluate';
-          this.interpretExpression(instruction);
-        }
+        environment.executionState.phase = 'evaluate';
+        this.interpretExpression(instruction);
         break;
       case 'evaluate':
         environment.executionState.phase = 'init';
         const value = environment.returnValues.pop();
         const array = [...environment.returnValues.pop(), value];
         environment.returnValues.push(array);
+        
         this.gotoNextInstruction();
-        break;
+        if (this.getNextInstruction() !== null) break; // if this was the last element we go straight to end
       case 'end':
         const values = environment.returnValues.pop();
         this.removeCurrentEnvironment();
@@ -1343,13 +1347,10 @@ export class Interpreter {
     }
 
     const declaration = this.getNextInstruction();
+    if (declaration === null) environment.executionState.phase = 'end';
 
     switch (environment.executionState.phase) {
       case 'init':
-        if (declaration === null) environment.executionState.phase = 'end';
-        else environment.executionState.phase = 'evaluate';
-        break;
-      case 'evaluate':
         environment.executionState.phase = 'declare';
         if (declaration.init !== null) this.interpretExpression(declaration.init);
         else environment.returnValues.push(undefined);
@@ -1366,7 +1367,7 @@ export class Interpreter {
         this.handleVariableCreation(varType, varName, value, parent, identifier);
 
         this.gotoNextInstruction();
-        break;
+        if (this.getNextInstruction() !== null) break; // if this was the last declaration we go straight to end
       case 'end':
         this.removeCurrentEnvironment();
         break;
