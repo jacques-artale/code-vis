@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './../../styles/VisualView.css';
 
 import Scope from './Scope';
 import Arrow from './Arrow';
 
-const VisualView = ({ scopes, theme }) => {
+const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
 
   const [scale, setScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -85,7 +85,7 @@ const VisualView = ({ scopes, theme }) => {
         alignItems: 'center'
       }}
       >
-        <Scope scope={scope} theme={theme} />
+        <Scope scope={scope} theme={theme} varChange={varChange} varCreate={varCreate} varAccess={varAccess} />
       </div>
     );
   }

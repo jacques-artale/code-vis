@@ -34,6 +34,9 @@ function App() {
   const [activeNode, setActiveNode] = useState(null);         // nodeId
   const [interpretSpeed, setInterpretSpeed] = useState(5);    // index for `interpreterSpeeds` between interpreter calls
   const [desiredSpeed, setDesiredSpeed] = useState(5);        // index for `interpreterSpeeds` between interpreter calls
+  const [updatedVariable, setUpdatedVariable] = useState(null); // { scopeId, name, properties }
+  const [createdVariable, setCreatedVariable] = useState(null); // { scopeId, name }
+  const [accessedVariable, setAccessedVariable] = useState(null); // { scopeId, name, properties }
   
   const interpreterRef = useRef();                            // interval which calls the interpreter
   const [worker, setWorker] = useState(null);                 // worker where the interpreter runs
@@ -52,6 +55,15 @@ function App() {
         setLog(old_log => [...old_log, e.data.argument]);
       } else if (e.data.command === 'updateActiveNode') {
         setActiveNode(e.data.nodeId);
+        setUpdatedVariable(null);
+        setCreatedVariable(null);
+        setAccessedVariable(null);
+      } else if (e.data.command === 'updatedVariable') {
+        setUpdatedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties });
+      } else if (e.data.command === 'createVariable') {
+        setCreatedVariable({ scopeId: e.data.scopeId, name: e.data.name });
+      } else if (e.data.command === 'accessVariable') {
+        setAccessedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties });
       } else if (e.data.command === 'end') {
         handleStop();
       }
@@ -185,7 +197,7 @@ function App() {
           {
             viewAST ?
               <ASTView code={code} /> :
-              <VisualView scopes={scopes} theme={theme} />
+              <VisualView scopes={scopes} theme={theme} varChange={updatedVariable} varCreate={createdVariable} varAccess={accessedVariable} />
           }
         </div>
         <div style={{ height: '25%' }}>

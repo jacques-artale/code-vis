@@ -1,24 +1,24 @@
 import React from 'react';
 import ArrayCell from './ArrayCell';
 
-const ArrayGrid = ({ name, values, theme }) => {
-
-  if (!Array.isArray(values)) {
-    return null;
-  }
+const ArrayGrid = ({ name, values, varChange, theme }) => {
 
   // Check if the array is one-dimensional
-  const isOneDimensional = values.every((item) => !Array.isArray(item));
+  const isOneDimensional = values === undefined ? false : values.every((item) => !Array.isArray(item));
 
   // Function to render a single cell
   const renderCell = ({value, index, row}) => {
     const color = theme === 'sketch' ? '#062746' : '#f5e8df';
+    const highlight = varChange !== null && (
+      (isOneDimensional && varChange.properties[0] === index) ||
+      (!isOneDimensional && varChange.properties[0] === row && varChange.properties[1] === index)
+    );
     return (
       <div key={`cell-${row}-${index}`}>
         {
           row === 0 && <p style={{ color: color, margin: 0, width: '25px', height: '25px', textAlign: 'center' }}>{index}</p>
         }
-        <ArrayCell value={value} theme={theme} />
+        <ArrayCell value={value} theme={theme} highlight={highlight}/>
       </div>
     );
   };

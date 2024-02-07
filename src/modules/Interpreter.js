@@ -110,6 +110,7 @@ export class Interpreter {
     environment.variables[name] = value;
 
     this.updateStateVariables();
+    this.updateCallback({ command: 'createVariable', scopeId: environment.id, name: name });
   }
 
   createArrayVariable(name, values, environment) {
@@ -120,6 +121,7 @@ export class Interpreter {
     environment.arrayVariables[name] = values;
 
     this.updateStateVariables();
+    this.updateCallback({ command: 'createVariable', scopeId: environment.id, name: name });
   }
 
   createObjectVariable(name, value, environment) {
@@ -130,26 +132,36 @@ export class Interpreter {
     environment.objectVariables[name] = value;
 
     this.updateStateVariables();
+    this.updateCallback({ command: 'createVariable', scopeId: environment.id, name: name });
   }
 
   lookupVariableValue(name, environment) {
-    if (name in this.builtInVariables) {
-      return this.builtInVariables[name];
+    let value = null;
+    let currentEnvironment = environment;
+    while (currentEnvironment !== null) {
+      if (name in this.builtInVariables){
+        value = this.builtInVariables[name];
+      } else if (name in currentEnvironment.variables) {
+        value = currentEnvironment.variables[name];
+      } else if (name in currentEnvironment.arrayVariables) {
+        value = currentEnvironment.arrayVariables[name];
+      } else if (name in currentEnvironment.objectVariables) {
+        value = currentEnvironment.objectVariables[name];
+      }
+
+      if (value !== null) break;
+      currentEnvironment = currentEnvironment.parentEnvironment;
     }
-    if (name in environment.variables) {
-      return environment.variables[name];
+
+    if (value !== null) {
+      this.updateCallback({ command: 'accessVariable', scopeId: currentEnvironment.id, name: name, properties: null });
     }
-    if (name in environment.arrayVariables) {
-      return environment.arrayVariables[name];
+
+    if (this.debugging && value === null) {
+      console.error(`Expression interpreter error: Variable ${name} not found`);
     }
-    if (name in environment.objectVariables) {
-      return environment.objectVariables[name];
-    }
-    if (environment.parentEnvironment !== null) {
-      return this.lookupVariableValue(name, environment.parentEnvironment);
-    }
-    if (this.debugging) console.error(`Expression interpreter error: Variable ${name} not found`);
-    return null;
+
+    return value;
   }
 
   updateVariableValue(name, value, environment) {
@@ -172,6 +184,7 @@ export class Interpreter {
     }
 
     this.updateStateVariables();
+    this.updateCallback({ command: 'updatedVariable', scopeId: currentEnvironment.id, name: name, properties: null });
   }
 
   updateVariableProperty(name, properties, value, environment) {
@@ -198,6 +211,7 @@ export class Interpreter {
     }
   
     this.updateStateVariables();
+    this.updateCallback({ command: 'updatedVariable', scopeId: currentEnvironment.id, name: name, properties: properties });
   }
 
   updateStateVariables() {
