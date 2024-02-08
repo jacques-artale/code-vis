@@ -11,6 +11,7 @@ import VisualView from './components/VisualView';
 import ScriptSelect from './components/ScriptSelect.js';
 import Slider from './components/Slider.js';
 import ThemeButton from './components/ThemeButton.js';
+import ExecutingInstruction from './components/ExecutingInstruction.js';
 
 function App() {
   const interpreterSpeeds = [3000, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
@@ -26,16 +27,16 @@ function App() {
   const [showPause, setShowPause] = useState(false);
   const [showResume, setShowResume] = useState(false);
   const [showNext, setShowNext] = useState(false);
+  const [interpretSpeed, setInterpretSpeed] = useState(5);        // index for `interpreterSpeeds` between interpreter calls
+  const [desiredSpeed, setDesiredSpeed] = useState(5);            // index for `interpreterSpeeds` between interpreter calls
 
-  const [scopes, setScopes] = useState([]);                   // [{}, ...]
-  const [log, setLog] = useState([]);                         // [line, line, ...]
+  const [scopes, setScopes] = useState([]);                       // [{}, ...]
+  const [log, setLog] = useState([]);                             // [line, line, ...]
 
-  const [highlights, setHighlights] = useState([]);           // [[startLine, startColumn, endLine, endColumn], ...]
-  const [activeNode, setActiveNode] = useState(null);         // nodeId
-  const [interpretSpeed, setInterpretSpeed] = useState(5);    // index for `interpreterSpeeds` between interpreter calls
-  const [desiredSpeed, setDesiredSpeed] = useState(5);        // index for `interpreterSpeeds` between interpreter calls
-  const [updatedVariable, setUpdatedVariable] = useState(null); // { scopeId, name, properties }
-  const [createdVariable, setCreatedVariable] = useState(null); // { scopeId, name }
+  const [highlights, setHighlights] = useState([]);               // [[startLine, startColumn, endLine, endColumn], ...]
+  const [activeNode, setActiveNode] = useState(null);             // { nodeId, type }
+  const [updatedVariable, setUpdatedVariable] = useState(null);   // { scopeId, name, properties }
+  const [createdVariable, setCreatedVariable] = useState(null);   // { scopeId, name }
   const [accessedVariable, setAccessedVariable] = useState(null); // { scopeId, name, properties }
   
   const interpreterRef = useRef();                            // interval which calls the interpreter
@@ -54,7 +55,7 @@ function App() {
       } else if (e.data.command === 'consoleLog') {
         setLog(old_log => [...old_log, e.data.argument]);
       } else if (e.data.command === 'updateActiveNode') {
-        setActiveNode(e.data.nodeId);
+        setActiveNode({ nodeId: e.data.nodeId, nodeType: e.data.nodeType });
         setUpdatedVariable(null);
         setCreatedVariable(null);
         setAccessedVariable(null);
@@ -193,6 +194,9 @@ function App() {
             <ThemeButton theme={theme} setTheme={setTheme}/>
           </div>
         </div>
+        <div style={{ display: 'flex', width: '100%', height: '3%' }}>
+          <ExecutingInstruction theme={theme} activeNode={activeNode} />
+        </div>
         <div style={{ display: 'flex', width: '100%', height: '70%' }}>
           {
             viewAST ?
@@ -200,7 +204,7 @@ function App() {
               <VisualView scopes={scopes} theme={theme} varChange={updatedVariable} varCreate={createdVariable} varAccess={accessedVariable} />
           }
         </div>
-        <div style={{ height: '25%' }}>
+        <div style={{ height: '22%' }}>
           <Console log={log} theme={theme}/>
         </div>
       </div>

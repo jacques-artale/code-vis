@@ -23,9 +23,10 @@ export function buildAst(code, useLoc = true) {
 
 export function getNodesToHighlight(node, nodesToFind = []) {
   let nodesToHighlight = [];
+  let nodesToFindIds = nodesToFind.map(n => n.nodeId); // Extract nodeIds from nodesToFind
   estraverse.traverse(node, {
     enter: function(node) {
-      if (nodesToFind.includes(node.nodeId)) {
+      if (nodesToFindIds.includes(node.nodeId)) {
         const { start, end } = node.loc;
         nodesToHighlight.push([start.line, start.column, end.line, end.column]);
       }
