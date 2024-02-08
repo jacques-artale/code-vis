@@ -1841,14 +1841,14 @@ export class Interpreter {
 
     const instruction = this.getNextInstruction();
 
+    if (instruction === null) {
+      environment.executionState.phase = 'end';
+    }
+
     switch (environment.executionState.phase) {
       case 'init': {
-        if (instruction !== null) {
-          environment.executionState.phase = 'log';
-          this.interpretExpression(instruction);
-        } else {
-          environment.executionState.phase = 'end';
-        }
+        environment.executionState.phase = 'log';
+        this.interpretExpression(instruction);
         break;
       }
       case 'log': {
@@ -1857,7 +1857,7 @@ export class Interpreter {
         const allArguments = environment.returnValues.pop();
         environment.returnValues.push([...allArguments, newArgument]);
         this.gotoNextInstruction();
-        break;
+        if (this.getNextInstruction() !== null) break;
       }
       case 'end': {
         this.removeCurrentEnvironment();

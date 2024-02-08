@@ -10,21 +10,23 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
       <div className={`${theme}-scope-header`}>
         <p className={`${theme}-scope-name`}>{scope.name}</p>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
         {
           scope.variables.map(([name, value], index) => {
+            const highlight = varChange !== null && scope.id === varChange.scopeId && varChange.properties !== null && varChange.name === name;
+
             const updated = varChange !== null && scope.id === varChange.scopeId && varChange.properties === null && name === varChange.name;
             const created = varCreate !== null && scope.id === varCreate.scopeId && name === varCreate.name;
             const accessed = varAccess !== null && scope.id === varAccess.scopeId && name === varAccess.name;
-            const highlightColor = updated ? '#0099ff' : created ? '#00ff00' : accessed ? '#ff0000' : 'transparent';
+            const highlightColor = updated ? '#0099ff' : created ? '#378805' : accessed ? '#e6b400' : 'transparent';
             return (
               <div
                 key={`var-${index}`}
                 style={{
                   margin: '10px',
-                  backgroundColor: highlightColor
+                  backgroundColor: highlightColor,
                 }}>
-                <Variable name={name} value={value} />
+                <Variable name={name} value={value} varChange={highlight ? varChange : null} />
               </div>
             );
           })
@@ -36,7 +38,7 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
             const updated = varChange !== null && scope.id === varChange.scopeId && varChange.properties === null && name === varChange.name;
             const created = varCreate !== null && scope.id === varCreate.scopeId && name === varCreate.name;
             const accessed = varAccess !== null && scope.id === varAccess.scopeId && name === varAccess.name;
-            const highlightColor = updated ? '#0099ff' : created ? '#00ff00' : accessed ? '#ff0000' : 'transparent';
+            const highlightColor = updated ? '#0099ff' : created ? '#378805' : accessed ? '#e6b400' : 'transparent';
             return (
               <div
                 key={`array-${index}`}
