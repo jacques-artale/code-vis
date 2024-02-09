@@ -7,6 +7,16 @@ function ExecutingInstruction ({ activeNode, theme }) {
       <div style={{ display: 'flex' }}>
         <p>CURRENT INSTRUCTION:</p>
         <p>{ activeNode.nodeType }</p>
+        {
+          /*
+          <p>{'\u2192'}</p>
+          <p>
+            {
+              // show evaluation of expression
+            }
+          </p>
+          */
+        }
       </div>
     );
   }

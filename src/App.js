@@ -65,6 +65,9 @@ function App() {
         setCreatedVariable({ scopeId: e.data.scopeId, name: e.data.name });
       } else if (e.data.command === 'accessVariable') {
         setAccessedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties });
+      } else if (e.data.command === 'error') {
+        handleStop();
+        alert(e.data.error);
       } else if (e.data.command === 'end') {
         handleStop();
       }

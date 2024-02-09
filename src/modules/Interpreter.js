@@ -99,12 +99,14 @@ export class Interpreter {
       }
     }
     if (this.debugging) console.error(`Expression interpreter error: Function ${name} not found`);
+    this.updateCallback({ command: 'error', error: `Function '${name}' is not defined` });
     return null;
   }
 
-  createVariable(name, value, environment) {
-    if (name in environment.variables) {
+  createVariable(name, value, environment) { // TODO: redeclaration of variable using var should be allowed
+    if (name in environment.variables || name in environment.arrayVariables || name in environment.objectVariables) {
       console.error(`Expression interpreter error: Variable ${name} already exists`);
+      this.updateCallback({ command: 'error', error: `Identifier '${name}' has already been declared` });
       return;
     }
     environment.variables[name] = value;
@@ -114,8 +116,9 @@ export class Interpreter {
   }
 
   createArrayVariable(name, values, environment) {
-    if (name in environment.arrayVariables) {
+    if (name in environment.arrayVariables || name in environment.variables || name in environment.objectVariables) {
       console.error(`Expression interpreter error: Array variable ${name} already exists`);
+      this.updateCallback({ command: 'error', error: `Identifier '${name}' has already been declared` });
       return;
     }
     environment.arrayVariables[name] = values;
@@ -125,8 +128,9 @@ export class Interpreter {
   }
 
   createObjectVariable(name, value, environment) {
-    if (name in environment.objectVariables) {
+    if (name in environment.objectVariables || name in environment.variables || name in environment.arrayVariables) {
       console.error(`Expression interpreter error: Object variable ${name} already exists`);
+      this.updateCallback({ command: 'error', error: `Identifier '${name}' has already been declared` });
       return;
     }
     environment.objectVariables[name] = value;
@@ -183,33 +187,48 @@ export class Interpreter {
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
 
+    if (currentEnvironment === null) {
+      console.error(`Expression interpreter error: Variable ${name} not found`);
+      this.updateCallback({ command: 'error', error: `Identifier '${name}' is not defined` });
+      return;
+    }
+
     this.updateStateVariables();
     this.updateCallback({ command: 'updatedVariable', scopeId: currentEnvironment.id, name: name, properties: null });
   }
 
   updateVariableProperty(name, properties, value, environment) {
-    // find and update the variable in the environment
     let currentEnvironment = environment;
     while (currentEnvironment !== null) {
-      if (name in currentEnvironment.arrayVariables) {
-        let variable = currentEnvironment.arrayVariables[name];
+      let variable = currentEnvironment.arrayVariables[name] || currentEnvironment.objectVariables[name];
+      if (variable) {
+        let error = false;
         for (let i = 0; i < properties.length - 1; i++) {
+          if (variable[properties[i]] === undefined) {
+            this.updateCallback({ command: 'error', error: `Property ${properties[i]} cannot be set on ${variable}` });
+            error = true;
+            break;
+          }
           variable = variable[properties[i]];
         }
-        variable[properties[properties.length - 1]] = value;
-        break;
-      }
-      if (name in currentEnvironment.objectVariables) {
-        let variable = currentEnvironment.objectVariables[name];
-        for (let i = 0; i < properties.length - 1; i++) {
-          variable = variable[properties[i]];
+        if (!error) {
+          if (variable[properties[properties.length - 1]] === undefined) {
+            this.updateCallback({ command: 'error', error: `Property ${properties[properties.length - 1]} cannot be set on ${variable}` });
+          } else {
+            variable[properties[properties.length - 1]] = value;
+          }
         }
-        variable[properties[properties.length - 1]] = value;
         break;
       }
       currentEnvironment = currentEnvironment.parentEnvironment;
     }
-  
+
+    if (currentEnvironment === null) {
+      console.error(`Expression interpreter error: Variable ${name} not found`);
+      this.updateCallback({ command: 'error', error: `Identifier '${name}' is not defined` });
+      return;
+    }
+
     this.updateStateVariables();
     this.updateCallback({ command: 'updatedVariable', scopeId: currentEnvironment.id, name: name, properties: properties });
   }
@@ -430,6 +449,7 @@ export class Interpreter {
         return; // do nothing
       default:
         console.log('unrecognized node type: ' + node.type);
+        this.updateCallback({ command: 'error', error: `Unrecognized node type: ${node.type}` });
     }
   }
 
@@ -495,6 +515,7 @@ export class Interpreter {
         break;
       default:
         console.error(`Unrecognized node type: ${node.type}`);
+        this.updateCallback({ command: 'error', error: `Unrecognized node type: ${node.type}` });
     }
   }
 
@@ -523,7 +544,9 @@ export class Interpreter {
       case '^':   return left ^ right;
       case 'in':  return left in right;
       // Add other operators as needed, possibly power operator and such
-      default: console.error(`Unrecognized operator: ${operator}`);
+      default:
+        console.error(`Unrecognized operator: ${operator}`);
+        this.updateCallback({ command: 'error', error: `Unrecognized operator: ${operator}` });
     }
   }
 
@@ -554,6 +577,7 @@ export class Interpreter {
         break;
       default:
         console.log('expression type not implemented yet');
+        this.updateCallback({ command: 'error', error: `Expression type not implemented yet: ${node.type}` });
     }
   }
 
@@ -648,7 +672,7 @@ export class Interpreter {
         const properties = environment.returnValues.pop();
         const object = environment.returnValues.pop();
 
-        const newValue = this.updateMemberAssignmentValue(oldValue, operator, value);
+        const newValue = this.handleAssignmentOperation(oldValue, operator, value);
         
         this.removeCurrentEnvironment();
         if (object.type === 'Identifier') {
@@ -664,7 +688,7 @@ export class Interpreter {
     }
   }
 
-  updateMemberAssignmentValue(oldValue, operator, value) {
+  handleAssignmentOperation(oldValue, operator, value) {
     switch (operator) {
       case "=": return value;
       case "+=": return oldValue + value;
@@ -680,6 +704,7 @@ export class Interpreter {
       case "^=": return oldValue ^ value;
       default:
         console.error("unknown operator: " + operator);
+        this.updateCallback({ command: 'error', error: `Unrecognized operator: ${operator}` });
         return oldValue;
     }
   }
@@ -721,24 +746,13 @@ export class Interpreter {
         const operator = node.operator;
 
         const oldValue = this.lookupVariableValue(varName, this.getCurrentEnvironment());
-        let newValue = oldValue;
-
-        if (operator === "=") newValue = value;
-        else if (operator === "+=") newValue = oldValue + value;
-        else if (operator === "-=") newValue = oldValue - value;
-        else if (operator === "*=") newValue = oldValue * value;
-        else if (operator === "/=") newValue = oldValue / value;
-        else if (operator === "%=") newValue = oldValue % value;
-        else if (operator === "<<=") newValue = oldValue << value;
-        else if (operator === ">>=") newValue = oldValue >> value;
-        else if (operator === ">>>=") newValue = oldValue >>> value;
-        else if (operator === "&=") newValue = oldValue & value;
-        else if (operator === "|=") newValue = oldValue | value;
-        else if (operator === "^=") newValue = oldValue ^ value;
-        else {
-          console.error("unknown operator: " + operator);
+        // if the variable is not found and operator is '=' create it in the global scope (example: num = 4)
+        if (oldValue === null && operator === '=') {
+          this.createVariable(varName, undefined, this.globalEnvironment);
         }
-        
+
+        const newValue = this.handleAssignmentOperation(oldValue, operator, value);
+
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
         this.updateVariableValue(varName, newValue, this.getCurrentEnvironment());
@@ -868,6 +882,7 @@ export class Interpreter {
         else if (operator === "void") result = void value;
         else {
           console.error("unknown operator: " + operator);
+          this.updateCallback({ command: 'error', error: `Unrecognized operator: ${operator}` });
         }
 
         this.getCurrentEnvironment().returnValues.push(result);
@@ -942,18 +957,25 @@ export class Interpreter {
         const identifier = (object.type === 'Identifier') ? object.name : null;
 
         let objectValue = this.lookupVariableValue(identifier, this.getCurrentEnvironment());
-        for (let i = 0; i < properties.length; i++) {
-          objectValue = objectValue[properties[i]];
+        let value = undefined;
+        if (objectValue === null) {
+          console.error(`Expression interpreter error: Variable ${identifier} not found`);
+          this.updateCallback({ command: 'error', error: `Identifier '${identifier}' is not defined` });
+        } else {
+          for (let i = 0; i < properties.length; i++) {
+            objectValue = objectValue[properties[i]];
+          }
+          
+          value = objectValue;
+          if (operator === '++') value++;
+          else if (operator === '--') value--;
+          else console.error("weird error, operator not found");
+          
+          this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
         }
-        
-        let value = objectValue;
-        if (operator === '++') value++;
-        else if (operator === '--') value--;
-        else console.error("weird error, operator not found");
 
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
         
         if (node.prefix) environment.returnValues.push(value);
         else environment.returnValues.push(objectValue);
