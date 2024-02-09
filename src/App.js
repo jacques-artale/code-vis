@@ -30,7 +30,9 @@ function App() {
   const [interpretSpeed, setInterpretSpeed] = useState(5);        // index for `interpreterSpeeds` between interpreter calls
   const [desiredSpeed, setDesiredSpeed] = useState(5);            // index for `interpreterSpeeds` between interpreter calls
 
-  const [scopes, setScopes] = useState([]);                       // [{}, ...]
+  const [scopes, setScopes] = useState([
+    //{ id: 0, name: 'Global', variables: [], arrayVariables: [['a', [1,2,3,4,5]], ['b', [6,[1,2,3,4],8,9,10]], ['c', [[11,12,13],[1,2,[21,4,1]],15]]]}
+  ]);                       // [{}, ...]
   const [log, setLog] = useState([]);                             // [line, line, ...]
 
   const [highlights, setHighlights] = useState([]);               // [[startLine, startColumn, endLine, endColumn], ...]

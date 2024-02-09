@@ -4,7 +4,7 @@ function ArrayCell({ value, theme, highlight }) {
   return (
     <div
       style={{
-        width: '25px',
+        minWidth: '25px',
         height: '25px',
         border: `1px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`,
         display: 'flex',
@@ -13,7 +13,11 @@ function ArrayCell({ value, theme, highlight }) {
         backgroundColor: highlight ? '#0099ff' : 'transparent'
       }}
     >
-      {value}
+      <div style={{ margin: '5px' }}>
+        {
+          value
+        }
+      </div>
     </div>
   )
 }

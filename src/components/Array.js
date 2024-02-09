@@ -1,10 +1,16 @@
 import React from 'react';
 import ArrayCell from './ArrayCell';
+import ArrayTree from './ArrayTree';
 
 const ArrayGrid = ({ name, values, varChange, theme }) => {
 
-  // Check if the array is one-dimensional
-  const isOneDimensional = values === undefined ? false : values.every((item) => !Array.isArray(item));
+  function getArrayDepth(arr) {
+    return Array.isArray(arr) ? 1 + Math.max(...arr.map(getArrayDepth)) : 0;
+  }
+
+  // Check the depth of the array
+  const isOneDimensional = values !== undefined ? getArrayDepth(values) === 1 : false;
+  const isTwoDimensional = values !== undefined ? getArrayDepth(values) === 2 : false;
 
   // Function to render a single cell
   const renderCell = ({value, index, row}) => {
@@ -16,7 +22,7 @@ const ArrayGrid = ({ name, values, varChange, theme }) => {
     return (
       <div key={`cell-${row}-${index}`}>
         {
-          row === 0 && <p style={{ color: color, margin: 0, width: '25px', height: '25px', textAlign: 'center' }}>{index}</p>
+          row === 0 && <p style={{ color: color, margin: 0, textAlign: 'center' }}>{index}</p>
         }
         <ArrayCell value={value} theme={theme} highlight={highlight}/>
       </div>
@@ -32,17 +38,33 @@ const ArrayGrid = ({ name, values, varChange, theme }) => {
 
     return (
       <div key={`row-${rowIndex}`} style={{ display: 'flex' }}>
-        <div style={{width: '25px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
-          <p style={{ margin: 0, color: color }}>{rowIndex}</p>
-        </div>
+        {
+          !isOneDimensional &&
+          <div style={{width: '25px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
+            <p style={{ margin: 0, color: color }}>{rowIndex}</p>
+          </div>
+        }
         {cells.map((cell, index) => renderCell({ value: cell, index, row: rowIndex }))}
       </div>
     );
   };
 
+  const renderArrayTree = (arr) => {
+    return (
+      <div>
+        <ArrayTree values={arr} theme={theme}/>
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {name} = {values === undefined ? "undefined" : isOneDimensional ? renderRow(values, 0) : values.map(renderRow)}
+      {name} = {
+        values === undefined ? "undefined" :
+        isOneDimensional ? renderRow(values, 0) :
+        isTwoDimensional ? values.map(renderRow) :
+        renderArrayTree(values)
+      }
     </div>
   );
 };
