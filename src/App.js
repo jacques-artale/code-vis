@@ -136,6 +136,7 @@ function App() {
   function handleStop() {
     manageExecutionInterval(null, 0, false);
     setHighlights([]);
+    setActiveNode(null);
 
     setShowStart(true);
     setShowStop(false);

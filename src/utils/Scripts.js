@@ -55,8 +55,8 @@ for (var i = 0; i < arr.length / 2; i++) {
   }
 }
 
-var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-var target = 6;
+var arr = [1, 3, 4, 7, 12, 13, 18, 23, 42];
+var target = 23;
 var result = binarySearch(target, arr);
 
 console.log("Target found at index: " + result);
