@@ -4,6 +4,7 @@ function ArrayCell({ value, theme, highlight }) {
   return (
     <div
       style={{
+        boxSizing: 'border-box',
         minWidth: '25px',
         height: '25px',
         border: `1px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`,

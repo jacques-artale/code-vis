@@ -75,16 +75,31 @@ const ArrayTree = ({ values, varChange, theme }) => {
             {
               row.map((cluster, clusterIndex) => {
                 return (
-                  <div key={`cluster-${cluster.id}`} id={`cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
-                    {
-                    cluster.cells.map((cell) => {
-                      return (
-                        <div key={`cell-${cell.id}`} id={`cell-${cell.id}`}>
-                          <ArrayCell value={cell.value} theme={theme} highlight={highlight === cell.id}/>
-                        </div>
-                      );
-                    })
-                    }
+                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
+                      {
+                        cluster.cells.map((cell, cellIndex) => {
+                          return (
+                            <div key={`cell-index-${cell.id}`} style={{width: '25px', height: '25px', display: 'flex', justifyContent: 'center' }}>
+                              <p style={{ margin: 0 }}>{cellIndex}</p>
+                            </div>
+                          )
+                        })
+                      }
+                    </div>
+                    <div key={`cluster-${cluster.id}`} id={`cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
+                      {
+                        cluster.cells.map((cell) => {
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'row' }} key={`cell-${cell.id}`}>
+                              <div id={`cell-${cell.id}`}>
+                                <ArrayCell value={cell.value} theme={theme} highlight={highlight === cell.id}/>
+                              </div>
+                            </div>
+                          );
+                        })
+                      }
+                    </div>
                   </div>
                 );
               })
