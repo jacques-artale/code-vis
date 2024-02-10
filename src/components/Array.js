@@ -18,7 +18,7 @@ const ArrayGrid = ({ name, values, varChange, theme }) => {
     const color = theme === 'sketch' ? '#062746' : '#f5e8df';
     const highlight = varChange !== null && (
       (isOneDimensional && varChange.properties[0] === index) ||
-      (!isOneDimensional && varChange.properties[0] === row && varChange.properties[1] === index)
+      (isTwoDimensional && varChange.properties[0] === row && varChange.properties[1] === index)
     );
     return (
       <div key={`cell-${row}-${index}`}>
@@ -53,7 +53,7 @@ const ArrayGrid = ({ name, values, varChange, theme }) => {
   const renderArrayTree = (arr) => {
     return (
       <div>
-        <ArrayTree values={arr} theme={theme}/>
+        <ArrayTree values={arr} varChange={varChange} theme={theme}/>
       </div>
     )
   }

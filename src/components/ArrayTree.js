@@ -1,38 +1,67 @@
-import React, {  } from 'react';
+import React, { useState, useEffect } from 'react';
 import ArrayCell from './ArrayCell';
 import Xarrow from 'react-xarrows';
 
-const ArrayTree = ({ values, theme }) => {
+const ArrayTree = ({ values, varChange, theme }) => {
+
+  const [highlight, setHighlight] = useState(null);
+
+  const valuesWithIds = assignCellId(values);
+
+  useEffect(() => {
+    if (varChange !== null && values !== null) {
+      let currentCell = { value: valuesWithIds };
+      for (let i = 0; i < varChange.properties.length; i++) {
+        currentCell = currentCell.value[varChange.properties[i]];
+      }
+      setHighlight(currentCell.id);
+    }
+  }, [varChange, values]);
+
+  function assignCellId(arr) {
+    let cellId = 0;
+  
+    function assign(arr) {
+      return arr.map((cell) => {
+        if (Array.isArray(cell)) {
+          return { value: assign(cell), id: cellId++ };
+        } else {
+          return { value: cell, id: cellId++ };
+        }
+      });
+    }
+  
+    return assign(arr);
+  }
 
   const renderTree = () => {
+    // Traverse the array and build the tree
     let clusterId = 0;
-    let cellId = 0;
-
     let arrows = []; // [[starClusterId, endClusterId], ...]
     let rows = []; // [row, row, ...] where row = [cluster, cluster, ...] where cluster = [cell, cell, ...]
-    let queue = [{ cluster: values, id: clusterId }]; // [cluster, cluster, ...]
+    let queue = [{ value: valuesWithIds, id: clusterId++ }]; // [cluster, cluster, ...]
+
     while (queue.length > 0) {
       let clusters = [];
       let clustersCount = queue.length;
       // iterate through the current row
       for (let i = 0; i < clustersCount; i++) {
-        let { cluster: current, id: currentId} = queue.shift();
+        let currentCluster = queue.shift();
         // iterate through the current array of cells in the row
         let cells = [];
-        for (let cell of current) {
-          cellId++;
+        for (let cell of currentCluster.value) {
           // if the cell is an array, add it to the queue to be processed in the next row and add an empty cell component to the current row
           // otherwise, add a cell component to the current row with the value
-          if (Array.isArray(cell)) {
+          if (Array.isArray(cell.value)) {
             clusterId++;
-            queue.push({ cluster: cell, id: clusterId });
-            cells.push({ value: '[]', id: cellId });
-            arrows.push([cellId, clusterId]);
+            queue.push({ value: cell.value, id: clusterId });
+            cells.push({ ...cell, value: '[]' });
+            arrows.push([cell.id, clusterId]);
           } else {
-            cells.push({ value: cell, id: cellId });
+            cells.push(cell);
           }
         }
-        clusters.push({ cells, id: currentId });
+        clusters.push({ cells, id: currentCluster.id });
       }
       rows.push(clusters);
     }
@@ -51,7 +80,7 @@ const ArrayTree = ({ values, theme }) => {
                     cluster.cells.map((cell) => {
                       return (
                         <div key={`cell-${cell.id}`} id={`cell-${cell.id}`}>
-                          <ArrayCell value={cell.value} theme={theme}/>
+                          <ArrayCell value={cell.value} theme={theme} highlight={highlight === cell.id}/>
                         </div>
                       );
                     })
