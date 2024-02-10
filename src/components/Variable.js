@@ -34,7 +34,11 @@ function Variable({ name, value, varChange }) {
   function renderPrimitive() {
     return (
       <p style={{ margin: '0px' }}>
-        {name} = {value === undefined ? "undefined" : value}
+        {name} = {
+          value === undefined ? "undefined" :
+          value === '' ? '""' :
+          value
+        }
       </p>
     );
   }

@@ -9,8 +9,9 @@ const ArrayGrid = ({ name, values, varChange, theme }) => {
   }
 
   // Check the depth of the array
-  const isOneDimensional = values !== undefined ? getArrayDepth(values) === 1 : false;
-  const isTwoDimensional = values !== undefined ? getArrayDepth(values) === 2 : false;
+  const valuesDepth = values !== undefined ? getArrayDepth(values) : 0;
+  const isOneDimensional = valuesDepth === 1;
+  const isTwoDimensional = valuesDepth === 2;
 
   // Function to render a single cell
   const renderCell = ({value, index, row}) => {
@@ -61,6 +62,7 @@ const ArrayGrid = ({ name, values, varChange, theme }) => {
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {name} = {
         values === undefined ? "undefined" :
+        values.length === 0 ? "[]" :
         isOneDimensional ? renderRow(values, 0) :
         isTwoDimensional ? values.map(renderRow) :
         renderArrayTree(values)

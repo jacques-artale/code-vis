@@ -31,7 +31,7 @@ function App() {
   const [desiredSpeed, setDesiredSpeed] = useState(5);            // index for `interpreterSpeeds` between interpreter calls
 
   const [scopes, setScopes] = useState([
-    //{ id: 0, name: 'Global', variables: [], arrayVariables: [['a', [1,2,3,4,5]], ['b', [6,[1,2,3,4],8,9,10]], ['c', [[11,12,13],[1,2,[21,4,1]],15]]]}
+    //{ id: 0, name: 'Global', variables: [], arrayVariables: [['a', [1,2,3,4,5]], ['b', [6,[1,2,3,4],8,9,10]], ['c', [[[1,2],3],[4],[5,[[6,7],8,9],10],[11,[12]]]   ]]}
   ]);                       // [{}, ...]
   const [log, setLog] = useState([]);                             // [line, line, ...]
 
@@ -142,6 +142,9 @@ function App() {
     manageExecutionInterval(null, 0, false);
     setHighlights([]);
     setActiveNode(null);
+    setUpdatedVariable(null);
+    setCreatedVariable(null);
+    setAccessedVariable(null);
 
     setShowStart(true);
     setShowStop(false);
