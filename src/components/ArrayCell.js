@@ -16,6 +16,10 @@ function ArrayCell({ value, theme, highlight }) {
     >
       <div style={{ margin: '5px' }}>
         {
+          value === undefined ? "undefined" :
+          value === '' ? '""' :
+          value === true ? 'true' :
+          value === false ? 'false' :
           value
         }
       </div>

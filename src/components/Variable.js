@@ -37,6 +37,8 @@ function Variable({ name, value, varChange }) {
         {name} = {
           value === undefined ? "undefined" :
           value === '' ? '""' :
+          value === true ? 'true' :
+          value === false ? 'false' :
           value
         }
       </p>
