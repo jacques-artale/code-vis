@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import ArrayCell from './ArrayCell';
 import Xarrow from 'react-xarrows';
 
-const ArrayTree = ({ values, varChange, theme }) => {
+const ArrayTree = ({ values, varChange, varAccess, theme }) => {
 
-  const [highlight, setHighlight] = useState(null); // id of the cell to highlight
+  const [changed, setChanged] = useState(null); // id of the cell to highlight
+  const [accessed, setAccessed] = useState(null); // id of the cell to highlight
 
   const valuesWithIds = assignCellId(values);
 
   /**
-   * Highlight the cell that was changed.
+   * Highlight the cell that was changed
    */
   useEffect(() => {
     if (varChange !== null && values !== null) {
@@ -17,9 +18,22 @@ const ArrayTree = ({ values, varChange, theme }) => {
       for (let i = 0; i < varChange.properties.length; i++) {
         currentCell = currentCell.value[varChange.properties[i]];
       }
-      setHighlight(currentCell.id);
+      setChanged(currentCell.id);
     }
   }, [varChange, values]);
+
+  /**
+   * Highlight the cell that was accessed
+   */
+  useEffect(() => {
+    if (varAccess !== null && values !== null) {
+      let currentCell = { value: valuesWithIds };
+      for (let i = 0; i < varAccess.properties.length; i++) {
+        currentCell = currentCell.value[varAccess.properties[i]];
+      }
+      setAccessed(currentCell.id);
+    }
+  }, [varAccess, values]);
 
   /**
    * Assigns a unique ID to each cell in the given array tree.
@@ -113,7 +127,7 @@ const ArrayTree = ({ values, varChange, theme }) => {
                           return (
                             <div key={`cell-${cell.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
                               <div id={`cell-${cell.id}`}>
-                                <ArrayCell value={cell.value} theme={theme} highlight={highlight === cell.id}/>
+                                <ArrayCell value={cell.value} theme={theme} changed={changed === cell.id} accessed={accessed === cell.id}/>
                               </div>
                             </div>
                           );

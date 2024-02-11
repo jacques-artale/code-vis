@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ArrayCell({ value, theme, highlight }) {
+function ArrayCell({ value, theme, changed, accessed }) {
   return (
     <div
       style={{
@@ -11,7 +11,7 @@ function ArrayCell({ value, theme, highlight }) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: highlight ? '#0099ff' : 'transparent'
+        backgroundColor: changed ? '#0099ff' : accessed ? '#e6b400' : 'transparent'
       }}
     >
       <div style={{ margin: '5px' }}>

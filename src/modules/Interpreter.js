@@ -168,6 +168,23 @@ export class Interpreter {
     return value;
   }
 
+  lookupVariableScope(name, environment) {
+    let currentEnvironment = environment;
+    while (currentEnvironment !== null) {
+      if (name in currentEnvironment.variables) {
+        return currentEnvironment;
+      }
+      if (name in currentEnvironment.arrayVariables) {
+        return currentEnvironment;
+      }
+      if (name in currentEnvironment.objectVariables) {
+        return currentEnvironment;
+      }
+      currentEnvironment = currentEnvironment.parentEnvironment;
+    }
+    return null;
+  }
+
   updateVariableValue(name, value, environment) {
     // find and update the variable in the environment
     let currentEnvironment = environment;
@@ -1168,7 +1185,10 @@ export class Interpreter {
         const objectProperties = object.properties;
         const objectIdentifier = object.identifier;
         const propertyValue = property.value;
+        const name = node.object.type === 'Identifier' ? node.object.name : objectIdentifier ? objectIdentifier : null;
+        const properties = objectProperties ? [...objectProperties, propertyValue] : [propertyValue];
 
+        // check if the property is not found in the object
         if (propertyValue !== 'length' && objectValue[propertyValue] === undefined) {
           console.error(`Expression interpreter error: Property ${propertyValue} not found in object`);
           this.updateCallback({ command: 'error', error: `Property '${propertyValue}' is not defined for '${objectValue}'` });
@@ -1176,10 +1196,16 @@ export class Interpreter {
           break;
         }
 
+        // send update callback for accessing the variable member
+        const variableScope = this.lookupVariableScope(name, environment);
+        if (variableScope !== null) {
+          this.updateCallback({ command: 'accessVariable', scopeId: variableScope.id, name: name, properties: properties });
+        }
+
         const returnValue = {
           value: propertyValue === 'length' ? objectValue.length : objectValue[propertyValue],
-          identifier: node.object.type === 'Identifier' ? node.object.name : objectIdentifier ? objectIdentifier : null,
-          properties: objectProperties ? [...objectProperties, propertyValue] : [propertyValue],
+          identifier: name,
+          properties: properties,
         }
 
         environment.returnValues.push(returnValue);
