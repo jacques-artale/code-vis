@@ -1169,6 +1169,13 @@ export class Interpreter {
         const objectIdentifier = object.identifier;
         const propertyValue = property.value;
 
+        if (propertyValue !== 'length' && objectValue[propertyValue] === undefined) {
+          console.error(`Expression interpreter error: Property ${propertyValue} not found in object`);
+          this.updateCallback({ command: 'error', error: `Property '${propertyValue}' is not defined for '${objectValue}'` });
+          environment.returnValues.push({ value: undefined });
+          break;
+        }
+
         const returnValue = {
           value: propertyValue === 'length' ? objectValue.length : objectValue[propertyValue],
           identifier: node.object.type === 'Identifier' ? node.object.name : objectIdentifier ? objectIdentifier : null,
@@ -1259,10 +1266,16 @@ export class Interpreter {
         const value = evaluate.value;
         const identifier = node.callee.object.name;
         const result = [...value, argumentValue];
+        const name = evaluate.identifier ? evaluate.identifier : identifier;
+        const properties = evaluate.properties;
         this.removeCurrentEnvironment();
 
-        this.updateVariableValue(identifier, result, this.getCurrentEnvironment());
-        //this.updateVariableProperty();
+        if (properties) {
+          this.updateVariableProperty(name, properties, result, this.getCurrentEnvironment());
+        } else {
+          this.updateVariableValue(identifier, result, this.getCurrentEnvironment());
+        }
+
         environment.returnValues.push({ value: argumentValue });
         break;
       default:

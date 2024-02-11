@@ -20,6 +20,7 @@ function ArrayCell({ value, theme, highlight }) {
           value === '' ? '""' :
           value === true ? 'true' :
           value === false ? 'false' :
+          value.length === 0 ? "[]" :
           value
         }
       </div>
