@@ -4,10 +4,13 @@ import Xarrow from 'react-xarrows';
 
 const ArrayTree = ({ values, varChange, theme }) => {
 
-  const [highlight, setHighlight] = useState(null);
+  const [highlight, setHighlight] = useState(null); // id of the cell to highlight
 
   const valuesWithIds = assignCellId(values);
 
+  /**
+   * Highlight the cell that was changed.
+   */
   useEffect(() => {
     if (varChange !== null && values !== null) {
       let currentCell = { value: valuesWithIds };
@@ -18,6 +21,12 @@ const ArrayTree = ({ values, varChange, theme }) => {
     }
   }, [varChange, values]);
 
+  /**
+   * Assigns a unique ID to each cell in the given array tree.
+   *
+   * @param {Array} arr - The array tree to assign IDs to.
+   * @returns {Array} - The array tree with assigned IDs.
+   */
   function assignCellId(arr) {
     let cellId = 0;
   
@@ -74,8 +83,18 @@ const ArrayTree = ({ values, varChange, theme }) => {
             <div key={`row-${rowIndex}`} style={{ marginLeft: `${rowIndex !== 0 ? 50 : 0}px` }}>
             {
               row.map((cluster, clusterIndex) => {
+                /** If cluster is an empty array we display '[]' */
+                if (cluster.cells.length === 0) {
+                  return (
+                    <div key={`cluster-${clusterIndex}`} id={`cluster-${cluster.id}`}>
+                      <p style={{ margin: 0 }}>[]</p>
+                    </div>
+                  );
+                }
+                /** Display cluster */
                 return (
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  <div key={`cluster-${cluster.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
+                    {/* Index numbers for each cell */}
                     <div style={{ display: 'flex', flexDirection: 'column', marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
                       {
                         cluster.cells.map((cell, cellIndex) => {
@@ -87,11 +106,12 @@ const ArrayTree = ({ values, varChange, theme }) => {
                         })
                       }
                     </div>
-                    <div key={`cluster-${cluster.id}`} id={`cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
+                    {/* Cells in the cluster */}
+                    <div id={`cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
                       {
                         cluster.cells.map((cell) => {
                           return (
-                            <div style={{ display: 'flex', flexDirection: 'row' }} key={`cell-${cell.id}`}>
+                            <div key={`cell-${cell.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
                               <div id={`cell-${cell.id}`}>
                                 <ArrayCell value={cell.value} theme={theme} highlight={highlight === cell.id}/>
                               </div>
