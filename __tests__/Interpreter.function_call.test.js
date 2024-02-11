@@ -144,6 +144,23 @@ describe('Function call', () => {
     });
   });
 
+  test('Function call to push method', () => {
+    const operations = [
+      { code: 'var a = [1,2,3]; a.push(4);', expected: [['a', [1,2,3,4]]] },
+      { code: 'var a = [1,2,3]; var b = 4; a.push(b);', expected: [['a', [1,2,3,4]]] },
+      { code: 'var a = [1,2,3]; a.push(2 + 3);', expected: [['a', [1,2,3,5]]] },
+      { code: 'var a = [[1], [2], [3]]; a.push([4]);', expected: [['a', [[1],[2],[3],[4]]]] },
+      { code: 'var a = [[1,2,3]]; a[0].push(4);', expected: [['a', [[1,2,3,4]]]] },
+    ];
+
+    operations.forEach(({ code, expected }) => {
+      arrayVariables = [];
+
+      interpret(code);
+      expect(arrayVariables).toEqual(expected);
+    });
+  });
+
   test('Function call with arithmetic expression argument', () => {
     const code = 'function a(b) { return b; } var c = a(1 + 2);';
     interpret(code);    

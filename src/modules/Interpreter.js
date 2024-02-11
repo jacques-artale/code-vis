@@ -475,11 +475,11 @@ export class Interpreter {
 
     switch (node.type) {
       case 'Literal':
-        environment.returnValues.push(node.value);
+        environment.returnValues.push({ value: node.value });
         break;
       case 'Identifier':
         const value = this.lookupVariableValue(node.name, this.getCurrentEnvironment());
-        environment.returnValues.push(value);
+        environment.returnValues.push({ value: value });
         break;
       case 'AssignmentExpression':
         return this.interpretAssignmentExpression(node);
@@ -633,8 +633,8 @@ export class Interpreter {
       }
       case 'property': { // adds the property value to the properties array
         environment.executionState.phase = 'init';
-        const property = environment.returnValues.pop();
-        const properties = [...environment.returnValues.pop(), property];
+        const init = environment.returnValues.pop();
+        const properties = [...environment.returnValues.pop(), init.value];
         environment.returnValues.push(properties);
 
         this.gotoNextInstruction();
@@ -652,7 +652,8 @@ export class Interpreter {
       }
       case 'evaluate': { // finds the value of the final property and evaluates the right side of the assignment
         environment.executionState.phase = 'end';
-        const objectValue = environment.returnValues.pop();
+        const object = environment.returnValues.pop();
+        const objectValue = object.value;
         const properties = environment.returnValues.pop();
         
         let oldValue = objectValue;
@@ -667,7 +668,8 @@ export class Interpreter {
       }
       case 'end': { // updates the value of the final property
         const operator = node.operator;
-        const value = environment.returnValues.pop();
+        const evaluate = environment.returnValues.pop();
+        const value = evaluate.value;
         const oldValue = environment.returnValues.pop();
         const properties = environment.returnValues.pop();
         const object = environment.returnValues.pop();
@@ -715,7 +717,7 @@ export class Interpreter {
     if (computed) {
       this.interpretExpression(property);
     } else {
-      if (property.type === 'Identifier') this.getCurrentEnvironment().returnValues.push(property.name);
+      if (property.type === 'Identifier') this.getCurrentEnvironment().returnValues.push({ value: property.name });
       else console.error("property is not an identifier");
     }
   }
@@ -741,7 +743,8 @@ export class Interpreter {
         break;
       case 'end':
         environment.executionState.phase = 'end';
-        const value = environment.returnValues.pop();
+        const init = environment.returnValues.pop();
+        const value = init.value;
         const varName = node.left.name;
         const operator = node.operator;
 
@@ -790,14 +793,16 @@ export class Interpreter {
         this.interpretExpression(node.right);
         break;
       case 'end':
-        const rightResult = environment.returnValues.pop();
-        const leftResult = environment.returnValues.pop();
+        const right = environment.returnValues.pop();
+        const left = environment.returnValues.pop();
+        const rightResult = right.value;
+        const leftResult = left.value;
         const operator = node.operator;
 
         this.removeCurrentEnvironment();
 
         const result = this.evaluateBinaryExpression(leftResult, rightResult, operator);
-        this.getCurrentEnvironment().returnValues.push(result);
+        this.getCurrentEnvironment().returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -831,14 +836,16 @@ export class Interpreter {
         this.interpretExpression(node.right);
         break;
       case 'end':
-        const rightResult = environment.returnValues.pop();
-        const leftResult = environment.returnValues.pop();
+        const right = environment.returnValues.pop();
+        const left = environment.returnValues.pop();
+        const rightResult = right.value;
+        const leftResult = left.value;
         const operator = node.operator;
         const result = this.evaluateBinaryExpression(leftResult, rightResult, operator);
 
         this.removeCurrentEnvironment();
 
-        this.getCurrentEnvironment().returnValues.push(result);
+        this.getCurrentEnvironment().returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -868,7 +875,8 @@ export class Interpreter {
         this.interpretExpression(node.argument);
         break;
       case 'end':
-        const value = environment.returnValues.pop();
+        const evaluate = environment.returnValues.pop();
+        const value = evaluate.value;
         const operator = node.operator;
 
         this.removeCurrentEnvironment();
@@ -885,7 +893,7 @@ export class Interpreter {
           this.updateCallback({ command: 'error', error: `Unrecognized operator: ${operator}` });
         }
 
-        this.getCurrentEnvironment().returnValues.push(result);
+        this.getCurrentEnvironment().returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -943,7 +951,8 @@ export class Interpreter {
       }
       case 'property': { // adds the property value to the properties array
         environment.executionState.phase = 'init';
-        const property = environment.returnValues.pop();
+        const init = environment.returnValues.pop();
+        const property = init.value;
         const properties = [...environment.returnValues.pop(), property];
         environment.returnValues.push(properties);
 
@@ -976,9 +985,11 @@ export class Interpreter {
 
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        
-        if (node.prefix) environment.returnValues.push(value);
-        else environment.returnValues.push(objectValue);
+
+        const returnValue = {
+          value: (node.prefix) ? value : objectValue
+        }
+        environment.returnValues.push(returnValue);
         break;
       }
       default:
@@ -1000,8 +1011,11 @@ export class Interpreter {
 
     this.updateVariableValue(varName, value, this.getCurrentEnvironment());
 
-    if (node.prefix) this.getCurrentEnvironment().returnValues.push(value);
-    else this.getCurrentEnvironment().returnValues.push(oldValue);
+    const returnValue = {
+      value: node.prefix ? value : oldValue
+    }
+
+    this.getCurrentEnvironment().returnValues.push(returnValue);
   }
 
   interpretCallExpression(node) {
@@ -1030,26 +1044,28 @@ export class Interpreter {
       environment = newEnvironment;
     }
 
-    const argument = this.getNextInstruction();
+    const argumentDeclaration = this.getNextInstruction();
 
     const functionDeclaration = this.lookupFunction(node.callee.name);
     switch (environment.executionState.phase) {
-      case 'init': {
-        if (argument === null) environment.executionState.phase = 'call';
+      case 'init': { // TODO: unececssary phase, remove it
+        if (argumentDeclaration === null) environment.executionState.phase = 'call';
         else environment.executionState.phase = 'argument';
         break;
       }
       case 'argument': {
         environment.executionState.phase = 'declare';
-        this.interpretExpression(argument);
+        this.interpretExpression(argumentDeclaration);
         break;
       }
       case 'declare': {
         environment.executionState.phase = 'init';
         const instructionPointer = environment.executionState.instructionPointer;
-        const argumentValue = environment.returnValues.pop();
+        const argument = environment.returnValues.pop();
+        const argumentValue = argument.value;
         const parameter = functionDeclaration.parameters[instructionPointer];
-        this.handleVariableCreation(argument.type, parameter.name, argumentValue, environment, argument.name);
+
+        this.handleVariableCreation(argumentDeclaration.type, parameter.name, argumentValue, environment, argumentDeclaration.name);
         this.gotoNextInstruction();
         if (this.getNextInstruction() !== null) break;
       }
@@ -1071,10 +1087,11 @@ export class Interpreter {
         break;
       }
       case 'end': {
-        const value = environment.returnValues.pop();
+        const call = environment.returnValues.pop();
+        const callReturnValue = call ? call.value : undefined;
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(value); // pass the return value to the previous environment
+        environment.returnValues.push({ value: callReturnValue }); // pass the return value to the previous environment
         break;
       }
       default:
@@ -1147,8 +1164,18 @@ export class Interpreter {
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
 
-        if (property === 'length') environment.returnValues.push(object.length);
-        else environment.returnValues.push(object[property]);
+        const objectValue = object.value;
+        const objectProperties = object.properties;
+        const objectIdentifier = object.identifier;
+        const propertyValue = property.value;
+
+        const returnValue = {
+          value: propertyValue === 'length' ? objectValue.length : objectValue[propertyValue],
+          identifier: node.object.type === 'Identifier' ? node.object.name : objectIdentifier ? objectIdentifier : null,
+          properties: objectProperties ? [...objectProperties, propertyValue] : [propertyValue],
+        }
+
+        environment.returnValues.push(returnValue);
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1179,7 +1206,8 @@ export class Interpreter {
         break;
       case 'consequent':
         environment.executionState.phase = 'end';
-        const testResult = environment.returnValues.pop();
+        const test = environment.returnValues.pop();
+        const testResult = test.value;
         if (testResult) {
           this.interpretExpression(node.consequent);
         } else {
@@ -1187,10 +1215,11 @@ export class Interpreter {
         }
         break;
       case 'end':
-        const value = environment.returnValues.pop();
+        const consequent = environment.returnValues.pop();
+        const value = consequent.value;
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(value);
+        environment.returnValues.push({ value: value });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1210,12 +1239,12 @@ export class Interpreter {
       this.addNewEnvironment(newEnvironment);
 
       newEnvironment.executionState.type = 'arrayPush';
-      newEnvironment.executionState.phase = 'value';
+      newEnvironment.executionState.phase = 'evaluate';
       environment = newEnvironment;
     }
 
     switch (environment.executionState.phase) {
-      case 'value':
+      case 'evaluate':
         environment.executionState.phase = 'argument';
         this.interpretExpression(node.callee.object);
         break;
@@ -1225,13 +1254,16 @@ export class Interpreter {
         break;
       case 'end':
         const argument = environment.returnValues.pop();
-        const value = environment.returnValues.pop();
+        const argumentValue = argument.value;
+        const evaluate = environment.returnValues.pop();
+        const value = evaluate.value;
         const identifier = node.callee.object.name;
-        const result = [...value, argument];
+        const result = [...value, argumentValue];
         this.removeCurrentEnvironment();
 
         this.updateVariableValue(identifier, result, this.getCurrentEnvironment());
-        environment.returnValues.push(argument);
+        //this.updateVariableProperty();
+        environment.returnValues.push({ value: argumentValue });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1270,7 +1302,8 @@ export class Interpreter {
       }
       case 'evaluate': {
         environment.executionState.phase = 'init';
-        const value = environment.returnValues.pop();
+        const init = environment.returnValues.pop();
+        const value = init.value;
         const key = property.key.name;
         const object = environment.returnValues.pop();
         object[key] = value;
@@ -1282,7 +1315,7 @@ export class Interpreter {
         const object = environment.returnValues.pop();
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(object);
+        environment.returnValues.push({ value: object });
         break;
       }
       default:
@@ -1319,7 +1352,8 @@ export class Interpreter {
         break;
       case 'evaluate':
         environment.executionState.phase = 'init';
-        const value = environment.returnValues.pop();
+        const init = environment.returnValues.pop();
+        const value = init.value;
         const array = [...environment.returnValues.pop(), value];
         environment.returnValues.push(array);
         
@@ -1329,7 +1363,7 @@ export class Interpreter {
         const values = environment.returnValues.pop();
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(values);
+        environment.returnValues.push({ value: values });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1389,14 +1423,15 @@ export class Interpreter {
       case 'init':
         environment.executionState.phase = 'declare';
         if (declaration.init !== null) this.interpretExpression(declaration.init);
-        else environment.returnValues.push(undefined);
+        else environment.returnValues.push({ value: undefined });
         break;
       case 'declare':
         environment.executionState.phase = 'init';
         
         const varName = declaration.id.name;
         const parent = environment.parentEnvironment;
-        const value = environment.returnValues.pop();
+        const init = environment.returnValues.pop();
+        const value = init.value;
         const varType = declaration.init !== null ? declaration.init.type : 'Literal';
         const identifier = declaration.init !== null ? declaration.init.name : null;
 
@@ -1523,7 +1558,8 @@ export class Interpreter {
         break;
       case 'consequent':
         environment.executionState.phase = 'end';
-        const testResult = environment.returnValues.pop();
+        const test = environment.returnValues.pop();
+        const testResult = test.value;
         if (testResult) {
           this.executeNodeType(node.consequent);
         } else {
@@ -1569,10 +1605,11 @@ export class Interpreter {
       case 'test':
         environment.executionState.phase = 'body';
         if (node.test !== null) this.interpretExpression(node.test);
-        else environment.returnValues.push(true); // if there is no test, we assume it is true
+        else environment.returnValues.push({ value: true }); // if there is no test, we assume it is true
         break;
       case 'body':
-        const testResult = environment.returnValues.pop();
+        const test = environment.returnValues.pop();
+        const testResult = test.value;
         if (testResult) {
           environment.executionState.phase = 'update';
           this.executeNodeType(node.body); // interpret the body of the for loop
@@ -1613,7 +1650,8 @@ export class Interpreter {
         this.interpretExpression(node.test)
         break;
       case 'body':
-        const testResult = environment.returnValues.pop();
+        const test = environment.returnValues.pop();
+        const testResult = test.value;
         if (testResult) {
           environment.executionState.phase = 'test';
           this.executeNodeType(node.body); // interpret the body of the while loop
@@ -1641,7 +1679,7 @@ export class Interpreter {
 
       newEnvironment.executionState.type = 'doWhile';
       newEnvironment.executionState.phase = 'body';
-      newEnvironment.returnValues.push(true); // this is used to make sure the body is executed at least once
+      newEnvironment.returnValues.push({ value: true }); // this is used to make sure the body is executed at least once
       environment = newEnvironment;
     }
 
@@ -1651,7 +1689,8 @@ export class Interpreter {
         this.interpretExpression(node.test)
         break;
       case 'body':
-        const testResult = environment.returnValues.pop();
+        const test = environment.returnValues.pop();
+        const testResult = test.value;
         if (testResult) {
           environment.executionState.phase = 'test';
           this.executeNodeType(node.body); // interpret the body of the do while loop
@@ -1701,7 +1740,7 @@ export class Interpreter {
         const foundMatch = environment.returnValues.pop();
 
         if (caseNode.test === null) { // is this default case?
-          environment.returnValues.push(true);          // found match is true
+          environment.returnValues.push({ value: true });          // found match is true
           environment.returnValues.push(discriminant);  // push discriminant back onto the stack
           environment.returnValues.push(discriminant);  // test will be discriminant (test === discriminant) to run consequent
         } else {
@@ -1716,10 +1755,12 @@ export class Interpreter {
         const test = environment.returnValues.pop();
         const discriminant = environment.returnValues.pop();
         const foundMatch = environment.returnValues.pop();
+        const testResult = test.value;
+        const discriminantValue = discriminant.value;
         
         this.gotoNextInstruction();
         
-        if (foundMatch || discriminant === test) {
+        if (foundMatch || discriminantValue === testResult) {
           this.interpretSwitchCase(caseNode);             // interpret the body of the case
           environment.returnValues.push(true);            // found match is now true
           environment.returnValues.push(discriminant);    // push discriminant back onto the stack
@@ -1822,7 +1863,8 @@ export class Interpreter {
         this.interpretExpression(node.argument);
         break;
       case 'end':
-        const value = environment.returnValues.pop();
+        const evaluate = environment.returnValues.pop();
+        const value = evaluate ? evaluate.value : undefined;
 
         // purge all environments until we reach a call environment which can handle a return
         let type = environment.executionState.type;
@@ -1833,7 +1875,7 @@ export class Interpreter {
         }
 
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(value); // pass the return value to the parent environment
+        environment.returnValues.push({ value: value }); // pass the return value to the parent environment
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1875,7 +1917,8 @@ export class Interpreter {
       }
       case 'log': {
         environment.executionState.phase = 'init';
-        const newArgument = environment.returnValues.pop();
+        const init = environment.returnValues.pop();
+        const newArgument = init.value;
         const allArguments = environment.returnValues.pop();
         environment.returnValues.push([...allArguments, newArgument]);
         this.gotoNextInstruction();
@@ -1932,10 +1975,12 @@ export class Interpreter {
       case 'end':
         const argument1 = environment.returnValues.pop();
         const argument2 = environment.returnValues.pop();
-        const result = Math.max(argument1, argument2);
+        const arg1Value = argument1.value;
+        const arg2Value = argument2.value;
+        const result = Math.max(arg1Value, arg2Value);
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(result);
+        environment.returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -1971,10 +2016,12 @@ export class Interpreter {
       case 'end':
         const argument1 = environment.returnValues.pop();
         const argument2 = environment.returnValues.pop();
-        const result = Math.min(argument1, argument2);
+        const arg1Value = argument1.value;
+        const arg2Value = argument2.value;
+        const result = Math.min(arg1Value, arg2Value);
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(result);
+        environment.returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -2005,10 +2052,11 @@ export class Interpreter {
         break;
       case 'end':
         const argument = environment.returnValues.pop();
-        const result = Math.abs(argument);
+        const argValue = argument.value;
+        const result = Math.abs(argValue);
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(result);
+        environment.returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);
@@ -2037,10 +2085,11 @@ export class Interpreter {
         break;
       case 'end':
         const argument = environment.returnValues.pop();
-        const result = Math.floor(argument);
+        const argValue = argument.value;
+        const result = Math.floor(argValue);
         this.removeCurrentEnvironment();
         environment = this.getCurrentEnvironment();
-        environment.returnValues.push(result);
+        environment.returnValues.push({ value: result });
         break;
       default:
         console.error("unknown phase: " + environment.executionState.phase);

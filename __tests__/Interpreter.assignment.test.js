@@ -151,12 +151,6 @@ describe('Array assignment', () => {
     expect(arrayVariables).toContainEqual(['a', [[1, 2, 3], [4, 7, 6]]]);
   });
 
-  test('Push to array', () => {
-    const code = 'var a = [1, 2, 3]; a.push(4);';
-    interpret(code);
-    expect(arrayVariables).toEqual([['a', [1, 2, 3, 4]]]);
-  });
-
   test('Assign value to array with function call as index', () => {
     const code = 'function a() { return 1; } var b = [1, 2, 3]; b[a()] = 4;';
     interpret(code);
