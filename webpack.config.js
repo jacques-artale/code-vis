@@ -6,9 +6,19 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: '[name].[contenthash].js',
     publicPath: '/',
+    chunkFilename: '[name].[contenthash].js'
   },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+    },
+  },
+  cache: {
+    type: 'filesystem',
+  },
+  devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
   module: {
     rules: [
       {
@@ -18,6 +28,7 @@ module.exports = {
           loader: "babel-loader",
           options: {
             presets: ["@babel/preset-env", "@babel/preset-react"],
+            cacheDirectory: true,
           }
         },
       },
