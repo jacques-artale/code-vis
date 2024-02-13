@@ -37,7 +37,8 @@ jobs:
             cd code-vis
             eval `ssh-agent -s`
             ssh-add ~/.ssh/jacques_github_deploy_key
-            git pull
+            echo "🔎 Pulling latest changes from GitHub"
+            git pull origin main
             npm install
             npm run aws-build
             pm2 delete all
