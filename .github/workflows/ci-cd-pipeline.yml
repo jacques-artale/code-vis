@@ -27,20 +27,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
-            ${{ secrets.SSH_GITHUB_DEPLOY_KEY }}
       - name: Deploy to AWS EC2
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_GITHUB_DEPLOY_KEY: ${{ secrets.SSH_GITHUB_DEPLOY_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@ec2-51-21-12-246.eu-north-1.compute.amazonaws.com <<EOF
-            cd code-vis
-            echo "🔎 Pulling latest changes from GitHub"
-            git pull origin main
-            npm install
-            npm run aws-build
-            pm2 delete all
+          # Start SSH agent
+          eval "$(ssh-agent -s)"
+          # Add the private key to the system
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          echo "$SSH_GITHUB_DEPLOY_KEY" | tr -d '\r' | ssh-add -
+          # SSH into the server and run commands
+          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@ec2-51-21-12-246.eu-north-1.compute.amazonaws.com <<EOF
+            cd code-vis &&
+            echo "🔎 Pulling latest changes from GitHub" &&
+            git pull origin main &&
+            npm install &&
+            npm run aws-build &&
+            pm2 delete all &&
             pm2 start npm --name "code-vis" -- run start
           EOF
