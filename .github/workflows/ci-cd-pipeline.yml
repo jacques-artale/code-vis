@@ -7,6 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
+  
   build-and-test:
     runs-on: ubuntu-latest
     steps:
@@ -31,8 +32,8 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}        # Used for GitHub Actions to connect to AWS EC2
-            ${{ secrets.SSH_GITHUB_DEPLOY_KEY }}  # Used for GitHub Actions to connect to GitHub repository from AWS EC2
+            ${{ secrets.SSH_PRIVATE_KEY }}
+            ${{ secrets.SSH_GITHUB_DEPLOY_KEY }}
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@ec2-51-21-12-246.eu-north-1.compute.amazonaws.com <<EOF
