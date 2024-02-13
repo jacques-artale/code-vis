@@ -30,13 +30,13 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}        # Used for GitHub Actions to connect to AWS EC2
+            ${{ secrets.SSH_GITHUB_DEPLOY_KEY }}  # Used for GitHub Actions to connect to GitHub repository from AWS EC2
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@ec2-51-21-12-246.eu-north-1.compute.amazonaws.com <<EOF
             cd code-vis
-            eval `ssh-agent -s`
-            ssh-add ~/.ssh/jacques_github_deploy_key
             echo "🔎 Pulling latest changes from GitHub"
             git pull origin main
             npm install
