@@ -2,7 +2,7 @@
 JavaScript Code Visualizer is an interactive tool designed to help developers understand JavaScript code execution visually. Paste or write JavaScript code into the visualizer to step through it incrementally. The visualizer interprets the code and generates corresponding React components to represent the code's behavior.
 
 ## Languages and Frameworks Used
-![My Skills](https://skillicons.dev/icons?i=js,html,css,react,webpack)
+![My Skills](https://skillicons.dev/icons?i=js,html,css,react,webpack,docker)
 
 ## Live-demo
 A live version can be found at: https://www.code-vis.io/
@@ -12,9 +12,10 @@ Before you begin, ensure you have met the following requirements:
 - You have installed the latest version of `node.js`
 - You have installed the latest version of `npm`
 - You have a Linux machine (not tested on Windows/macOS)
+- You have `Docker` installed (Optional)
 
 ## Installing Code-Vis
-1. Run `git clone [repository URL]`
+1. Run `git clone https://github.com/jacques-artale/code-vis.git`
 2. Navigate to the project directory `cd code-vis/`
 3. Install dependencies `npm install`
 
@@ -23,11 +24,15 @@ Before you begin, ensure you have met the following requirements:
 1. `npm run dev` runs the app in the development mode
 2. Open [http://localhost:8080](http://localhost:8080) to view it in your browser.
 #### Production:
-1. `npm build` builds the app for production
-2. `npm start` runs the app in production mode
+1. `npm run build` builds the app for production
+2. `npm run start` runs the app in production mode
+3. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+#### Docker:
+1. `npm run docker:build` builds a docker-image from the application
+2. `npm run docker:run` creates a running container from the image
 3. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 #### Test:
-1. `npm test` runs the tests using Jest
+1. `npm run test` runs the tests using Jest
 
 ## ES6 Compatability - Supported and Pending Features
 | Currently Supported | Pending Support |

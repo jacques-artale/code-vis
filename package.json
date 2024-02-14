@@ -25,6 +25,8 @@
     "start": "node server.js",
     "build": "webpack --mode production",
     "aws-build": "NODE_OPTIONS='--max-old-space-size=4096' webpack --mode production",
+    "docker:build": "docker build -t code-vis .",
+    "docker:run": "docker run -p 3000:3000 code-vis",
     "dev": "webpack serve --mode development --open --hot",
     "test": "jest --coverage --verbose",
     "eject": "react-scripts eject"
