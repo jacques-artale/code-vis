@@ -18,7 +18,7 @@ function App() {
 
   const [theme, setTheme] = useState('sketch');
 
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\n'*/'hello world');
   const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
