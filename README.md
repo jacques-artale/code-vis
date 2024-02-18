@@ -44,8 +44,8 @@ Before you begin, ensure you have met the following requirements:
 |✅ Return|❌ Classes|
 |✅ Binary expressions|❌ Default Parameters|
 |✅ Unary expressions|❌ Map function|
-|✅ Update expressions (x++, x--)||❌ Try-catch|
-|✅ If statements||
+|✅ Update expressions (x++, x--)|❌ Try-catch|
+|✅ If statements|❌ Variable Hoisting|
 |✅ For statements||
 |✅ While statements||
 |✅ Do-while statements||
@@ -62,3 +62,5 @@ Before you begin, ensure you have met the following requirements:
 - ✅ View scopes
 - ✅ View output from console
 - ✅ View AST
+
+For a more detailed description see the [Wiki](https://github.com/jacques-artale/code-vis/wiki).
