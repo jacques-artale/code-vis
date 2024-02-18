@@ -83,3 +83,19 @@
   background-color: #062746;
   color: #f5e8df;
 }
+
+.dark-github-link {
+  width: 35px;
+  height: 40px;
+  overflow: hidden;
+  background: url("../assets/images/sketch-github-mark.svg") no-repeat center;
+  background-size: 25px 25px;
+}
+
+.sketch-github-link {
+  width: 35px;
+  height: 40px;
+  overflow: hidden;
+  background: url("../assets/images/dark-github-mark.svg") no-repeat center;
+  background-size: 25px 25px;
+}

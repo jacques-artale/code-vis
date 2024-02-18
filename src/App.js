@@ -18,7 +18,7 @@ function App() {
 
   const [theme, setTheme] = useState('sketch');
 
-  const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\n'*/'if you see me it worked');
+  const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\n'*/'');
   const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
@@ -201,6 +201,12 @@ function App() {
           </div>
           <div style={{ position: 'relative' }}>
             <ThemeButton theme={theme} setTheme={setTheme}/>
+          </div>
+          { /** GitHub Logo link to repository */}
+          <div style={{ position: 'relative' }}>
+              <a href="https://github.com/jacques-artale/code-vis" target="_blank">
+                <div className={`${theme}-github-link`}></div>
+              </a>
           </div>
         </div>
         <div style={{ display: 'flex', width: '100%', height: '3%' }}>

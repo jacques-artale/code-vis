@@ -132,12 +132,18 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
   const handleMouseUp = () => {
     setIsDragging(false);
   }
+
+  const handleBackToCenter = () => {
+    setTranslateX(0);
+    setTranslateY(0);
+  }
   
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <div className='zoom-button-container'>
-        <button className={`${theme}-zoom-button`} onClick={() => handleZoom(true)}>+</button>
-        <button className={`${theme}-zoom-button`} onClick={() => handleZoom(false)}>-</button>
+      <div className='visual-control-buttons-container'>
+        <button type="button" className={`${theme}-visual-control-button`} onClick={() => handleZoom(true)}>+</button>
+        <button type="button" className={`${theme}-visual-control-button`} onClick={() => handleZoom(false)}>-</button>
+        <button type="button" className={`${theme}-visual-reset-button`} onClick={() => handleBackToCenter()}></button>
       </div>
       <div
         style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}

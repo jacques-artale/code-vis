@@ -1,4 +1,4 @@
-.zoom-button-container {
+.visual-control-buttons-container {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -8,7 +8,7 @@
   padding: 4px;
 }
 
-.dark-zoom-button {
+.dark-visual-control-button {
   background-color: #212529;
   border: 2px solid #f5e8df;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
@@ -20,7 +20,7 @@
   color: #f5e8df;
 }
 
-.sketch-zoom-button {
+.sketch-visual-control-button {
   background-color: #f5e8df;
   border: 2px solid #062746;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
@@ -31,12 +31,55 @@
   margin: 1px;
 }
 
-.dark-zoom-button:hover {
+.dark-visual-control-button:hover {
   background-color: #f5e8df;
   color: #212529;
 }
 
-.sketch-zoom-button:hover {
+.sketch-visual-control-button:hover {
   background-color: #062746;
   color: #f5e8df;
+}
+
+
+.sketch-visual-reset-button {
+  background-color: #f5e8df;
+  border: 2px solid #062746;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  border-radius: 2px;
+  width: 25px;
+  height: 25px;
+  margin: 1px;
+  background: url("../assets/images/sketch-reset.svg") no-repeat center;
+  background-size: 20px 20px;
+}
+
+.dark-visual-reset-button {
+  background-color: #212529;
+  border: 2px solid #f5e8df;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  border-radius: 2px;
+  width: 25px;
+  height: 25px;
+  margin: 1px;
+  background: url("../assets/images/dark-reset.svg") no-repeat center;
+  background-size: 20px 20px;
+}
+
+.sketch-visual-reset-button:hover {
+  background-color: #062746;
+  background-image: url("../assets/images/dark-reset.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+}
+
+.dark-visual-reset-button:hover {
+  background-color: #f5e8df;
+  background-image: url("../assets/images/sketch-reset.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
 }

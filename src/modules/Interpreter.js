@@ -32,6 +32,7 @@ export class Interpreter {
     this.environmentStack.push(this.globalEnvironment);
     this.functionDeclarations = [];
     this.environmentStack = [];
+    this.uniqueEnvironmentId = 0;
   }
 
   // This function will reset the interpreter as well as the parsed code
@@ -39,6 +40,7 @@ export class Interpreter {
     this.parsedCode = parsedCode;
     this.functionDeclarations = [];
     this.environmentStack = [];
+    this.uniqueEnvironmentId = 0;
     this.globalEnvironment = this.createEnvironment(null, parsedCode, parsedCode.body);
     this.globalEnvironment.executionState.type = 'global';
     this.environmentStack.push(this.globalEnvironment);
