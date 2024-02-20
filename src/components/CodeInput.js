@@ -35,6 +35,19 @@ class CodeEditor extends React.Component {
       }
     });
     editor.updateOptions({ theme: vsTheme });
+
+    window.addEventListener('resize', this.handleResize);
+    this.handleResize();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  }
+
+  handleResize = () => {
+    if (this.state.editor) {
+      this.state.editor.layout();
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -85,6 +98,8 @@ class CodeEditor extends React.Component {
     const options = {
       selectOnLineNumbers: true,
       tabSize: 2,
+      wordWrap: 'on',
+      wrappingIndent: 'indent'
     };
     const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
     return (
@@ -119,7 +134,7 @@ function CodeInput({ code, setCode, highlights, theme }) {
   }, [theme, highlights]);
 
   return (
-    <div style={{ float: 'right', width: '100%', height: '100%' }}>
+    <div style={{ float: 'right', width: '100%', height: '100%', overflow: 'hidden' }}>
       <CodeEditor code={code} setCode={setCode} ref={codeEditorRef} theme={theme}/>
     </div>
   );
