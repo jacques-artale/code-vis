@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ArrayCell from './ArrayCell';
 import Xarrow from 'react-xarrows';
 
-const ArrayTree = ({ values, varChange, varAccess, theme }) => {
+const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
 
   const [changed, setChanged] = useState(null); // id of the cell to highlight
   const [accessed, setAccessed] = useState(null); // id of the cell to highlight
@@ -100,7 +100,7 @@ const ArrayTree = ({ values, varChange, varAccess, theme }) => {
                 /** If cluster is an empty array we display '[]' */
                 if (cluster.cells.length === 0) {
                   return (
-                    <div key={`cluster-${clusterIndex}`} id={`cluster-${cluster.id}`}>
+                    <div key={`${scope}-cluster-${clusterIndex}`} id={`cluster-${cluster.id}`}>
                       <p style={{ margin: 0 }}>[]</p>
                     </div>
                   );
@@ -121,12 +121,12 @@ const ArrayTree = ({ values, varChange, varAccess, theme }) => {
                       }
                     </div>
                     {/* Cells in the cluster */}
-                    <div id={`cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
+                    <div id={`${scope}-cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
                       {
                         cluster.cells.map((cell) => {
                           return (
                             <div key={`cell-${cell.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
-                              <div id={`cell-${cell.id}`}>
+                              <div id={`${scope}-cell-${cell.id}`}>
                                 <ArrayCell value={cell.value} theme={theme} changed={changed === cell.id} accessed={accessed === cell.id}/>
                               </div>
                             </div>
@@ -147,8 +147,8 @@ const ArrayTree = ({ values, varChange, varAccess, theme }) => {
             return (
               <Xarrow
                 key={`arrow-${index}`}
-                start={`cell-${arrow[0]}`}
-                end={`cluster-${arrow[1]}`}
+                start={`${scope}-cell-${arrow[0]}`}
+                end={`${scope}-cluster-${arrow[1]}`}
                 color={theme === 'sketch' ? '#062746' : '#f5e8df'}
                 strokeWidth={1}
                 startAnchor="middle"

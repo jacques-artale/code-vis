@@ -2,7 +2,7 @@ import React from 'react';
 import ArrayCell from './ArrayCell';
 import ArrayTree from './ArrayTree';
 
-const ArrayGrid = ({ name, values, varChange, varAccess, theme }) => {
+const ArrayGrid = ({ scope, name, values, varChange, varAccess, theme }) => {
 
   function getArrayDepth(arr) {
     return Array.isArray(arr) ? 1 + Math.max(...arr.map(getArrayDepth)) : 0;
@@ -64,7 +64,7 @@ const ArrayGrid = ({ name, values, varChange, varAccess, theme }) => {
   const renderArrayTree = (arr) => {
     return (
       <div>
-        <ArrayTree values={arr} varChange={varChange} varAccess={varAccess} theme={theme}/>
+        <ArrayTree scope={scope} values={arr} varChange={varChange} varAccess={varAccess} theme={theme}/>
       </div>
     )
   }

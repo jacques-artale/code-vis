@@ -102,5 +102,27 @@ let array = [10, 7, 8, 9, 1, 5];
 quickSort(array);
 console.log("Sorted array:", array);
 `
+  },
+  {
+    name: 'Flatten Array',
+    code: `function flattenArray(arr) {
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (typeof arr[i] === 'object') {
+      let temp = flattenArray(arr[i]);
+      for (let j = 0; j < temp.length; j++) {
+        result.push(temp[j]);
+      }
+    } else {
+      result.push(arr[i]);
+    }
+  }
+  return result;
+}
+
+let multiDimensionalArray = [1, [2, [3, [4, [5]]]], [6, 7, [8, 9, [10]]]];
+
+let flattenedArray = flattenArray(multiDimensionalArray);
+`
   }
 ];

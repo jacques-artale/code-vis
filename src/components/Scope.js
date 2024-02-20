@@ -48,7 +48,7 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
                   backgroundColor: highlightColor
                 }}
               >
-                <ArrayGrid name={name} values={arr} varChange={highlightCellUpdate ? varChange : null} varAccess={highlightCellAccess ? varAccess : null} theme={theme}/>
+                <ArrayGrid scope={scope.id} name={name} values={arr} varChange={highlightCellUpdate ? varChange : null} varAccess={highlightCellAccess ? varAccess : null} theme={theme}/>
               </div>
             );
           })
