@@ -117,7 +117,7 @@ class CodeEditor extends React.Component {
   }
 }
 
-function CodeInput({ code, setCode, highlights, theme }) {
+function CodeInput({ code, setCode, highlights, theme, width }) {
   const codeEditorRef = React.useRef(null);
 
   useEffect(() => {
@@ -132,6 +132,12 @@ function CodeInput({ code, setCode, highlights, theme }) {
       codeEditorRef.current.setHighlights(highlights);
     }
   }, [theme, highlights]);
+
+  useEffect(() => {
+    if (codeEditorRef.current) {
+      codeEditorRef.current.handleResize();
+    }
+  }, [width]);
 
   return (
     <div style={{ float: 'right', width: '100%', height: '100%', overflow: 'hidden' }}>

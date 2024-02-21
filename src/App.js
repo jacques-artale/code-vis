@@ -19,7 +19,10 @@ function App() {
   const [theme, setTheme] = useState('sketch');
   const [consoleHeight, setConsoleHeight] = useState(22);
   const [visualHeight, setVisualHeight] = useState(70);
-  const [isResizing, setIsResizing] = useState(false);
+  const [codeWidth, setCodeWidth] = useState(50);
+  const [visualWidth, setVisualWidth] = useState(50);
+  const [isResizingConsole, setIsResizingConsole] = useState(false);
+  const [isResizingCode, setIsResizingCode] = useState(false);
 
   const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\n'*/'');
   const [parsedCode, setParsedCode] = useState(null);
@@ -97,7 +100,7 @@ function App() {
   // Handle resizing of console
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (isResizing) {
+      if (isResizingConsole) {
         const newConsoleHeight = ((window.innerHeight - e.clientY) / window.innerHeight) * 100;
         const newVisualHeight = 92 - newConsoleHeight; // 100 - height of controls - height of executing instruction - console height
 
@@ -106,13 +109,24 @@ function App() {
           setVisualHeight(newVisualHeight);
         }
       }
+
+      if (isResizingCode) {
+        const newCodeWidth = ((window.innerWidth - e.clientX) / window.innerWidth) * 100;
+        const newVisualWidth = 100 - newCodeWidth;
+
+        if (newCodeWidth > 10 && newVisualWidth > 10) {
+          setCodeWidth(newCodeWidth);
+          setVisualWidth(newVisualWidth);
+        }
+      }
     }
 
     const handleMouseUp = () => {
-      setIsResizing(false);
+      setIsResizingConsole(false);
+      setIsResizingCode(false);
     }
 
-    if (isResizing) {
+    if (isResizingConsole || isResizingCode) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -121,11 +135,16 @@ function App() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     }
-  }, [isResizing]);
+  }, [isResizingConsole, isResizingCode]);
 
   const handleConsoleResize = (e) => {
     e.preventDefault();
-    setIsResizing(true);
+    setIsResizingConsole(true);
+  }
+
+  const handleCodeResize = (e) => {
+    e.preventDefault();
+    setIsResizingCode(true);
   }
 
 
@@ -218,7 +237,7 @@ function App() {
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'row' }} className={`${theme}-body`}>
 
-      <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: `${visualWidth}%`, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', width: '100%', height: '5%' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
             <button className={`${theme}-control-button`} style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
@@ -260,8 +279,8 @@ function App() {
         </div>
         
         { /** Draggable top border */ }
-        <div className='resizable-top' onMouseDown={handleConsoleResize}>
-          <div className='resizable-handle'></div>
+        <div className='resizable-console' onMouseDown={handleConsoleResize}>
+          <div className={`${theme}-resizable-handle-horizontal`}></div>
         </div>
         
         { /** Console */ }
@@ -270,9 +289,14 @@ function App() {
         </div>
       </div>
 
-      <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      { /** Draggable left border */ }
+      <div className='resizable-code' onMouseDown={handleCodeResize}>
+        <div className={`${theme}-resizable-handle-vertical`}></div>
+      </div>
+
+      <div style={{ width: `${codeWidth}%`, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <ScriptSelect setCode={setCode} theme={theme}/>
-        <CodeInput code={code} setCode={setCode} highlights={highlights} theme={theme}/>
+        <CodeInput code={code} setCode={setCode} highlights={highlights} theme={theme} width={codeWidth}/>
       </div>
       
     </div>
