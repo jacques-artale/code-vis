@@ -1,6 +1,5 @@
 .dark-script-select-button {
   padding: 0.5%;
-  height: 25px;
   border: none;
   border-bottom: 2px solid #f5e8df;
   background-color: #212529;
@@ -12,7 +11,6 @@
 
 .sketch-script-select-button {
   padding: 0.5%;
-  height: 25px;
   border: none;
   border-bottom: 2px solid #212529;
   background-color: #f5e8df;
@@ -23,7 +21,6 @@
 
 .dark-script-select-button-active {
   padding: 0.5%;
-  height: 25px;
   border-bottom: none;
   border-top: 2px solid #f5e8df;
   border-left: 2px solid #f5e8df;
@@ -37,7 +34,6 @@
 
 .sketch-script-select-button-active {
   padding: 0.5%;
-  height: 25px;
   border-bottom: none;
   border-top: 2px solid #212529;
   border-left: 2px solid #212529;

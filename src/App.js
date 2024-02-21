@@ -17,6 +17,9 @@ function App() {
   const interpreterSpeeds = [3000, 2000, 1500, 1000, 750, 500, 250, 100, 50, 25, 0];
 
   const [theme, setTheme] = useState('sketch');
+  const [consoleHeight, setConsoleHeight] = useState(22);
+  const [visualHeight, setVisualHeight] = useState(70);
+  const [isResizing, setIsResizing] = useState(false);
 
   const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\n'*/'');
   const [parsedCode, setParsedCode] = useState(null);
@@ -90,6 +93,40 @@ function App() {
       manageExecutionInterval(parsedCode, desiredSpeed, true);
     }
   }, [desiredSpeed, isExecuting, parsedCode]);
+
+  // Handle resizing of console
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isResizing) {
+        const newConsoleHeight = ((window.innerHeight - e.clientY) / window.innerHeight) * 100;
+        const newVisualHeight = 92 - newConsoleHeight; // 100 - height of controls - height of executing instruction - console height
+
+        if (newConsoleHeight > 5 && newVisualHeight > 10) {
+          setConsoleHeight(newConsoleHeight);
+          setVisualHeight(newVisualHeight);
+        }
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    }
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+  }, [isResizing]);
+
+  const handleConsoleResize = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }
 
 
 
@@ -202,24 +239,33 @@ function App() {
           <div style={{ position: 'relative' }}>
             <ThemeButton theme={theme} setTheme={setTheme}/>
           </div>
-          { /** GitHub Logo link to repository */}
+          { /** GitHub Logo link to repository */ }
           <div style={{ position: 'relative' }}>
               <a href="https://github.com/jacques-artale/code-vis" target="_blank">
                 <div className={`${theme}-github-link`}></div>
               </a>
           </div>
         </div>
+
         <div style={{ display: 'flex', width: '100%', height: '3%' }}>
           <ExecutingInstruction theme={theme} activeNode={activeNode} />
         </div>
-        <div style={{ display: 'flex', width: '100%', height: '70%' }}>
+        
+        <div style={{ display: 'flex', width: '100%', height: `${visualHeight}%` }}>
           {
             viewAST ?
               <ASTView code={code} /> :
               <VisualView scopes={scopes} theme={theme} varChange={updatedVariable} varCreate={createdVariable} varAccess={accessedVariable} />
           }
         </div>
-        <div style={{ height: '22%' }}>
+        
+        { /** Draggable top border */ }
+        <div className='resizable-top' onMouseDown={handleConsoleResize}>
+          <div className='resizable-handle'></div>
+        </div>
+        
+        { /** Console */ }
+        <div style={{ height: `${consoleHeight}%` }}>
           <Console log={log} theme={theme}/>
         </div>
       </div>
