@@ -4,7 +4,7 @@ import './../../styles/VisualView.css';
 import Scope from './Scope';
 import Arrow from './Arrow';
 
-const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
+const VisualView = ({ scopes, theme, varChange, varCreate, varAccess, setSelectedScope }) => {
 
   const [scale, setScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -21,13 +21,13 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
     setBounds(newBounds);
   }, [scopes, scale]);
 
-  
+
   function calculateBounds(scopes, scopeRefs) {
     const globalScope = scopes.find(scope => scope.parentId === null);
     if (!globalScope) return [];
-    
+
     const scopeDistances = findDistancesBFS(globalScope.id, scopes); // distances[scopeId] = distance to global    
-    
+
     const bounds = [];
     let currentTreeHeight = 0;
 
@@ -37,8 +37,8 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
         const x = scopeDistances[scope.id] * 100;
         const y = currentTreeHeight;
 
-        bounds[scope.id] = { id: scope.id, x: x, y: y, width: rect.width, height: rect.height / scale};
-        
+        bounds[scope.id] = { id: scope.id, x: x, y: y, width: rect.width, height: rect.height / scale };
+
         currentTreeHeight += (rect.height / scale) + 40;
       }
     }
@@ -71,25 +71,36 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
   function createScopeComponent(scope, index) {
     scopeRefs.current[scope.id] = React.createRef();
     const bound = bounds[scope.id] || { x: 0, y: 0 };
+
+    const handleMouseEnter = () => {
+      setSelectedScope(scope.nodeId); // We want to find the node in the AST which represents the scope
+    }
+
+    const handleMouseLeave = () => {
+      setSelectedScope(null);
+    }
+
     return (
       <div
-      ref={scopeRefs.current[scope.id]}
-      key={`scope-${scope.id}-${index}`}
-      id={scope.id}
-      style={{
-        position: 'absolute',
-        transform: `scale(${scale}) translate(${bound.x + translateX}px, ${bound.y + translateY}px)`,
-        transformOrigin: 'top left',
-        display: 'inline-flex',
-        flexDirection: 'column',
-        alignItems: 'center'
-      }}
+        ref={scopeRefs.current[scope.id]}
+        key={`scope-${scope.id}-${index}`}
+        id={scope.id}
+        style={{
+          position: 'absolute',
+          transform: `scale(${scale}) translate(${bound.x + translateX}px, ${bound.y + translateY}px)`,
+          transformOrigin: 'top left',
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <Scope scope={scope} theme={theme} varChange={varChange} varCreate={varCreate} varAccess={varAccess} />
       </div>
     );
   }
-  
+
   function createArrowComponent(scope, scopeBounds, parentBounds, index) {
     return (
       <div
@@ -100,17 +111,17 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
           transformOrigin: 'top left'
         }}
       >
-        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds} theme={theme}/>
+        <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds} theme={theme} />
       </div>
     )
   }
-  
+
   function handleZoom(zoomIn) {
     if (zoomIn && scale >= 2) return;
     if (!zoomIn && scale <= 0.2) return;
     setScale(scale + (zoomIn ? 0.1 : -0.1));
   }
-  
+
   function handleWheel(e) {
     if (e.deltaY < 0) handleZoom(true);
     else handleZoom(false);
@@ -137,7 +148,7 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess }) => {
     setTranslateX(0);
     setTranslateY(0);
   }
-  
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <div className='visual-control-buttons-container'>

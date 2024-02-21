@@ -3,7 +3,7 @@ import '../styles/App.css';
 
 import InterpretWorker from './workers/Interpreter.worker.js';
 
-import { buildAst, getNodesToHighlight } from './modules/ASTBuilder';
+import { buildAst, getNodeLocation } from './modules/ASTBuilder';
 import CodeInput from './components/CodeInput';
 import Console from './components/Console';
 import ASTView from './components/ASTView';
@@ -41,16 +41,18 @@ function App() {
   ]);                       // [{}, ...]
   const [log, setLog] = useState([]);                             // [line, line, ...]
 
-  const [highlights, setHighlights] = useState([]);               // [[startLine, startColumn, endLine, endColumn], ...]
+  const [nodeHighlight, setNodeHighlight] = useState([]);         // [[startLine, startColumn, endLine, endColumn], ...]
   const [activeNode, setActiveNode] = useState(null);             // { nodeId, type }
+  const [scopeHighlight, setScopeHighlight] = useState(null);     // [startLine, startColumn, endLine, endColumn]
+  const [selectedScope, setSelectedScope] = useState(null);       // nodeId
   const [updatedVariable, setUpdatedVariable] = useState(null);   // { scopeId, name, properties }
   const [createdVariable, setCreatedVariable] = useState(null);   // { scopeId, name }
   const [accessedVariable, setAccessedVariable] = useState(null); // { scopeId, name, properties }
-  
+
   const interpreterRef = useRef();                            // interval which calls the interpreter
   const [worker, setWorker] = useState(null);                 // worker where the interpreter runs
   const [isExecuting, setIsExecuting] = useState(false);      // boolean for whether the interpreter is running
-  
+
   // setup worker for interpreting code
   useEffect(() => {
     const newWorker = new InterpretWorker();
@@ -86,10 +88,19 @@ function App() {
 
   useEffect(() => {
     if (activeNode !== null) {
-      const nodesToHighlight = getNodesToHighlight(parsedCode, [activeNode]);
-      setHighlights(nodesToHighlight);
+      const nodeToHighlight = getNodeLocation(parsedCode, activeNode.nodeId);
+      setNodeHighlight(nodeToHighlight);
     }
   }, [activeNode, parsedCode]);
+
+  useEffect(() => {
+    if (selectedScope !== null) {
+      const scopeHighlight = getNodeLocation(parsedCode, selectedScope);
+      setScopeHighlight(scopeHighlight);
+    } else {
+      setScopeHighlight(null);
+    }
+  }, [selectedScope]);
 
   useEffect(() => {
     if (isExecuting) {
@@ -185,7 +196,7 @@ function App() {
     setParsedCode(parsed.code);
     resetInterpreter(parsed.code);
     manageExecutionInterval(parsed.code, desiredSpeed, true);
-    
+
     setShowStart(false);
     setShowStop(true);
     setShowPause(true);
@@ -196,7 +207,7 @@ function App() {
 
   function handleStop() {
     manageExecutionInterval(null, 0, false);
-    setHighlights([]);
+    setNodeHighlight(null);
     setActiveNode(null);
     setUpdatedVariable(null);
     setCreatedVariable(null);
@@ -240,65 +251,72 @@ function App() {
       <div style={{ width: `${visualWidth}%`, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', width: '100%', height: '5%' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <button className={`${theme}-control-button`} style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart() }>START</button>
-            <button className={`${theme}-control-button`} style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop() }>STOP</button>
-            <button className={`${theme}-control-button`} style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause() }>PAUSE</button>
-            <button className={`${theme}-control-button`} style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume() }>RESUME</button>
-            <button className={`${theme}-control-button`} style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext() }>NEXT</button>
-            <button className={`${theme}-control-button`} onClick={() => toggleASTView() }>
+            <button className={`${theme}-control-button`} style={{ display: showStart ? 'block' : 'none' }} onClick={() => handleStart()}>START</button>
+            <button className={`${theme}-control-button`} style={{ display: showStop ? 'block' : 'none' }} onClick={() => handleStop()}>STOP</button>
+            <button className={`${theme}-control-button`} style={{ display: showPause ? 'block' : 'none' }} onClick={() => handlePause()}>PAUSE</button>
+            <button className={`${theme}-control-button`} style={{ display: showResume ? 'block' : 'none' }} onClick={() => handleResume()}>RESUME</button>
+            <button className={`${theme}-control-button`} style={{ display: showNext ? 'block' : 'none' }} onClick={() => handleNext()}>NEXT</button>
+            <button className={`${theme}-control-button`} onClick={() => toggleASTView()}>
               {
                 viewAST ? 'VIEW VISUAL' : 'VIEW AST'
               }
             </button>
             <p>SPEED</p>
             <div style={{ width: '15%', height: '100%', marginLeft: '1%' }}>
-              <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)} theme={theme}/>
+              <Slider min={0} max={10} value={desiredSpeed} onInputChange={(value) => setDesiredSpeed(value)} theme={theme} />
             </div>
           </div>
           <div style={{ position: 'relative' }}>
-            <ThemeButton theme={theme} setTheme={setTheme}/>
+            <ThemeButton theme={theme} setTheme={setTheme} />
           </div>
-          { /** GitHub Logo link to repository */ }
+          { /** GitHub Logo link to repository */}
           <div style={{ position: 'relative' }}>
-              <a href="https://github.com/jacques-artale/code-vis" target="_blank">
-                <div className={`${theme}-github-link`}></div>
-              </a>
+            <a href="https://github.com/jacques-artale/code-vis" target="_blank">
+              <div className={`${theme}-github-link`}></div>
+            </a>
           </div>
         </div>
 
         <div style={{ display: 'flex', width: '100%', height: '3%' }}>
           <ExecutingInstruction theme={theme} activeNode={activeNode} />
         </div>
-        
+
         <div style={{ display: 'flex', width: '100%', height: `${visualHeight}%` }}>
           {
             viewAST ?
               <ASTView code={code} /> :
-              <VisualView scopes={scopes} theme={theme} varChange={updatedVariable} varCreate={createdVariable} varAccess={accessedVariable} />
+              <VisualView
+                scopes={scopes}
+                theme={theme}
+                varChange={updatedVariable}
+                varCreate={createdVariable}
+                varAccess={accessedVariable}
+                setSelectedScope={setSelectedScope}
+              />
           }
         </div>
-        
-        { /** Draggable top border */ }
+
+        { /** Draggable top border */}
         <div className='resizable-console' onMouseDown={handleConsoleResize}>
           <div className={`${theme}-resizable-handle-horizontal`}></div>
         </div>
-        
-        { /** Console */ }
+
+        { /** Console */}
         <div style={{ height: `${consoleHeight}%` }}>
-          <Console log={log} theme={theme}/>
+          <Console log={log} theme={theme} />
         </div>
       </div>
 
-      { /** Draggable left border */ }
+      { /** Draggable left border */}
       <div className='resizable-code' onMouseDown={handleCodeResize}>
         <div className={`${theme}-resizable-handle-vertical`}></div>
       </div>
 
       <div style={{ width: `${codeWidth}%`, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <ScriptSelect setCode={setCode} theme={theme}/>
-        <CodeInput code={code} setCode={setCode} highlights={highlights} theme={theme} width={codeWidth}/>
+        <ScriptSelect setCode={setCode} theme={theme} />
+        <CodeInput code={code} setCode={setCode} nodeHighlight={nodeHighlight} scopeHighlight={scopeHighlight} theme={theme} width={codeWidth} />
       </div>
-      
+
     </div>
   );
 }

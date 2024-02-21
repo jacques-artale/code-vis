@@ -59,7 +59,7 @@ Before you begin, ensure you have met the following requirements:
 - ✅ View variables and their corresponding values
 - ✅ View arrays (1D, 2D, and up)
 - ✅ Highlighting for variable creation/access/modification
-- ✅ View scopes
+- ✅ View scopes & corresponding code location
 - ✅ View output from console
 - ✅ View AST
 

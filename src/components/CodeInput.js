@@ -16,7 +16,7 @@ class CodeEditor extends React.Component {
   editorDidMount(editor, monaco) {
     this.setState({ editor, monaco });
     editor.focus();
-  
+
     const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
     const themeBase = this.props.theme === 'sketch' ? 'vs' : 'vs-dark';
     monaco.editor.defineTheme(vsTheme, {
@@ -83,10 +83,16 @@ class CodeEditor extends React.Component {
     if (editor) {
       const clearedDecorations = editor.deltaDecorations(currentDecorations, []);
 
-      const decorations = highlights.map(highlight => ({
-        range: new this.state.monaco.Range(highlight[0], highlight[1], highlight[2], highlight[3] + 1),
-        options: { inlineClassName: `${this.props.theme}-highlight` }
-      }));
+      const decorations = highlights.map(highlight => {
+        const loc = highlight.highlight;
+        const type = highlight.type;
+        return {
+          range: new this.state.monaco.Range(loc[0], loc[1], loc[2], loc[3] + 1),
+          options: {
+            inlineClassName: type === 'node' ? `${this.props.theme}-node-highlight` : `${this.props.theme}-scope-highlight`
+          }
+        }
+      });
 
       const newDecorations = editor.deltaDecorations(clearedDecorations, decorations);
       this.setState({ currentDecorations: newDecorations });
@@ -117,7 +123,7 @@ class CodeEditor extends React.Component {
   }
 }
 
-function CodeInput({ code, setCode, highlights, theme, width }) {
+function CodeInput({ code, setCode, nodeHighlight, scopeHighlight, theme, width }) {
   const codeEditorRef = React.useRef(null);
 
   useEffect(() => {
@@ -128,10 +134,14 @@ function CodeInput({ code, setCode, highlights, theme, width }) {
 
   useEffect(() => {
     if (codeEditorRef.current) {
+      const toHighlight = [];
+      if (nodeHighlight !== null) toHighlight.push({ highlight: nodeHighlight, type: 'node' });
+      if (scopeHighlight !== null) toHighlight.push({ highlight: scopeHighlight, type: 'scope' });
+
       codeEditorRef.current.setState({ theme });
-      codeEditorRef.current.setHighlights(highlights);
+      codeEditorRef.current.setHighlights(toHighlight);
     }
-  }, [theme, highlights]);
+  }, [theme, nodeHighlight, scopeHighlight]);
 
   useEffect(() => {
     if (codeEditorRef.current) {
@@ -141,7 +151,7 @@ function CodeInput({ code, setCode, highlights, theme, width }) {
 
   return (
     <div style={{ float: 'right', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <CodeEditor code={code} setCode={setCode} ref={codeEditorRef} theme={theme}/>
+      <CodeEditor code={code} setCode={setCode} ref={codeEditorRef} theme={theme} />
     </div>
   );
 }

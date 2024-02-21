@@ -145,7 +145,7 @@ export class Interpreter {
     let value = null;
     let currentEnvironment = environment;
     while (currentEnvironment !== null) {
-      if (name in this.builtInVariables){
+      if (name in this.builtInVariables) {
         value = this.builtInVariables[name];
       } else if (name in currentEnvironment.variables) {
         value = currentEnvironment.variables[name];
@@ -288,7 +288,7 @@ export class Interpreter {
           currentType = currentEnvironment.executionState.type;
         }
       }
-      
+
       const parentId = (currentEnvironment !== null) ? currentEnvironment.id : null;
       const currentId = environment.id;
 
@@ -298,6 +298,7 @@ export class Interpreter {
         arrayVariables: arrayVariables,
         parentId: parentId,
         id: currentId,
+        nodeId: environment.executionState.node.nodeId,
         active: false,
       };
 
@@ -540,28 +541,28 @@ export class Interpreter {
 
   evaluateBinaryExpression(left, right, operator) {
     switch (operator) {
-      case '+':   return left + right;
-      case '-':   return left - right;
-      case '*':   return left * right;
-      case '/':   return left / right;
-      case '%':   return left % right;
-      case '==':  return left == right;
+      case '+': return left + right;
+      case '-': return left - right;
+      case '*': return left * right;
+      case '/': return left / right;
+      case '%': return left % right;
+      case '==': return left == right;
       case '===': return left === right;
-      case '!=':  return left != right;
+      case '!=': return left != right;
       case '!==': return left !== right;
-      case '<':   return left < right;
-      case '<=':  return left <= right;
-      case '>':   return left > right;
-      case '>=':  return left >= right;
-      case '&&':  return left && right;
-      case '||':  return left || right;
-      case '<<':  return left << right;
-      case '>>':  return left >> right;
+      case '<': return left < right;
+      case '<=': return left <= right;
+      case '>': return left > right;
+      case '>=': return left >= right;
+      case '&&': return left && right;
+      case '||': return left || right;
+      case '<<': return left << right;
+      case '>>': return left >> right;
       case '>>>': return left >>> right;
-      case '&':   return left & right;
-      case '|':   return left | right;
-      case '^':   return left ^ right;
-      case 'in':  return left in right;
+      case '&': return left & right;
+      case '|': return left | right;
+      case '^': return left ^ right;
+      case 'in': return left in right;
       // Add other operators as needed, possibly power operator and such
       default:
         console.error(`Unrecognized operator: ${operator}`);
@@ -674,7 +675,7 @@ export class Interpreter {
         const object = environment.returnValues.pop();
         const objectValue = object.value;
         const properties = environment.returnValues.pop();
-        
+
         let oldValue = objectValue;
         for (let i = 0; i < properties.length; i++) {
           oldValue = oldValue[properties[i]];
@@ -694,7 +695,7 @@ export class Interpreter {
         const object = environment.returnValues.pop();
 
         const newValue = this.handleAssignmentOperation(oldValue, operator, value);
-        
+
         this.removeCurrentEnvironment();
         if (object.type === 'Identifier') {
           this.updateVariableProperty(object.name, properties, newValue, this.getCurrentEnvironment()); // identifier[properties[0]][properties[1]][...] = value;
@@ -993,12 +994,12 @@ export class Interpreter {
           for (let i = 0; i < properties.length; i++) {
             objectValue = objectValue[properties[i]];
           }
-          
+
           value = objectValue;
           if (operator === '++') value++;
           else if (operator === '--') value--;
           else console.error("weird error, operator not found");
-          
+
           this.updateVariableProperty(identifier, properties, value, this.getCurrentEnvironment()); // identifier[property[0]][property[1]][...] = value;
         }
 
@@ -1148,7 +1149,7 @@ export class Interpreter {
     }
     return false;
   }
-  
+
   interpretMemberExpression(node) {
     if (this.debugging) console.log("member expression");
     if (this.debugging) console.log(node);
@@ -1397,7 +1398,7 @@ export class Interpreter {
         const value = init.value;
         const array = [...environment.returnValues.pop(), value];
         environment.returnValues.push(array);
-        
+
         this.gotoNextInstruction();
         if (this.getNextInstruction() !== null) break; // if this was the last element we go straight to end
       case 'end':
@@ -1428,7 +1429,7 @@ export class Interpreter {
     }
 
     const instruction = this.getNextInstruction();
-    
+
     if (instruction === null) {
       this.removeCurrentEnvironment();
     } else {
@@ -1468,7 +1469,7 @@ export class Interpreter {
         break;
       case 'declare':
         environment.executionState.phase = 'init';
-        
+
         const varName = declaration.id.name;
         const parent = environment.parentEnvironment;
         const init = environment.returnValues.pop();
@@ -1571,7 +1572,7 @@ export class Interpreter {
       this.gotoNextInstruction();
       this.executeNodeType(instruction);
     }
-    
+
     return null;
   }
 
@@ -1752,15 +1753,15 @@ export class Interpreter {
 
     let environment = this.getCurrentEnvironment();
     if (environment.executionState.node !== node) {
-        const instructions = node.cases;
-        const newEnvironment = this.createEnvironment(environment, node, instructions);
-        this.addNewEnvironment(newEnvironment);
-  
-        newEnvironment.executionState.type = 'switch';
-        newEnvironment.executionState.phase = 'discriminant';
-        environment = newEnvironment;
+      const instructions = node.cases;
+      const newEnvironment = this.createEnvironment(environment, node, instructions);
+      this.addNewEnvironment(newEnvironment);
 
-        environment.returnValues.push(false); // found match or not
+      newEnvironment.executionState.type = 'switch';
+      newEnvironment.executionState.phase = 'discriminant';
+      environment = newEnvironment;
+
+      environment.returnValues.push(false); // found match or not
     }
 
     const caseNode = this.getNextInstruction();
@@ -1798,9 +1799,9 @@ export class Interpreter {
         const foundMatch = environment.returnValues.pop();
         const testResult = test.value;
         const discriminantValue = discriminant.value;
-        
+
         this.gotoNextInstruction();
-        
+
         if (foundMatch || discriminantValue === testResult) {
           this.interpretSwitchCase(caseNode);             // interpret the body of the case
           environment.returnValues.push(true);            // found match is now true
@@ -1940,7 +1941,7 @@ export class Interpreter {
       newEnvironment.executionState.type = 'consoleLog';
       newEnvironment.executionState.phase = 'init';
       environment = newEnvironment;
-      
+
       environment.returnValues.push([]); // array of arguments
     }
 
@@ -1975,7 +1976,7 @@ export class Interpreter {
           const argument = allArguments[i];
           if (typeof argument === 'object') resultPrintout += JSON.stringify(argument);
           else resultPrintout += argument;
-          
+
           if (i < allArguments.length - 1) resultPrintout += " ";
         }
 

@@ -4,7 +4,7 @@ import * as estraverse from 'estraverse';
 function assignASTIds(ast) {
   let id = 0;
   estraverse.traverse(ast, {
-    enter: function(node) {
+    enter: function (node) {
       node.nodeId = id++;
     }
   });
@@ -14,23 +14,23 @@ export function buildAst(code, useLoc = true) {
   try {
     const ast = parseScript(code, { loc: useLoc });
     assignASTIds(ast);
-    return { type: 'parsed', code: ast};
+    return { type: 'parsed', code: ast };
   } catch (e) {
     console.log("Error parsing code: ", e);
     return { type: 'error', description: e.description, line: e.lineNumber, column: e.column };
   }
 }
 
-export function getNodesToHighlight(node, nodesToFind = []) {
-  let nodesToHighlight = [];
-  let nodesToFindIds = nodesToFind.map(n => n.nodeId); // Extract nodeIds from nodesToFind
-  estraverse.traverse(node, {
-    enter: function(node) {
-      if (nodesToFindIds.includes(node.nodeId)) {
+export function getNodeLocation(root, nodeId) {
+  let location = [];
+  estraverse.traverse(root, {
+    enter: function (node) {
+      if (node.nodeId === nodeId) {
         const { start, end } = node.loc;
-        nodesToHighlight.push([start.line, start.column, end.line, end.column]);
+        location = [start.line, start.column, end.line, end.column];
+        this.break();
       }
     }
   });
-  return nodesToHighlight;
+  return location;
 }

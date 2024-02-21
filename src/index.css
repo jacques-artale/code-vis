@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Hubballi&display=swap");
 
-body, html, #root {
+body,
+html,
+#root {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -47,10 +49,18 @@ p {
   margin: 8px;
 }
 
-.dark-highlight {
-  background-color: red;
+.dark-node-highlight {
+  background-color: #10446b;
 }
 
-.sketch-highlight {
+.sketch-node-highlight {
+  background-color: #b8dbd9;
+}
+
+.dark-scope-highlight {
+  background-color: #10446b;
+}
+
+.sketch-scope-highlight {
   background-color: #b8dbd9;
 }
