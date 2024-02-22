@@ -7,7 +7,7 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
   const topY = parentBounds.y + parentBounds.height;
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       { /* Bottom line */}
       <div
         style={{
@@ -17,7 +17,6 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           width: `${scopeBounds.x - bottomX}px`,
           height: '2px',
           backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df',
-          zIndex: 1
         }}
       ></div>
 
@@ -30,7 +29,6 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           width: '2px',
           height: `${bottomY - topY}px`,
           backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df',
-          zIndex: 1
         }}
       ></div>
 
@@ -43,7 +41,6 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           borderLeft: '7px solid transparent',
           borderRight: '7px solid transparent',
           borderBottom: `14px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`,
-          zIndex: 1
         }}
       ></div>
     </div>

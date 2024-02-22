@@ -91,7 +91,8 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess, setSelecte
           transformOrigin: 'top left',
           display: 'inline-flex',
           flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: 'center',
+          zIndex: 2
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -108,7 +109,8 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess, setSelecte
         style={{
           position: 'absolute',
           transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
-          transformOrigin: 'top left'
+          transformOrigin: 'top left',
+          zIndex: 1
         }}
       >
         <Arrow scopeBounds={scopeBounds} parentBounds={parentBounds} theme={theme} />
