@@ -1,6 +1,10 @@
 import React from 'react';
 
-function Variable({ name, value, varChange }) {
+import ToolTip from './ToolTip';
+
+function Variable({ name, value, varChange, created, updated, accessed }) {
+
+  const [viewTooltip, setViewTooltip] = React.useState(false);
 
   const highlightProperty = () => {
     let jsonStr = JSON.stringify(value, null, 2);
@@ -30,21 +34,44 @@ function Variable({ name, value, varChange }) {
       </pre>
     );
   }
-  
+
+  function createToolTip() {
+    if (created) return <ToolTip message="Variable created" show={viewTooltip} />;
+    if (updated) return <ToolTip message="Variable updated" show={viewTooltip} />;
+    if (accessed) return <ToolTip message="Variable accessed" show={viewTooltip} />;
+    return null;
+  }
+
   function renderPrimitive() {
+    const highlightColor = updated ? '#0099ff' : created ? '#378805' : accessed ? '#e6b400' : 'transparent';
+
     return (
-      <p style={{ margin: '0px' }}>
-        {name} = {
-          value === undefined ? "undefined" :
-          value === '' ? '""' :
-          value === true ? 'true' :
-          value === false ? 'false' :
-          value
+      <div
+        style={{
+          position: 'relative',
+          backgroundColor: highlightColor,
+        }}
+      >
+        {
+          createToolTip()
         }
-      </p>
+        <p
+          style={{ margin: '0px' }}
+          onMouseEnter={() => setViewTooltip(true)}
+          onMouseLeave={() => setViewTooltip(false)}
+        >
+          {name} = {
+            value === undefined ? "undefined" :
+              value === '' ? '""' :
+                value === true ? 'true' :
+                  value === false ? 'false' :
+                    value
+          }
+        </p>
+      </div>
     );
   }
-  
+
   return (
     <div style={{ display: 'flex' }}>
       {typeof value === 'object' ? renderObject() : renderPrimitive()}

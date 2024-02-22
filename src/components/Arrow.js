@@ -8,7 +8,7 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
 
   return (
     <div>
-      { /* Bottom line */ }
+      { /* Bottom line */}
       <div
         style={{
           position: 'absolute',
@@ -16,11 +16,12 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           top: `${bottomY}px`,
           width: `${scopeBounds.x - bottomX}px`,
           height: '2px',
-          backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df'
+          backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df',
+          zIndex: 1
         }}
       ></div>
 
-      { /* Top line */ }
+      { /* Top line */}
       <div
         style={{
           position: 'absolute',
@@ -28,11 +29,12 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           top: `${topY}px`,
           width: '2px',
           height: `${bottomY - topY}px`,
-          backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df'
+          backgroundColor: theme === 'sketch' ? '#062746' : '#f5e8df',
+          zIndex: 1
         }}
       ></div>
 
-      { /* Arrow head */ }
+      { /* Arrow head */}
       <div
         style={{
           position: 'absolute',
@@ -40,7 +42,8 @@ const Arrow = ({ scopeBounds, parentBounds, theme }) => {
           top: `${topY}px`,
           borderLeft: '7px solid transparent',
           borderRight: '7px solid transparent',
-          borderBottom: `14px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`
+          borderBottom: `14px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`,
+          zIndex: 1
         }}
       ></div>
     </div>

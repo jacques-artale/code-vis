@@ -18,15 +18,14 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
             const updated = varChange !== null && scope.id === varChange.scopeId && varChange.properties === null && name === varChange.name;
             const created = varCreate !== null && scope.id === varCreate.scopeId && name === varCreate.name;
             const accessed = varAccess !== null && scope.id === varAccess.scopeId && name === varAccess.name;
-            const highlightColor = updated ? '#0099ff' : created ? '#378805' : accessed ? '#e6b400' : 'transparent';
             return (
               <div
                 key={`var-${index}`}
                 style={{
                   margin: '10px',
-                  backgroundColor: highlightColor,
-                }}>
-                <Variable name={name} value={value} varChange={highlight ? varChange : null} />
+                }}
+              >
+                <Variable name={name} value={value} varChange={highlight ? varChange : null} created={created} updated={updated} accessed={accessed} />
               </div>
             );
           })
