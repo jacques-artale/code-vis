@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+
 import ArrayCell from './ArrayCell';
 import ArrayTree from './ArrayTree';
+import ToolTip from './ToolTip';
 
-const ArrayGrid = ({ scope, name, values, varChange, varAccess, theme }) => {
+const ArrayGrid = ({ scope, name, values, varChange, varAccess, created, updated, accessed, theme }) => {
+
+  const [viewTooltip, setViewTooltip] = useState(false);
 
   function getArrayDepth(arr) {
     return Array.isArray(arr) ? 1 + Math.max(...arr.map(getArrayDepth)) : 0;
@@ -14,9 +18,9 @@ const ArrayGrid = ({ scope, name, values, varChange, varAccess, theme }) => {
   const isTwoDimensional = valuesDepth === 2;
 
   // Function to render a single cell
-  const renderCell = ({value, index, row}) => {
+  const renderCell = ({ value, index, row }) => {
     const color = theme === 'sketch' ? '#062746' : '#f5e8df';
-    const changed = varChange !== null && (
+    const updated = varChange !== null && (
       (isOneDimensional && varChange.properties[0] === index) ||
       (isTwoDimensional && varChange.properties[0] === row && varChange.properties[1] === index)
     );
@@ -30,7 +34,7 @@ const ArrayGrid = ({ scope, name, values, varChange, varAccess, theme }) => {
         {
           row === 0 && <p style={{ color: color, margin: 0, textAlign: 'center' }}>{index}</p>
         }
-        <ArrayCell value={value} theme={theme} changed={changed} accessed={accessed}/>
+        <ArrayCell value={value} theme={theme} updated={updated} accessed={accessed} />
       </div>
     );
   };
@@ -49,13 +53,25 @@ const ArrayGrid = ({ scope, name, values, varChange, varAccess, theme }) => {
     return (
       <div key={`row-${rowIndex}`} style={{ display: 'flex' }}>
         {
+          // Show the row index
           !isOneDimensional &&
-          <div style={{width: '25px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
+          <div style={{ width: '25px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
             <p style={{ margin: 0, color: color }}>{rowIndex}</p>
           </div>
         }
-        <div style={{ display: 'flex', flexDirection: 'row', backgroundColor: highlightColor }}>
-          {cells.map((cell, index) => renderCell({ value: cell, index, row: rowIndex }))}
+        <div style={{ position: 'relative' }}>
+          {
+            createToolTip(false, changed, accessed)
+          }
+          <div
+            style={{ display: 'flex', flexDirection: 'row', backgroundColor: highlightColor }}
+            onMouseEnter={() => setViewTooltip(true)}
+            onMouseLeave={() => setViewTooltip(false)}
+          >
+            {
+              cells.map((cell, index) => renderCell({ value: cell, index, row: rowIndex }))
+            }
+          </div>
         </div>
       </div>
     );
@@ -64,20 +80,36 @@ const ArrayGrid = ({ scope, name, values, varChange, varAccess, theme }) => {
   const renderArrayTree = (arr) => {
     return (
       <div>
-        <ArrayTree scope={scope} values={arr} varChange={varChange} varAccess={varAccess} theme={theme}/>
+        <ArrayTree scope={scope} values={arr} varChange={varChange} varAccess={varAccess} theme={theme} />
       </div>
     )
   }
 
+  function createToolTip(created, updated, accessed) {
+    if (created) return <ToolTip message="Variable created" show={viewTooltip} />;
+    if (updated) return <ToolTip message="Variable updated" show={viewTooltip} />;
+    if (accessed) return <ToolTip message="Variable accessed" show={viewTooltip} />;
+    return null;
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {name} = {
-        values === undefined ? "undefined" :
-        values.length === 0 ? "[]" :
-        isOneDimensional ? renderRow(values, 0) :
-        isTwoDimensional ? values.map(renderRow) :
-        renderArrayTree(values)
+    <div style={{ position: 'relative' }}>
+      {
+        createToolTip(created, updated, accessed)
       }
+      <div
+        style={{ display: 'flex', flexDirection: 'column' }}
+        onMouseEnter={() => setViewTooltip(true)}
+        onMouseLeave={() => setViewTooltip(false)}
+      >
+        {name} = {
+          values === undefined ? "undefined" :
+            values.length === 0 ? "[]" :
+              isOneDimensional ? renderRow(values, 0) :
+                isTwoDimensional ? values.map(renderRow) :
+                  renderArrayTree(values)
+        }
+      </div>
     </div>
   );
 };

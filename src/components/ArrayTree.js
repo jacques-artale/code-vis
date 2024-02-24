@@ -43,7 +43,7 @@ const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
    */
   function assignCellId(arr) {
     let cellId = 0;
-  
+
     function assign(arr) {
       return arr.map((cell) => {
         if (Array.isArray(cell)) {
@@ -53,7 +53,7 @@ const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
         }
       });
     }
-  
+
     return assign(arr);
   }
 
@@ -92,55 +92,55 @@ const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
     return (
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         {
-        rows.map((row, rowIndex) => {
-          return (
-            <div key={`row-${rowIndex}`} style={{ marginLeft: `${rowIndex !== 0 ? 50 : 0}px` }}>
-            {
-              row.map((cluster, clusterIndex) => {
-                /** If cluster is an empty array we display '[]' */
-                if (cluster.cells.length === 0) {
-                  return (
-                    <div key={`${scope}-cluster-${clusterIndex}`} id={`cluster-${cluster.id}`}>
-                      <p style={{ margin: 0 }}>[]</p>
-                    </div>
-                  );
+          rows.map((row, rowIndex) => {
+            return (
+              <div key={`row-${rowIndex}`} style={{ marginLeft: `${rowIndex !== 0 ? 50 : 0}px` }}>
+                {
+                  row.map((cluster, clusterIndex) => {
+                    /** If cluster is an empty array we display '[]' */
+                    if (cluster.cells.length === 0) {
+                      return (
+                        <div key={`${scope}-cluster-${clusterIndex}`} id={`cluster-${cluster.id}`}>
+                          <p style={{ margin: 0 }}>[]</p>
+                        </div>
+                      );
+                    }
+                    /** Display cluster */
+                    return (
+                      <div key={`cluster-${cluster.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
+                        {/* Index numbers for each cell */}
+                        <div style={{ display: 'flex', flexDirection: 'column', marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
+                          {
+                            cluster.cells.map((cell, cellIndex) => {
+                              return (
+                                <div key={`cell-index-${cell.id}`} style={{ width: '25px', height: '25px', display: 'flex', justifyContent: 'center' }}>
+                                  <p style={{ margin: 0 }}>{cellIndex}</p>
+                                </div>
+                              )
+                            })
+                          }
+                        </div>
+                        {/* Cells in the cluster */}
+                        <div id={`${scope}-cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
+                          {
+                            cluster.cells.map((cell) => {
+                              return (
+                                <div key={`cell-${cell.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
+                                  <div id={`${scope}-cell-${cell.id}`}>
+                                    <ArrayCell value={cell.value} theme={theme} updated={changed === cell.id} accessed={accessed === cell.id} />
+                                  </div>
+                                </div>
+                              );
+                            })
+                          }
+                        </div>
+                      </div>
+                    );
+                  })
                 }
-                /** Display cluster */
-                return (
-                  <div key={`cluster-${cluster.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
-                    {/* Index numbers for each cell */}
-                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
-                      {
-                        cluster.cells.map((cell, cellIndex) => {
-                          return (
-                            <div key={`cell-index-${cell.id}`} style={{width: '25px', height: '25px', display: 'flex', justifyContent: 'center' }}>
-                              <p style={{ margin: 0 }}>{cellIndex}</p>
-                            </div>
-                          )
-                        })
-                      }
-                    </div>
-                    {/* Cells in the cluster */}
-                    <div id={`${scope}-cluster-${cluster.id}`} style={{ marginTop: `${clusterIndex !== 0 ? 20 : 0}px` }}>
-                      {
-                        cluster.cells.map((cell) => {
-                          return (
-                            <div key={`cell-${cell.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
-                              <div id={`${scope}-cell-${cell.id}`}>
-                                <ArrayCell value={cell.value} theme={theme} changed={changed === cell.id} accessed={accessed === cell.id}/>
-                              </div>
-                            </div>
-                          );
-                        })
-                      }
-                    </div>
-                  </div>
-                );
-              })
-            }
-            </div>
-          );
-        })
+              </div>
+            );
+          })
         }
         {
           arrows.map((arrow, index) => {

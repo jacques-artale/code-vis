@@ -25,7 +25,14 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
                   margin: '10px',
                 }}
               >
-                <Variable name={name} value={value} varChange={highlight ? varChange : null} created={created} updated={updated} accessed={accessed} />
+                <Variable
+                  name={name}
+                  value={value}
+                  varChange={highlight ? varChange : null}
+                  created={created}
+                  updated={updated}
+                  accessed={accessed}
+                />
               </div>
             );
           })
@@ -47,7 +54,17 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
                   backgroundColor: highlightColor
                 }}
               >
-                <ArrayGrid scope={scope.id} name={name} values={arr} varChange={highlightCellUpdate ? varChange : null} varAccess={highlightCellAccess ? varAccess : null} theme={theme} />
+                <ArrayGrid
+                  scope={scope.id}
+                  name={name}
+                  values={arr}
+                  varChange={highlightCellUpdate ? varChange : null}
+                  varAccess={highlightCellAccess ? varAccess : null}
+                  created={created}
+                  updated={updated}
+                  accessed={accessed}
+                  theme={theme}
+                />
               </div>
             );
           })
