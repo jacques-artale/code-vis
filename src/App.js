@@ -70,7 +70,7 @@ function App() {
         setCreatedVariable(null);
         setAccessedVariable(null);
       } else if (e.data.command === 'updatedVariable') {
-        setUpdatedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties, message: "Value changed from ... to ..." });
+        setUpdatedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties, message: e.data.message });
         setCreatedVariable(null);
         setAccessedVariable(null);
       } else if (e.data.command === 'createVariable') {

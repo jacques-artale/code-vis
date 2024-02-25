@@ -189,6 +189,7 @@ export class Interpreter {
 
   updateVariableValue(name, value, environment) {
     // find and update the variable in the environment
+    let oldValue = this.lookupVariableValue(name, environment);
     let currentEnvironment = environment;
     while (currentEnvironment !== null) {
       if (name in currentEnvironment.variables) {
@@ -212,11 +213,20 @@ export class Interpreter {
       return;
     }
 
+    const callbackObj = {
+      command: 'updatedVariable',
+      scopeId: currentEnvironment.id,
+      name: name,
+      properties: null,
+      message: `Value changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}`
+    }
+
     this.updateStateVariables();
-    this.updateCallback({ command: 'updatedVariable', scopeId: currentEnvironment.id, name: name, properties: null });
+    this.updateCallback(callbackObj);
   }
 
   updateVariableProperty(name, properties, value, environment) {
+    let oldValue = null;
     let currentEnvironment = environment;
     while (currentEnvironment !== null) {
       let variable = currentEnvironment.arrayVariables[name] || currentEnvironment.objectVariables[name];
@@ -234,7 +244,8 @@ export class Interpreter {
           if (variable[properties[properties.length - 1]] === undefined) {
             this.updateCallback({ command: 'error', error: `Property ${properties[properties.length - 1]} cannot be set on ${variable}` });
           } else {
-            variable[properties[properties.length - 1]] = value;
+            oldValue = variable[properties[properties.length - 1]]; // save the old property value for the callback
+            variable[properties[properties.length - 1]] = value; // update the property
           }
         }
         break;
@@ -248,8 +259,16 @@ export class Interpreter {
       return;
     }
 
+    const callbackObj = {
+      command: 'updatedVariable',
+      scopeId: currentEnvironment.id,
+      name: name,
+      properties: properties,
+      message: `Property changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}`
+    }
+
     this.updateStateVariables();
-    this.updateCallback({ command: 'updatedVariable', scopeId: currentEnvironment.id, name: name, properties: properties });
+    this.updateCallback(callbackObj);
   }
 
   updateStateVariables() {
