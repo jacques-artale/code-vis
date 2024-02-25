@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ArrayCell from './ArrayCell';
 import Xarrow from 'react-xarrows';
 
-const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
+const ArrayTree = ({ scope, values, varUpdate, varAccess, theme }) => {
 
   const [changed, setChanged] = useState(null); // id of the cell to highlight
   const [accessed, setAccessed] = useState(null); // id of the cell to highlight
@@ -13,20 +13,20 @@ const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
    * Highlight the cell that was changed
    */
   useEffect(() => {
-    if (varChange !== null && values !== null) {
+    if (varUpdate !== null && varUpdate.properties !== null && values !== null) {
       let currentCell = { value: valuesWithIds };
-      for (let i = 0; i < varChange.properties.length; i++) {
-        currentCell = currentCell.value[varChange.properties[i]];
+      for (let i = 0; i < varUpdate.properties.length; i++) {
+        currentCell = currentCell.value[varUpdate.properties[i]];
       }
       setChanged(currentCell.id);
     }
-  }, [varChange, values]);
+  }, [varUpdate, values]);
 
   /**
    * Highlight the cell that was accessed
    */
   useEffect(() => {
-    if (varAccess !== null && values !== null) {
+    if (varAccess !== null && varAccess.properties !== null && values !== null) {
       let currentCell = { value: valuesWithIds };
       for (let i = 0; i < varAccess.properties.length; i++) {
         currentCell = currentCell.value[varAccess.properties[i]];
@@ -127,7 +127,12 @@ const ArrayTree = ({ scope, values, varChange, varAccess, theme }) => {
                               return (
                                 <div key={`cell-${cell.id}`} style={{ display: 'flex', flexDirection: 'row' }}>
                                   <div id={`${scope}-cell-${cell.id}`}>
-                                    <ArrayCell value={cell.value} theme={theme} updated={changed === cell.id} accessed={accessed === cell.id} />
+                                    <ArrayCell
+                                      value={cell.value}
+                                      theme={theme}
+                                      varUpdate={changed === cell.id ? varUpdate : null}
+                                      varAccess={accessed === cell.id ? varAccess : null}
+                                    />
                                   </div>
                                 </div>
                               );

@@ -18,20 +18,19 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
             const updated = varChange !== null && scope.id === varChange.scopeId && varChange.properties === null && name === varChange.name;
             const created = varCreate !== null && scope.id === varCreate.scopeId && name === varCreate.name;
             const accessed = varAccess !== null && scope.id === varAccess.scopeId && name === varAccess.name;
+
             return (
               <div
                 key={`var-${index}`}
-                style={{
-                  margin: '10px',
-                }}
+                style={{ margin: '10px' }}
               >
                 <Variable
                   name={name}
                   value={value}
-                  varChange={highlight ? varChange : null}
-                  created={created}
-                  updated={updated}
-                  accessed={accessed}
+                  varChange={highlight ? varChange : null} // TODO: Remove. Used to highlight property of object but also sent with 'varUpdate'
+                  varCreate={created ? varCreate : null}
+                  varUpdate={updated ? varChange : null}
+                  varAccess={accessed ? varAccess : null}
                 />
               </div>
             );
@@ -39,30 +38,22 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
         }
         {
           scope.arrayVariables.map(([name, arr], index) => {
-            const highlightCellUpdate = varChange !== null && scope.id === varChange.scopeId && varChange.properties !== null && varChange.name === name;
-            const highlightCellAccess = varAccess !== null && scope.id === varAccess.scopeId && varAccess.properties !== null && varAccess.name === name;
+            const created = varCreate !== null && varCreate.scopeId === scope.id && varCreate.name === name;
+            const updated = varChange !== null && varChange.scopeId === scope.id && varChange.name === name;
+            const accessed = varAccess !== null && varAccess.scopeId === scope.id && varAccess.name === name;
 
-            const updated = varChange !== null && scope.id === varChange.scopeId && varChange.properties === null && name === varChange.name;
-            const created = varCreate !== null && scope.id === varCreate.scopeId && name === varCreate.name;
-            const accessed = varAccess !== null && scope.id === varAccess.scopeId && varAccess.properties === null && name === varAccess.name;
-            const highlightColor = updated ? '#0099ff' : created ? '#378805' : accessed ? '#e6b400' : 'transparent';
             return (
               <div
                 key={`array-${index}`}
-                style={{
-                  margin: '10px',
-                  backgroundColor: highlightColor
-                }}
+                style={{ margin: '10px' }}
               >
                 <ArrayGrid
                   scope={scope.id}
                   name={name}
                   values={arr}
-                  varChange={highlightCellUpdate ? varChange : null}
-                  varAccess={highlightCellAccess ? varAccess : null}
-                  created={created}
-                  updated={updated}
-                  accessed={accessed}
+                  varCreate={created ? varCreate : null}
+                  varUpdate={updated ? varChange : null}
+                  varAccess={accessed ? varAccess : null}
                   theme={theme}
                 />
               </div>

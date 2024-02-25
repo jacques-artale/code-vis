@@ -24,7 +24,7 @@ function App() {
   const [isResizingConsole, setIsResizingConsole] = useState(false);
   const [isResizingCode, setIsResizingCode] = useState(false);
 
-  const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\n'*/'');
+  const [code, setCode] = useState(/*'var a = [1,2,3,4,5];\nvar b = [6,[1,2,3,4],8,9,10]\nvar c = [[[1,2],3],[4],[500000000,[[6,7],8,9],10],[11,[12]]];\na[1] = 10;\nb[1][2] = 10;\nc[2][1][0][0] = 10;\nvar d = a[1];\nvar e = b[1][2];\nvar f = c[2][1][0][0];\na = [1,2,3];\nb = [1,[1,2,3],3];\nc = [1,[1,[1,2,3],3],3];'*/'');
   const [parsedCode, setParsedCode] = useState(null);
 
   const [viewAST, setViewAST] = useState(false);
@@ -45,9 +45,9 @@ function App() {
   const [activeNode, setActiveNode] = useState(null);             // { nodeId, type }
   const [scopeHighlight, setScopeHighlight] = useState(null);     // [startLine, startColumn, endLine, endColumn]
   const [selectedScope, setSelectedScope] = useState(null);       // nodeId
-  const [updatedVariable, setUpdatedVariable] = useState(null);   // { scopeId, name, properties }
-  const [createdVariable, setCreatedVariable] = useState(null);   // { scopeId, name }
-  const [accessedVariable, setAccessedVariable] = useState(null); // { scopeId, name, properties }
+  const [updatedVariable, setUpdatedVariable] = useState(null);   // { scopeId, name, properties, message }
+  const [createdVariable, setCreatedVariable] = useState(null);   // { scopeId, name, message }
+  const [accessedVariable, setAccessedVariable] = useState(null); // { scopeId, name, properties, message }
 
   const interpreterRef = useRef();                            // interval which calls the interpreter
   const [worker, setWorker] = useState(null);                 // worker where the interpreter runs
@@ -70,11 +70,17 @@ function App() {
         setCreatedVariable(null);
         setAccessedVariable(null);
       } else if (e.data.command === 'updatedVariable') {
-        setUpdatedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties });
+        setUpdatedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties, message: "Value changed from ... to ..." });
+        setCreatedVariable(null);
+        setAccessedVariable(null);
       } else if (e.data.command === 'createVariable') {
-        setCreatedVariable({ scopeId: e.data.scopeId, name: e.data.name });
+        setUpdatedVariable(null);
+        setCreatedVariable({ scopeId: e.data.scopeId, name: e.data.name, message: "Variable created" });
+        setAccessedVariable(null);
       } else if (e.data.command === 'accessVariable') {
-        setAccessedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties });
+        setUpdatedVariable(null);
+        setCreatedVariable(null);
+        setAccessedVariable({ scopeId: e.data.scopeId, name: e.data.name, properties: e.data.properties, message: "Variable accessed" });
       } else if (e.data.command === 'error') {
         handleStop();
         alert(e.data.error);

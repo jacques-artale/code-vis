@@ -2,15 +2,22 @@ import React, { useState } from 'react';
 
 import ToolTip from './ToolTip';
 
-const ArrayCell = ({ value, theme, updated, accessed }) => {
+const ArrayCell = ({ value, theme, varUpdate, varAccess }) => {
 
   const [viewTooltip, setViewTooltip] = useState(false);
 
   function createToolTip() {
-    if (updated) return <ToolTip message="Variable updated" show={viewTooltip} />;
-    if (accessed) return <ToolTip message="Variable accessed" show={viewTooltip} />;
+    if (varUpdate !== null) return <ToolTip message={varUpdate.message} show={viewTooltip} />;
+    if (varAccess !== null) return <ToolTip message={varAccess.message} show={viewTooltip} />;
     return null;
   }
+
+  let cellValue = value;
+  if (cellValue === undefined) cellValue = "undefined";
+  else if (cellValue === '') cellValue = '""';
+  else if (cellValue === true) cellValue = 'true';
+  else if (cellValue === false) cellValue = 'false';
+  else if (cellValue.length === 0) cellValue = "[]";
 
   return (
     <div style={{ position: 'relative' }}>
@@ -26,20 +33,13 @@ const ArrayCell = ({ value, theme, updated, accessed }) => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: updated ? '#0099ff' : accessed ? '#e6b400' : 'transparent'
+          backgroundColor: varUpdate !== null ? '#0099ff' : varAccess !== null ? '#e6b400' : 'transparent'
         }}
         onMouseEnter={() => setViewTooltip(true)}
         onMouseLeave={() => setViewTooltip(false)}
       >
         <div style={{ margin: '5px' }}>
-          {
-            value === undefined ? "undefined" :
-              value === '' ? '""' :
-                value === true ? 'true' :
-                  value === false ? 'false' :
-                    value.length === 0 ? "[]" :
-                      value
-          }
+          {cellValue}
         </div>
       </div>
     </div>
