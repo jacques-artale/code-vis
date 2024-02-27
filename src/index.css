@@ -1,5 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Hubballi&display=swap");
 
+:root {
+  --white: #f5e8df;
+  --dark-blue: #062746;
+  --black: #212529;
+  --green: #378805;
+  --yellow: #e6b400;
+  --blue: #0099ff;
+}
+
 body,
 html,
 #root {
@@ -11,7 +20,7 @@ html,
   font-size: 16px;
   font-weight: 600;
   line-height: 1.5;
-  color: #212529;
+  color: var(--black);
   text-align: left;
   background-color: #fffafa;
 }
@@ -34,9 +43,9 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 2px solid #062746;
+  border: 2px solid var(--dark-blue);
   border-radius: 15px;
-  background-image: linear-gradient(-45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
+  background-image: linear-gradient(-45deg, var(--dark-blue) 10%, transparent 10%, transparent 50%, var(--dark-blue) 50%, var(--dark-blue) 60%, transparent 60%);
   background-size: 10px 10px;
 }
 

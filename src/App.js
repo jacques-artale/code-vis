@@ -252,7 +252,7 @@ function App() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'row' }} className={`${theme}-body`}>
+    <div className={`${theme}-body`}>
 
       <div style={{ width: `${visualWidth}%`, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', width: '100%', height: '5%' }}>

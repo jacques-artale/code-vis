@@ -1,12 +1,12 @@
 import React from 'react';
 
-function ExecutingInstruction ({ activeNode, theme }) {
+function ExecutingInstruction({ activeNode, theme }) {
 
   function renderInstruction() {
     return (
       <div style={{ display: 'flex' }}>
         <p>CURRENT INSTRUCTION:</p>
-        <p>{ activeNode.nodeType }</p>
+        <p>{activeNode.nodeType}</p>
         {
           /*
           <p>{'\u2192'}</p>
@@ -30,7 +30,7 @@ function ExecutingInstruction ({ activeNode, theme }) {
         alignItems: 'center',
       }}
     >
-      { activeNode ? renderInstruction() : <p>SELECT A SCRIPT AND PRESS 'START'</p> }
+      {activeNode ? renderInstruction() : <p>SELECT A SCRIPT AND PRESS 'START'</p>}
     </div>
   )
 }

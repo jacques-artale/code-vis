@@ -1,0 +1,18 @@
+.primitive-variable {
+  position: relative;
+}
+
+.primitive-variable-created {
+  position: relative;
+  background-color: var(--green);
+}
+
+.primitive-variable-updated {
+  position: relative;
+  background-color: var(--blue);
+}
+
+.primitive-variable-accessed {
+  position: relative;
+  background-color: var(--yellow);
+}

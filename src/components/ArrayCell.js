@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 
+import '../../styles/ArrayCell.css';
+
 import ToolTip from './ToolTip';
+
+const getCellHighlight = (theme, varUpdate, varAccess) => {
+  if (varUpdate !== null) return `${theme}-array-cell-updated`;
+  if (varAccess !== null) return `${theme}-array-cell-accessed`;
+  return `${theme}-array-cell`;
+};
 
 const ArrayCell = ({ value, theme, varUpdate, varAccess }) => {
 
   const [viewTooltip, setViewTooltip] = useState(false);
-
-  function createToolTip() {
-    if (varUpdate !== null) return <ToolTip message={varUpdate.message} show={viewTooltip} />;
-    if (varAccess !== null) return <ToolTip message={varAccess.message} show={viewTooltip} />;
-    return null;
-  }
 
   let cellValue = value;
   if (cellValue === undefined) cellValue = "undefined";
@@ -19,22 +21,18 @@ const ArrayCell = ({ value, theme, varUpdate, varAccess }) => {
   else if (cellValue === false) cellValue = 'false';
   else if (cellValue.length === 0) cellValue = "[]";
 
+  const cellHighlight = getCellHighlight(theme, varUpdate, varAccess);
+
   return (
     <div style={{ position: 'relative' }}>
       {
-        createToolTip()
+        varUpdate && <ToolTip message={varUpdate.message} show={viewTooltip} />
+      }
+      {
+        varAccess && <ToolTip message={varAccess.message} show={viewTooltip} />
       }
       <div
-        style={{
-          boxSizing: 'border-box',
-          minWidth: '25px',
-          height: '25px',
-          border: `1px solid ${theme === 'sketch' ? '#062746' : '#f5e8df'}`,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: varUpdate !== null ? '#0099ff' : varAccess !== null ? '#e6b400' : 'transparent'
-        }}
+        className={cellHighlight}
         onMouseEnter={() => setViewTooltip(true)}
         onMouseLeave={() => setViewTooltip(false)}
       >

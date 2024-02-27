@@ -1,0 +1,37 @@
+.sketch-bottom-line {
+  position: absolute;
+  height: 2px;
+  background-color: var(--dark-blue);
+}
+
+.dark-bottom-line {
+  position: absolute;
+  height: 2px;
+  background-color: var(--white);
+}
+
+.sketch-top-line {
+  position: absolute;
+  width: 2px;
+  background-color: var(--dark-blue);
+}
+
+.dark-top-line {
+  position: absolute;
+  width: 2px;
+  background-color: var(--white);
+}
+
+.sketch-arrow-head {
+  position: absolute;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 14px solid var(--dark-blue);
+}
+
+.dark-arrow-head {
+  position: absolute;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 14px solid var(--white);
+}

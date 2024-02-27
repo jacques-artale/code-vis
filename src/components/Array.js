@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import '../../styles/Array.css';
+
 import ArrayCell from './ArrayCell';
 import ArrayTree from './ArrayTree';
 import ToolTip from './ToolTip';
@@ -19,7 +21,6 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
 
   // Function to render a single cell
   const renderCell = ({ value, index, row }) => {
-    const color = theme === 'sketch' ? '#062746' : '#f5e8df';
     const updated = varUpdate !== null && varUpdate.properties !== null && (
       (isOneDimensional && varUpdate.properties[0] === index) ||
       (isTwoDimensional && varUpdate.properties[0] === row && varUpdate.properties[1] === index)
@@ -32,7 +33,7 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
     return (
       <div key={`cell-${row}-${index}`}>
         {
-          row === 0 && <p style={{ color: color, margin: 0, textAlign: 'center' }}>{index}</p>
+          row === 0 && <p className={`${theme}-array-column-index`}>{index}</p>
         }
         <ArrayCell value={value} theme={theme} varUpdate={updated ? varUpdate : null} varAccess={accessed ? varAccess : null} />
       </div>
@@ -44,12 +45,13 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
     // Only highlight entire rows if the array is two-dimensional
     const rowUpdated = isTwoDimensional && varUpdate !== null && varUpdate.properties !== null && varUpdate.properties.length === 1 && varUpdate.properties[0] === rowIndex;
     const rowAccessed = isTwoDimensional && varAccess !== null && varAccess.properties !== null && varAccess.properties.length === 1 && varAccess.properties[0] === rowIndex;
-    const highlightColor = rowUpdated ? '#0099ff' : rowAccessed ? '#e6b400' : 'transparent';
+    let highlightRow = 'array-row';
+    if (rowUpdated) highlightRow = 'array-row-updated';
+    else if (rowAccessed) highlightRow = 'array-row-accessed';
 
     // If the array is one-dimensional, treat each item as a cell in a single row
     // Otherwise, treat each item as a row
     const cells = isOneDimensional ? values : (Array.isArray(row) ? row : [row]);
-    const color = theme === 'sketch' ? '#062746' : '#f5e8df';
 
     return (
       <div key={`row-${rowIndex}`} style={{ display: 'flex' }}>
@@ -57,7 +59,7 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
           // Show the row index
           !isOneDimensional &&
           <div style={{ width: '25px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
-            <p style={{ margin: 0, color: color }}>{rowIndex}</p>
+            <p className={`${theme}-array-row-index`}>{rowIndex}</p>
           </div>
         }
         <div style={{ position: 'relative' }}>
@@ -65,7 +67,7 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
             createToolTip(null, rowUpdated ? varUpdate : null, rowAccessed ? varAccess : null)
           }
           <div
-            style={{ display: 'flex', flexDirection: 'row', backgroundColor: highlightColor }}
+            className={highlightRow}
             onMouseEnter={() => setViewTooltip(true)}
             onMouseLeave={() => setViewTooltip(false)}
           >
@@ -97,10 +99,10 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
   const createdEntireArray = varCreate !== null;
   const accessedEntireArray = varAccess !== null && varAccess.properties === null;
 
-  let highlightColor = 'transparent';
-  if (updatedEntireArray) highlightColor = '#0099ff';
-  else if (createdEntireArray) highlightColor = '#378805';
-  else if (accessedEntireArray) highlightColor = '#e6b400';
+  let highlightArray = 'array-grid';
+  if (updatedEntireArray) highlightArray = 'array-grid-updated';
+  else if (createdEntireArray) highlightArray = 'array-grid-created';
+  else if (accessedEntireArray) highlightArray = 'array-grid-accessed';
 
   let arrValues;
   if (values === undefined) arrValues = "undefined";
@@ -110,7 +112,7 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
   else arrValues = renderArrayTree(values);
 
   return (
-    <div style={{ position: 'relative', backgroundColor: highlightColor }}>
+    <div className={highlightArray}>
       {
         createToolTip(createdEntireArray ? varCreate : null, updatedEntireArray ? varUpdate : null, accessedEntireArray ? varAccess : null)
       }
@@ -119,7 +121,7 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
         onMouseEnter={() => setViewTooltip(true)}
         onMouseLeave={() => setViewTooltip(false)}
       >
-        {name} = {arrValues}
+        {name}: {arrValues}
       </div>
     </div>
   );

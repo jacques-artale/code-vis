@@ -9,9 +9,9 @@
   top: 50%;
   height: 6px;
   border-radius: 5px;
-  border: 2px solid #f5e8df;
+  border: 2px solid var(--white);
   transform: translateY(-50%);
-  background-image: linear-gradient(-45deg, #f5e8df 10%, transparent 10%, transparent 50%, #f5e8df 50%, #f5e8df 60%, transparent 60%);
+  background-image: linear-gradient(-45deg, var(--white) 10%, transparent 10%, transparent 50%, var(--white) 50%, var(--white) 60%, transparent 60%);
   background-size: 10px 10px;
 
 }
@@ -21,9 +21,9 @@
   top: 50%;
   height: 6px;
   border-radius: 5px;
-  border: 2px solid #062746;
+  border: 2px solid var(--dark-blue);
   transform: translateY(-50%);
-  background-image: linear-gradient(-45deg, #062746 10%, transparent 10%, transparent 50%, #062746 50%, #062746 60%, transparent 60%);
+  background-image: linear-gradient(-45deg, var(--dark-blue) 10%, transparent 10%, transparent 50%, var(--dark-blue) 50%, var(--dark-blue) 60%, transparent 60%);
   background-size: 10px 10px;
 }
 
@@ -32,7 +32,7 @@
   top: 50%;
   height: 6px;
   border-radius: 5px;
-  border: 2px solid #f5e8df;
+  border: 2px solid var(--white);
   transform: translateY(-50%);
 }
 
@@ -41,7 +41,7 @@
   top: 50%;
   height: 6px;
   border-radius: 5px;
-  border: 2px solid #062746;
+  border: 2px solid var(--dark-blue);
   transform: translateY(-50%);
 }
 
@@ -50,9 +50,9 @@
   top: 50%;
   width: 20px;
   height: 20px;
-  border: 2px solid #f5e8df;
+  border: 2px solid var(--white);
   border-radius: 50%;
-  background-color: #212529;
+  background-color: var(--black);
   transform: translate(-50%, -50%);
 }
 
@@ -61,16 +61,16 @@
   top: 50%;
   width: 20px;
   height: 20px;
-  border: 2px solid #062746;
+  border: 2px solid var(--dark-blue);
   border-radius: 50%;
-  background-color: #f5e8df;
+  background-color: var(--white);
   transform: translate(-50%, -50%);
 }
 
 .dark-slider-thumb:hover {
-  background-color: #f5e8df;
+  background-color: var(--white);
 }
 
 .sketch-slider-thumb:hover {
-  background-color: #062746;
+  background-color: var(--dark-blue);
 }

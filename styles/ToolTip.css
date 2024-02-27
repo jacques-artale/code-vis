@@ -1,8 +1,8 @@
 .tooltip {
   position: absolute;
   display: inline-block;
-  background-color: #f5e8df;
-  border: 2px solid #062746;
+  background-color: var(--white);
+  border: 2px solid var(--dark-blue);
   border-radius: 5px;
   width: max-content;
   left: 50%;
@@ -24,10 +24,10 @@
 }
 
 .tooltip::before {
-  border-top: 10px solid #062746;
+  border-top: 10px solid var(--dark-blue);
 }
 
 .tooltip::after {
-  border-top: 10px solid #f5e8df;
+  border-top: 10px solid var(--white);
   bottom: -8px;
 }

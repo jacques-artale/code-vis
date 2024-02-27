@@ -1,8 +1,17 @@
 import React from 'react';
 
+import '../../styles/Variable.css';
+
 import ToolTip from './ToolTip';
 
-function Variable({ name, value, varChange, varCreate, varUpdate, varAccess }) {
+function getVariableHighlight(varCreate, varUpdate, varAccess) {
+  if (varCreate !== null) return 'primitive-variable-created';
+  if (varUpdate !== null) return 'primitive-variable-updated';
+  if (varAccess !== null) return 'primitive-variable-accessed';
+  return '';
+}
+
+const Variable = ({ name, value, varChange, varCreate, varUpdate, varAccess }) => {
 
   const [viewTooltip, setViewTooltip] = React.useState(false);
 
@@ -43,22 +52,20 @@ function Variable({ name, value, varChange, varCreate, varUpdate, varAccess }) {
   }
 
   function renderPrimitive() {
-    let highlightColor = 'transparent';
-    if (varUpdate !== null) highlightColor = '#0099ff';
-    else if (varCreate !== null) highlightColor = '#378805';
-    else if (varAccess !== null) highlightColor = '#e6b400';
-
     let varValue = value;
     if (varValue === undefined) varValue = "undefined";
     else if (varValue === '') varValue = '""';
     else if (varValue === true) varValue = 'true';
     else if (varValue === false) varValue = 'false';
 
+    const highlightVariable = getVariableHighlight(varCreate, varUpdate, varAccess);
+
     return (
       <div
+        className={highlightVariable}
         style={{
           position: 'relative',
-          backgroundColor: highlightColor,
+          backgroundColor: highlightVariable,
         }}
       >
         {
@@ -69,7 +76,7 @@ function Variable({ name, value, varChange, varCreate, varUpdate, varAccess }) {
           onMouseEnter={() => setViewTooltip(true)}
           onMouseLeave={() => setViewTooltip(false)}
         >
-          {name} = {varValue}
+          {name}: {varValue}
         </p>
       </div>
     );

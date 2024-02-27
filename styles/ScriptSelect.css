@@ -1,19 +1,19 @@
 .dark-script-select-button {
   padding: 5px;
   border: none;
-  border-bottom: 2px solid #f5e8df;
-  background-color: #212529;
+  border-bottom: 2px solid var(--white);
+  background-color: var(--black);
   font-family: "Hubballi";
   font-weight: 600;
   font-size: 16px;
-  color: #f5e8df;
+  color: var(--white);
 }
 
 .sketch-script-select-button {
   padding: 5px;
   border: none;
-  border-bottom: 2px solid #212529;
-  background-color: #f5e8df;
+  border-bottom: 2px solid var(--black);
+  background-color: var(--white);
   font-family: "Hubballi";
   font-weight: 600;
   font-size: 16px;
@@ -22,34 +22,34 @@
 .dark-script-select-button-active {
   padding: 5px;
   border-bottom: none;
-  border-top: 2px solid #f5e8df;
-  border-left: 2px solid #f5e8df;
-  border-right: 2px solid #f5e8df;
-  background-color: #212529;
+  border-top: 2px solid var(--white);
+  border-left: 2px solid var(--white);
+  border-right: 2px solid var(--white);
+  background-color: var(--black);
   font-family: "Hubballi";
   font-weight: 600;
   font-size: 16px;
-  color: #f5e8df;
+  color: var(--white);
 }
 
 .sketch-script-select-button-active {
   padding: 5px;
   border-bottom: none;
-  border-top: 2px solid #212529;
-  border-left: 2px solid #212529;
-  border-right: 2px solid #212529;
-  background-color: #f5e8df;
+  border-top: 2px solid var(--black);
+  border-left: 2px solid var(--black);
+  border-right: 2px solid var(--black);
+  background-color: var(--white);
   font-family: "Hubballi";
   font-weight: 600;
   font-size: 16px;
 }
 
 .dark-script-select-button:hover {
-  background-color: #f5e8df;
-  color: #212529
+  background-color: var(--white);
+  color: var(--black)
 }
 
 .sketch-script-select-button:hover {
-  background-color: #212529;
-  color: #f5e8df;
+  background-color: var(--black);
+  color: var(--white);
 }

@@ -1,0 +1,58 @@
+.array-grid {
+  position: relative;
+}
+
+.array-grid-created {
+  position: relative;
+  background-color: var(--green);
+}
+
+.array-grid-updated {
+  position: relative;
+  background-color: var(--blue);
+}
+
+.array-grid-accessed {
+  position: relative;
+  background-color: var(--yellow);
+}
+
+
+.array-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.array-row-updated {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--blue);
+}
+
+.array-row-accessed {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--yellow);
+}
+
+.sketch-array-row-index {
+  margin: 0;
+  color: var(--dark-blue);
+}
+
+.dark-array-row-index {
+  margin: 0;
+  color: var(--white);
+}
+
+.sketch-array-column-index {
+  margin: 0;
+  color: var(--dark-blue);
+  text-align: center;
+}
+
+.dark-array-column-index {
+  margin: 0;
+  color: var(--white);
+  text-align: center;
+}

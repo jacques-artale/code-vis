@@ -9,20 +9,20 @@
 }
 
 .dark-visual-control-button {
-  background-color: #212529;
-  border: 2px solid #f5e8df;
+  background-color: var(--black);
+  border: 2px solid var(--white);
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
   font-size: 16px;
   border-radius: 2px;
   width: 25px;
   height: 25px;
   margin: 1px;
-  color: #f5e8df;
+  color: var(--white);
 }
 
 .sketch-visual-control-button {
-  background-color: #f5e8df;
-  border: 2px solid #062746;
+  background-color: var(--white);
+  border: 2px solid var(--dark-blue);
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
   font-size: 16px;
   border-radius: 2px;
@@ -32,18 +32,18 @@
 }
 
 .dark-visual-control-button:hover {
-  background-color: #f5e8df;
-  color: #212529;
+  background-color: var(--white);
+  color: var(--black);
 }
 
 .sketch-visual-control-button:hover {
-  background-color: #062746;
-  color: #f5e8df;
+  background-color: var(--dark-blue);
+  color: var(--white);
 }
 
 
 .sketch-visual-reset-button {
-  border: 2px solid #062746;
+  border: 2px solid var(--dark-blue);
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
   font-size: 16px;
   border-radius: 2px;
@@ -52,11 +52,11 @@
   margin: 1px;
   background: url("../assets/images/sketch-reset.svg") no-repeat center;
   background-size: 20px 20px;
-  background-color: #f5e8df;
+  background-color: var(--white);
 }
 
 .dark-visual-reset-button {
-  border: 2px solid #f5e8df;
+  border: 2px solid var(--white);
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
   font-size: 16px;
   border-radius: 2px;
@@ -65,11 +65,11 @@
   margin: 1px;
   background: url("../assets/images/dark-reset.svg") no-repeat center;
   background-size: 20px 20px;
-  background-color: #212529;
+  background-color: var(--black);
 }
 
 .sketch-visual-reset-button:hover {
-  background-color: #062746;
+  background-color: var(--dark-blue);
   background-image: url("../assets/images/dark-reset.svg");
   background-position: center;
   background-repeat: no-repeat;
@@ -77,7 +77,7 @@
 }
 
 .dark-visual-reset-button:hover {
-  background-color: #f5e8df;
+  background-color: var(--white);
   background-image: url("../assets/images/sketch-reset.svg");
   background-position: center;
   background-repeat: no-repeat;

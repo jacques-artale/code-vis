@@ -1,0 +1,63 @@
+.sketch-array-cell {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid var(--dark-blue);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sketch-array-cell-updated {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid var(--dark-blue);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--blue);
+}
+
+.sketch-array-cell-accessed {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid var(--dark-blue);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--yellow);
+}
+
+.dark-array-cell {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dark-array-cell-updated {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--blue);
+}
+
+.dark-array-cell-accessed {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--yellow);
+}

@@ -17,6 +17,11 @@ class CodeEditor extends React.Component {
     this.setState({ editor, monaco });
     editor.focus();
 
+    const rootStyles = getComputedStyle(document.documentElement);
+    const white = rootStyles.getPropertyValue('--white').trim();
+    const darkBlue = rootStyles.getPropertyValue('--dark-blue').trim();
+    const black = rootStyles.getPropertyValue('--black').trim();
+
     const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
     const themeBase = this.props.theme === 'sketch' ? 'vs' : 'vs-dark';
     monaco.editor.defineTheme(vsTheme, {
@@ -26,12 +31,12 @@ class CodeEditor extends React.Component {
         { token: 'highlight', foreground: '000000', background: 'ffff00' },
       ],
       colors: {
-        'editor.background': this.props.theme === 'sketch' ? '#f5e8df' : '#212529',
+        'editor.background': this.props.theme === 'sketch' ? white : black,
         'editor.lineHighlightBackground': this.props.theme === 'sketch' ? '#eadbd1' : '#313538',
-        'editorLineNumber.foreground': this.props.theme === 'sketch' ? '#062746' : '#f5e8df',
+        'editorLineNumber.foreground': this.props.theme === 'sketch' ? darkBlue : white,
         'editorLineNumber.activeForeground': 'red',
-        'editor.foreground': this.props.theme === 'sketch' ? '#062746' : '#f5e8df',
-        'editorCursor.foreground': this.props.theme === 'sketch' ? '#062746' : '#f5e8df',
+        'editor.foreground': this.props.theme === 'sketch' ? darkBlue : white,
+        'editorCursor.foreground': this.props.theme === 'sketch' ? darkBlue : white,
       }
     });
     editor.updateOptions({ theme: vsTheme });
@@ -51,6 +56,11 @@ class CodeEditor extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const white = rootStyles.getPropertyValue('--white').trim();
+    const darkBlue = rootStyles.getPropertyValue('--dark-blue').trim();
+    const black = rootStyles.getPropertyValue('--black').trim();
+
     if (this.props.theme !== prevProps.theme) {
       const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
       const themeBase = this.props.theme === 'sketch' ? 'vs' : 'vs-dark';
@@ -61,12 +71,12 @@ class CodeEditor extends React.Component {
           { token: 'highlight', foreground: '000000', background: 'ffff00' },
         ],
         colors: {
-          'editor.background': this.props.theme === 'sketch' ? '#f5e8df' : '#212529',
+          'editor.background': this.props.theme === 'sketch' ? white : black,
           'editor.lineHighlightBackground': this.props.theme === 'sketch' ? '#eadbd1' : '#313538',
-          'editorLineNumber.foreground': this.props.theme === 'sketch' ? '#062746' : '#f5e8df',
+          'editorLineNumber.foreground': this.props.theme === 'sketch' ? darkBlue : white,
           'editorLineNumber.activeForeground': 'red',
-          'editor.foreground': this.props.theme === 'sketch' ? '#062746' : '#f5e8df',
-          'editorCursor.foreground': this.props.theme === 'sketch' ? '#062746' : '#f5e8df',
+          'editor.foreground': this.props.theme === 'sketch' ? darkBlue : white,
+          'editorCursor.foreground': this.props.theme === 'sketch' ? darkBlue : white,
         }
       });
       this.state.editor.updateOptions({ theme: vsTheme });
@@ -105,7 +115,8 @@ class CodeEditor extends React.Component {
       selectOnLineNumbers: true,
       tabSize: 2,
       wordWrap: 'on',
-      wrappingIndent: 'indent'
+      wrappingIndent: 'indent',
+      fontSize: 15,
     };
     const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
     return (
