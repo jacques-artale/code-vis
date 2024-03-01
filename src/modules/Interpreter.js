@@ -87,11 +87,13 @@ export class Interpreter {
   }
 
   createFunction(name, parameters, body) {
-    return {
+    const newFunctionDeclaration = {
       name: name,
       parameters: parameters,
       body: body,
     };
+    this.functionDeclarations.push(newFunctionDeclaration);
+    this.updateStateVariables();
   }
 
   lookupFunction(name) {
@@ -310,11 +312,13 @@ export class Interpreter {
 
       const parentId = (currentEnvironment !== null) ? currentEnvironment.id : null;
       const currentId = environment.id;
+      const availableFunctions = (type === 'global') ? this.functionDeclarations : [];
 
       const scope = {
         name: this.translateTypeToName(environment.executionState.node.type),
         variables: variables,
         arrayVariables: arrayVariables,
+        availableFunctions: availableFunctions,
         parentId: parentId,
         id: currentId,
         nodeId: environment.executionState.node.nodeId,
@@ -1563,9 +1567,7 @@ export class Interpreter {
     const parameters = node.params;
     const body = node.body;
 
-    const functionDeclaration = this.createFunction(name, parameters, body);
-
-    this.functionDeclarations.push(functionDeclaration);
+    this.createFunction(name, parameters, body);
   }
 
   interpretBlockStatement(node) {

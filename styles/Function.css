@@ -1,0 +1,15 @@
+.sketch-function-declaration {
+  margin: 0;
+}
+
+.dark-function-declaration {
+  margin: 0;
+}
+
+.sketch-function {
+  color: var(--wine-red);
+}
+
+.dark-function {
+  color: var(--wine-red);
+}
