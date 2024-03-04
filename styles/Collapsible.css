@@ -1,0 +1,59 @@
+.collapsible-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.collapsible-title-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sketch-collapsible-arrow-closed {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--dark-blue);
+  margin-right: 5px;
+  transform: rotate(0deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+.sketch-collapsible-arrow-open {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--dark-blue);
+  margin-right: 5px;
+  transform: rotate(90deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+.dark-collapsible-arrow-closed {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--white);
+  margin-right: 5px;
+  transform: rotate(0deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+.dark-collapsible-arrow-open {
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--white);
+  margin-right: 5px;
+  transform: rotate(90deg);
+  transition: transform 0.1s ease-in-out;
+}
+
+.collapsible-title {
+  margin: 0;
+}
+
+.collapsible-content-collapsed {
+  display: none;
+}
+
+.collapsible-content-expanded {
+  display: flex;
+  flex-direction: column;
+}

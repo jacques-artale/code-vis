@@ -6,7 +6,7 @@ import ArrayCell from './ArrayCell';
 import ArrayTree from './ArrayTree';
 import ToolTip from './ToolTip';
 
-const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme }) => {
+const ArrayGrid = ({ scope, values, varCreate, varUpdate, varAccess, theme }) => {
 
   const [viewTooltip, setViewTooltip] = useState(false);
 
@@ -121,7 +121,7 @@ const ArrayGrid = ({ scope, name, values, varCreate, varUpdate, varAccess, theme
         onMouseEnter={() => setViewTooltip(true)}
         onMouseLeave={() => setViewTooltip(false)}
       >
-        {name}: {arrValues}
+        {arrValues}
       </div>
     </div>
   );

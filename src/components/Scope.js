@@ -1,6 +1,7 @@
 import React from 'react';
 import './../../styles/Scope.css';
 
+import Collapsible from './Collapsible';
 import Variable from './Variable';
 import ArrayGrid from './Array';
 import Function from './Function';
@@ -64,15 +65,16 @@ const Scope = ({ scope, theme, varChange, varCreate, varAccess }) => {
                 key={`array-${index}`}
                 style={{ margin: '10px' }}
               >
-                <ArrayGrid
-                  scope={scope.id}
-                  name={name}
-                  values={arr}
-                  varCreate={created ? varCreate : null}
-                  varUpdate={updated ? varChange : null}
-                  varAccess={accessed ? varAccess : null}
-                  theme={theme}
-                />
+                <Collapsible collapsedTitle={<><span>{name}</span>: <i>{JSON.stringify(arr)}</i></>} expandedTitle={`${name}:`} theme={theme}>
+                  <ArrayGrid
+                    scope={scope.id}
+                    values={arr}
+                    varCreate={created ? varCreate : null}
+                    varUpdate={updated ? varChange : null}
+                    varAccess={accessed ? varAccess : null}
+                    theme={theme}
+                  />
+                </Collapsible>
               </div>
             );
           })

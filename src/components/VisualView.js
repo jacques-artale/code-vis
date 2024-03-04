@@ -16,10 +16,23 @@ const VisualView = ({ scopes, theme, varChange, varCreate, varAccess, setSelecte
   const [bounds, setBounds] = useState([]); // [{ x: Number, y: Number, width: Number, height: Number }, ...]
   const scopeRefs = useRef({});
 
+  /** Calculate positions of the scopes whenever their sizes, contents or the scale changes */
   useEffect(() => {
-    const newBounds = calculateBounds(scopes, scopeRefs);
-    setBounds(newBounds);
-  }, [scopes, scale]);
+    const resizeObserver = new ResizeObserver(() => {
+      const newBounds = calculateBounds(scopes, scopeRefs);
+      setBounds(newBounds);
+    });
+
+    Object.values(scopeRefs.current).forEach(ref => {
+      if (ref.current) {
+        resizeObserver.observe(ref.current);
+      }
+    });
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [scopes, scale, scopeRefs]);
 
 
   function calculateBounds(scopes, scopeRefs) {
