@@ -117,6 +117,7 @@ class CodeEditor extends React.Component {
       wordWrap: 'on',
       wrappingIndent: 'indent',
       fontSize: 15,
+      folding: true,
     };
     const vsTheme = this.props.theme === 'sketch' ? 'vs-light' : 'vs-dark';
     return (
