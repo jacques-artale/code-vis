@@ -1,11 +1,11 @@
 # Code-vis
-JavaScript Code Visualizer is an interactive tool designed to help developers understand JavaScript code execution visually. Paste or write JavaScript code into the visualizer to step through it incrementally. The visualizer interprets the code and generates corresponding React components to represent the code's behavior.
+JavaScript Code Visualizer is an interactive tool designed to visually understand JavaScript code execution. Paste or write JavaScript code into the visualizer to step through it incrementally. The visualizer interprets the code and shows representations of the code's behavior.
 
 ## Languages and Frameworks Used
 ![My Skills](https://skillicons.dev/icons?i=js,html,css,react,webpack,docker)
 
 ## Live-demo
-A live version can be found at: https://www.code-vis.io/
+A live version can [not] be found at: https://www.code-vis.io/
 
 ## Prerequisites
 Before you begin, ensure you have met the following requirements:
